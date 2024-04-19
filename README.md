@@ -1,2 +1,2 @@
 # CGRenderEngine
-二维渲染引擎
+2D OpenGL rendering engine
