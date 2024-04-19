@@ -1,0 +1,140 @@
+#include "QtDisplayWidget.h"
+
+static inline long long color_to_int(const QColor& color)
+{
+	auto shift = [&](unsigned val, int shift) {
+		return ((val & 0xff) << shift);
+	};
+
+	return shift(color.red(), 0) | shift(color.green(), 8) |
+		shift(color.blue(), 16) | shift(color.alpha(), 24);
+}
+
+static inline QColor rgba_to_color(uint32_t rgba)
+{
+	return QColor::fromRgb(rgba & 0xFF, (rgba >> 8) & 0xFF,
+		(rgba >> 16) & 0xFF, (rgba >> 24) & 0xFF);
+}
+
+QTDisplayWidget::QTDisplayWidget(QWidget* parent, Qt::WindowFlags flags)
+	: QWidget(parent, flags)
+{
+	//setAttribute(Qt::WA_PaintOnScreen);
+	//setAttribute(Qt::WA_StaticContents);
+	//setAttribute(Qt::WA_NoSystemBackground);
+	//setAttribute(Qt::WA_OpaquePaintEvent);
+	//setAttribute(Qt::WA_DontCreateNativeAncestors);
+	//setAttribute(Qt::WA_NativeWindow);
+
+
+	auto windowVisible = [this](bool visible) {
+		if (!visible) {
+#if !defined(_WIN32) && !defined(__APPLE__)
+			//display = nullptr;
+#endif
+			return;
+		}
+
+		//if (!display) {
+		//	CreateDisplay();
+		//}
+		//else {
+		//	QSize size = GetPixelSize(this);
+		//	obs_display_resize(display, size.width(),
+		//		size.height());
+		//}
+	};
+
+	//auto screenChanged = [this](QScreen*) {
+	//	CreateDisplay();
+
+	//	QSize size = GetPixelSize(this);
+	//	obs_display_resize(display, size.width(), size.height());
+	//};
+
+	//connect(windowHandle(), &QWindow::visibleChanged, windowVisible);
+	//connect(windowHandle(), &QWindow::screenChanged, screenChanged);
+
+#ifdef ENABLE_WAYLAND
+	if (obs_get_nix_platform() == OBS_NIX_PLATFORM_WAYLAND)
+		windowHandle()->installEventFilter(
+			new SurfaceEventFilter(this));
+#endif
+}
+
+QColor QTDisplayWidget::GetDisplayBackgroundColor() const
+{
+	return rgba_to_color(backgroundColor);
+}
+
+void QTDisplayWidget::SetDisplayBackgroundColor(const QColor& color)
+{
+	uint32_t newBackgroundColor = (uint32_t)color_to_int(color);
+
+	if (newBackgroundColor != backgroundColor) {
+		backgroundColor = newBackgroundColor;
+		UpdateDisplayBackgroundColor();
+	}
+}
+
+void QTDisplayWidget::UpdateDisplayBackgroundColor()
+{
+	//obs_display_set_background_color(display, backgroundColor);
+}
+
+void QTDisplayWidget::CreateDisplay(bool force)
+{
+	//if (display)
+	//	return;
+
+	//if (!windowHandle()->isExposed() && !force)
+	//	return;
+
+	//QSize size = GetPixelSize(this);
+
+	//gs_init_data info = {};
+	//info.cx = size.width();
+	//info.cy = size.height();
+	//info.format = GS_BGRA;
+	//info.zsformat = GS_ZS_NONE;
+
+	//if (!QTToGSWindow(windowHandle(), info.window))
+	//	return;
+
+	//display = obs_display_create(&info, backgroundColor);
+
+	//emit DisplayCreated(this);
+}
+
+void QTDisplayWidget::resizeEvent(QResizeEvent* event)
+{
+	//QWidget::resizeEvent(event);
+
+	//CreateDisplay();
+
+	//if (isVisible() && display) {
+	//	QSize size = GetPixelSize(this);
+	//	obs_display_resize(display, size.width(), size.height());
+	//}
+
+	//emit DisplayResized();
+	return ;
+}
+
+void QTDisplayWidget::paintEvent(QPaintEvent* event)
+{
+	//CreateDisplay();
+
+	//QWidget::paintEvent(event);
+	return;
+}
+
+bool QTDisplayWidget::eventFilter(QObject* obj, QEvent* event)
+{
+	return true;
+}
+
+QPaintEngine* QTDisplayWidget::paintEngine() const
+{
+	return nullptr;
+}

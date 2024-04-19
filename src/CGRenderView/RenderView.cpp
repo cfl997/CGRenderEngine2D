@@ -1,0 +1,77 @@
+#include "RenderView.h"
+#include "CGCore.h"
+
+#include <map>
+#include <mutex>
+#include <memory>
+
+
+
+using namespace CGRender;
+
+static const std::wstring windowMainStr = L"CGRenderViewMainWindow";
+
+struct CGRenderView::PrivateRenderView
+{
+	bool m_Running = false;
+	std::map<std::wstring, std::shared_ptr<CGRender::Window>> cgWindows;
+
+	std::shared_ptr<CGRender::Window>getMainWindos() { return cgWindows[windowMainStr]; }
+};
+
+
+CGRender::CGRenderView::CGRenderView(uint32_t width, uint32_t height, void* parent) :m_priv(new PrivateRenderView)
+{
+	auto& d = *m_priv;
+	d.m_Running = true;
+	//手动创建主窗口，并作为主资源
+	std::shared_ptr<CGRender::Window>window = std::shared_ptr<CGRender::Window>(CGRender::Window::Create({ parent, windowMainStr, width, height,nullptr ,WindowType::Window_Main }));
+	d.cgWindows[windowMainStr] = window;
+}
+CGRenderView::~CGRenderView()
+{
+	auto& d = *m_priv;
+	d.m_Running = false;
+	d.cgWindows.clear();
+}
+
+bool CGRender::CGRenderView::createWindow(const CGRender::WindowProps& windowsProps)
+{
+	auto& d = *m_priv;
+	if (windowsProps.type == WindowType::Window_Main || windowsProps.type == WindowType::Window_unknow)
+		return false;
+	std::shared_ptr<CGRender::Window>window = std::shared_ptr<CGRender::Window>(CGRender::Window::Create({ windowsProps.parentWindow, windowsProps.Title, windowsProps.Width,windowsProps.Height,windowsProps.share_Window }));
+	d.cgWindows[windowsProps.Title] = window;
+	return true;
+}
+
+bool CGRender::CGRenderView::deleteWindow(const std::wstring& title)
+{
+	auto& d = *m_priv;
+	auto windowIterator = d.cgWindows.find(title);
+	if (windowIterator == d.cgWindows.end())
+		return false;
+	d.cgWindows.erase(windowIterator);
+	return true;
+}
+
+std::shared_ptr<CGRender::Window> CGRender::CGRenderView::getWindowByType(WindowType windowType)
+{
+	auto& d = *m_priv;
+	return d.cgWindows[windowMainStr];
+}
+
+
+void CGRender::CGRenderView::Render()
+{
+	auto& d = *m_priv;
+	while (d.m_Running)
+	{
+		for (auto& win : d.cgWindows)
+		{
+			win.second->Render();
+		}
+	}
+}
+
+
