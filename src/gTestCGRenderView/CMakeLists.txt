@@ -20,15 +20,20 @@ link_directories(
 
 set(common_src
 	gTestCGRenderView.cpp
+	gtestInclude.cpp
+)
+set(common_header
+	gtestInclude.h
 )
 
 add_executable(${PROJECT_NAME}
 ${common_src}
+${common_header}
 )
 if(${CMAKE_BUILD_TYPE} MATCHES "Debug")
-	#target_link_libraries(${PROJECT_NAME} ${CGRender_ROOT_DIR}/third/gTest/Debug/lib/gtest.lib)
-	#target_link_libraries(${PROJECT_NAME} ${CGRender_ROOT_DIR}/third/gTest/Debug/lib/gtest_main.lib)
-#else()
+	target_link_libraries(${PROJECT_NAME} ${CGRender_ROOT_DIR}/third/gTest/Debug/lib/gtest.lib)
+	target_link_libraries(${PROJECT_NAME} ${CGRender_ROOT_DIR}/third/gTest/Debug/lib/gtest_main.lib)
+else()
 	target_link_libraries(${PROJECT_NAME} ${CGRender_ROOT_DIR}/third/gTest/Release/lib/gtest.lib)
 	target_link_libraries(${PROJECT_NAME} ${CGRender_ROOT_DIR}/third/gTest/Release/lib/gtest_main.lib)
 endif()

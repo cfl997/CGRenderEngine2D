@@ -136,7 +136,8 @@ bool CGRender::CGRenderEvent::OnMouseButtonPress(MouseButtonPressedEvent& e)
 	float x = e.GetX();
 	float y = e.GetY();
 
-	winWindow->getCamera()->ProcessMousePress(x, y);
+	if (e.GetMouseButton() == CG_MOUSE_BUTTON_RIGHT)
+		winWindow->getCamera()->ProcessMousePress(x, y);
 	if (e.GetMouseButton() == CG_MOUSE_BUTTON_RIGHT)
 		winWindow->getCurLayer()->ProcessMousePress(x, y);
 
@@ -157,7 +158,8 @@ bool CGRender::CGRenderEvent::OnMouseButtonRelease(MouseButtonReleasedEvent& e)
 	float x = e.GetX();
 	float y = e.GetY();
 
-	winWindow->getCamera()->ProcessMouseRelease(x, y);
+	if (e.GetMouseButton() == CG_MOUSE_BUTTON_RIGHT)
+		winWindow->getCamera()->ProcessMouseRelease(x, y);
 	if (e.GetMouseButton() == CG_MOUSE_BUTTON_RIGHT)
 		winWindow->getCurLayer()->ProcessMouseRelease(x, y);
 

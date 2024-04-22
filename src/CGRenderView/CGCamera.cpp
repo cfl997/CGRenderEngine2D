@@ -10,6 +10,8 @@ struct CGCamera::PrivateData
 
 	bool isScorll = false;
 
+	glm::mat4 viewMatrix;
+
 };
 
 CGCamera::CGCamera(glm::vec3 position, glm::vec3 up, float yaw, float pitch) :
@@ -25,11 +27,13 @@ CGCamera::CGCamera(glm::vec3 position, glm::vec3 up, float yaw, float pitch) :
 	Pitch = pitch;
 	updateCameraVectors();
 
+	m_priv->viewMatrix = glm::lookAt(Position, Position + Front, Up);
 }
 
 
 CGRender::CGCamera::~CGCamera()
 {
+	SAFE_DELETE(m_priv);
 }
 
 //CGCamera::CGCamera(float posX, float posY, float posZ, float upX, float upY, float upZ, float yaw, float pitch) : Front(glm::vec3(0.0f, 0.0f, -1.0f)), MovementSpeed(SPEED), MouseSensitivity(SENSITIVITY), Zoom(ZOOM)
@@ -49,21 +53,33 @@ glm::mat4 CGCamera::GetViewMatrix()
 		__debugbreak();
 	}
 #endif // DEBUG
-	return glm::lookAt(Position, Position + Front, Up);
+	auto& d = *m_priv;
+	if (!d.isMove)
+		d.viewMatrix = glm::lookAt(Position, Position + Front, Up);
+	return d.viewMatrix;
 }
 
 void CGRender::CGCamera::ProcessMouseMoveXY(float x, float y)
 {
 	//cfl-20240416
-	return;
+	//return;
 	auto& d = *m_priv;
 	if (d.isMove)
 	{
+		glm::vec2 offset = glm::vec2{ x,y } - d.pressPos;
+		//offset=glm::normalize(offset);
+		//d.position += glm::vec3((glm::vec2{ x,y } - d.pressPos),0.0);
+		Position.x -= offset.x;
+		Position.y -= offset.y;
 
-		static const float movePosSpeed = .1f;
+		//d.position = d.position - glm::vec3(offset, 0);
+		d.pressPos = glm::vec2{ x,y };
+		return;
+
+		static const float movePosSpeed = 1.f;
 		auto xoffset = (x - d.pressPos.x) * movePosSpeed;
 		Position.x -= xoffset;
-		auto fn = [](float&a){
+		auto fn = [](float& a) {
 			if (a < -1000)
 				a = -1000;
 			if (a > 1000)
@@ -130,6 +146,9 @@ void CGCamera::ProcessMouseMovement(float xoffset, float yoffset, bool constrain
 
 	updateCameraVectors();
 }
+
+static const float SCALE[24] = { 0.10f,0.20f,0.30f,0.40f,0.50f,0.60f,0.70f,0.80f,0.90f,1.00f,1.20f,1.40f,
+	1.60f,2.00f,3.00f,4.00f,5.00f,6.00f,8.00f,10.0f,12.0f,14.0f,16.0f,20.0f };
 
 void CGCamera::ProcessMouseScroll(float yoffset, float x, float y)
 {

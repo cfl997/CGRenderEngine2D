@@ -19,6 +19,8 @@ CGItem::CGItem() :m_priv(new PrivateData)
 
 CGItem::~CGItem()
 {
+	delete m_priv;
+	m_priv = nullptr;
 }
 
 void CGData::CGItem::setPrimitiveType(GLPrimitiveTypes type)

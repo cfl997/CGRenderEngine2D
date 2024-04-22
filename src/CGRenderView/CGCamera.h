@@ -23,7 +23,8 @@ namespace CGRender
 	const float PITCH = 0.0f;
 	const float SPEED = 2.5f;
 	const float SENSITIVITY = 0.1f;
-	const float ZOOM = 45.0f;
+	//const float ZOOM = 45.0f;
+	const float ZOOM = 35.0f;//cfl-20240419
 	class CGCamera
 	{
 	public:

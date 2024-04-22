@@ -209,7 +209,7 @@ int main(int argc, char* argv[])
 			int vsptmvp3 = CGRender_CreateShader(contextID, ShaderCodeName::VS_POS_TEX_MVP3Matrix);
 			int vsptmvp = CGRender_CreateShader(contextID, ShaderCodeName::VS_POS_TEX_MVPMatrix);
 			//int psshader = CGRender_CreateShader(contextID, ShaderCodeName::FSTwoTex);
-			int psshader = CGRender_CreateShader(contextID, ShaderCodeName::FSGray);
+			int psshader = CGRender_CreateShader(contextID, ShaderCodeName::FS_Tex_Gray);
 
 			CGRender_SetShader(contextID, vsptmvp3, ShaderType::VERTEX);
 			CGRender_SetShader(contextID, vsptmvp, ShaderType::VERTEX);

@@ -54,7 +54,7 @@ bool CGRender::CGRenderEventRectangle::OnMouseMove(MouseMovedEvent& e)
 	float height = d.releasePos.y - d.pressPos.y;
 
 	d.itemRect->setWidth(width);
-	d.itemRect->setHeight(height);
+	d.itemRect->setHeight(-height);
 
 	return false;
 }
@@ -67,7 +67,7 @@ bool CGRender::CGRenderEventRectangle::OnMouseButtonPress(MouseButtonPressedEven
 
 		d.isPressLeft = true;
 		d.pressPos = glm::vec2{ e.GetX(),e.GetY() };
-		d.itemRect->setPos(glm::vec3(d.pressPos,0.));
+		d.itemRect->setPos(glm::vec3(d.pressPos, CGData::g_itemZDistance));
 	}
 	return false;
 }

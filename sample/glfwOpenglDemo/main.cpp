@@ -147,8 +147,11 @@ struct UniformBufferData
 	glm::mat4 matrix;
 };
 
-static const int WindowWidth = 1000;
-static const int WindowHeight = 600;
+//static const int WindowWidth = 800;
+//static const int WindowHeight = 600;
+
+static const int WindowWidth = 1920;
+static const int WindowHeight = 1000;
 int main()
 {
 
@@ -216,7 +219,7 @@ int main()
 		int vsptmvp3 = CGRender_CreateShader(contextID, ShaderCodeName::VS_POS_TEX_MVP3Matrix);
 		int vsptmvp = CGRender_CreateShader(contextID, ShaderCodeName::VS_POS_TEX_MVPMatrix);
 		//int psshader = CGRender_CreateShader(contextID, ShaderCodeName::FSTwoTex);
-		int psshader = CGRender_CreateShader(contextID, ShaderCodeName::FSGray);
+		int psshader = CGRender_CreateShader(contextID, ShaderCodeName::FS_Tex_Gray);
 
 		CGRender_SetShader(contextID, vsptmvp3, ShaderType::VERTEX);
 		CGRender_SetShader(contextID, vsptmvp, ShaderType::VERTEX);
@@ -263,7 +266,7 @@ int main()
 				//int vsptmvp = CGRender_CreateShader(contextID, ShaderCodeName::VS_POS_TEX_MVPMatrix);
 				//int vsptmvp = CGRender_CreateShader(contextID, ShaderCodeName::VS_POS_COLOR_TEX);//test
 				//int psshader = CGRender_CreateShader(contextID, ShaderCodeName::FSTestUniform);
-				int psshader = CGRender_CreateShader(contextID, ShaderCodeName::FSRotate90);
+				int psshader = CGRender_CreateShader(contextID, ShaderCodeName::FS_Tex_Rotate90);
 				CGRender_SetShader(contextID, psshader, ShaderType::FRAGMENT);
 				CGRender_SetUniformBuffer(contextID, uniformBufferid, 0, ShaderType::VERTEX);
 				//CGRender_SetUniformBuffer(contextID, uniformBufferid, 0, ShaderType::FRAGMENT);

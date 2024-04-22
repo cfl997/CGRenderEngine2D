@@ -1,9 +1,6 @@
 
-#include "CGRender.h"
-#include "CGData.h"
-#include "CGRenderView.h"
 
-#include "gtest/gtest.h"
+#include "gtestInclude.h"
 
 static const int WindowWidth = 970;
 static const int WindowHeight = 720;
@@ -65,7 +62,7 @@ TEST_F(MyTest, worldPos)
 	float distance = glm::distance(glm::vec2{ worldPos.x,worldPos.y }, { 0,0 });
 	EXPECT_LE(distance, 0.1);
 
-	if(0)
+	if (0)
 	{
 		auto worldPos = CGRender_GetWorldPos({ WindowWidth,WindowHeight }, m_windowswin->getViewMatrix(), m_windowswin->getPerspectiveMatrix(), { 0,0,WindowWidth,WindowHeight });
 		float distance = glm::distance(glm::vec2{ worldPos.x,worldPos.y }, { float(WindowWidth / 2) ,float(WindowHeight / 2) });
@@ -83,5 +80,32 @@ TEST_F(MyTest, RenderEvent)
 
 	m_windowswin->removeCGRenderEvent(CGRenderEventType::RenderEvent_Rectangle);
 
+
+}
+const static std::wstring tex16file = L"E:/A/work/Render2D/src/gTestCGRenderView/testFiles/010_L01S.img";
+TEST_F(MyTest, CGItemTex16)
+{
+	auto layer = m_windowswin->getCurLayer();
+
+
+	CGData::CGITtemTex16* itemTex = new CGData::CGITtemTex16(tex16file);
+	layer->addItem(itemTex);
+
+	//m_renderView->Render();
+	m_windowswin->Render();
+
+
+	layer->removeItem(itemTex->GUID());
+//	int target = CGRender_GetRenderTarget(contextID);
+//	//CGRender_SaveTextue(contextID, target, RESOURCE_FILE_PATH L"Mytest-saveImageTarget.png");
+//	CGRender_SaveTextue(contextID, target, PICTUREFILENAME);
+}
+
+
+TEST_F(MyTest, saveImage)
+{
+
+	//int target = CGRender_GetRenderTarget(contextID);
+	//CGRender_SaveTextue(contextID, target, RESOURCE_FILE_PATH L"Mytest-saveImageTarget.png");
 
 }

@@ -32,14 +32,19 @@ CGItemRectangle::CGItemRectangle() :m_priv(new PrivateData)
 
 	//cfl-test
 
-	d.ltpos = glm::vec3{ 0,0,-0.549623430 };
-	d.width = 20.;
+	d.ltpos = glm::vec3{ 0,0,g_itemZDistance };
+
+	d.width = 40.;
 	d.height = 30.;
 }
 
 CGItemRectangle::~CGItemRectangle()
 {
-
+	if (m_priv)
+	{
+		delete m_priv;
+		m_priv = nullptr;
+	}
 }
 
 void CGData::CGItemRectangle::setPos(glm::vec3 pos)
@@ -69,7 +74,7 @@ void CGData::CGItemRectangle::build(int Device)
 	glm::vec3 yDistance = g_YNormal * d.height;
 
 
-	glm::vec3 lbPos = d.ltpos + yDistance;
+	glm::vec3 lbPos = d.ltpos - yDistance;
 	glm::vec3 rbPos = lbPos + xDistance;
 
 	glm::vec3 rtPos = d.ltpos + xDistance;
@@ -79,8 +84,8 @@ void CGData::CGItemRectangle::build(int Device)
 	data.vertexes.clear();
 	data.vertexes.push_back({ d.ltpos,Color(),{0,0} });
 	data.vertexes.push_back({ rtPos,Color(),{0,0} });
-	data.vertexes.push_back({ rbPos,0x00ff00,{0,0} });
-	data.vertexes.push_back({ lbPos,0xff0000,{0,0} });
+	data.vertexes.push_back({ rbPos,Color(),{0,0} });
+	data.vertexes.push_back({ lbPos,Color(),{0,0} });
 
 	auto sizea = sizeof(glm::vec3);
 
@@ -114,19 +119,10 @@ void CGData::CGItemRectangle::Render(int device, const glm::mat4& matrix)
 	build(device);
 	auto& d = *m_priv;
 	auto& itemData = *getItemData();
-	struct AAA
-	{
-		glm::mat4 a;
-	};
-	AAA aaa;
-	aaa.a = matrix;
 
-	glm::mat4 move = glm::mat4{ 1 };
-	//move=glm::translate(move, glm::vec3(-100, 100, 0));
-	//move=glm::translate(move, glm::vec3{0});
+	glm::mat4 a = matrix;
 
-	aaa.a = matrix * move;
-	int uniformBufferid = CGRender_CreateBuffer(device, sizeof(glm::mat4), 1, &aaa, GLBufferType::uniformBuffer);
+	int uniformBufferid = CGRender_CreateBuffer(device, sizeof(glm::mat4), 1, &a, GLBufferType::uniformBuffer);
 
 	CGRender_SetShader(device, d.vsShader, ShaderType::VERTEX);
 	CGRender_SetShader(device, d.fsShader, ShaderType::FRAGMENT);

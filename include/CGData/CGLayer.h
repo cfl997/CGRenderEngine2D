@@ -24,7 +24,7 @@ namespace CGData
 		void ProcessMouseRelease(float x, float y);
 	private:
 		struct PrivateData;
-		PrivateData* m_Priv = nullptr;
+		PrivateData* m_priv = nullptr;
 	};
 
 }

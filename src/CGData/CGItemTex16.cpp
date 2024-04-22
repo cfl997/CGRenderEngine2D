@@ -90,6 +90,8 @@ static bool getImageData(const std::wstring& path, ImageData& imageData)
 			imageData.isLoad = true;
 			imageData.data = new char[bytes * header.width * header.height];
 			std::copy(szbuf, szbuf + bytes * header.width * header.height, imageData.data);
+			delete szbuf;
+			szbuf = nullptr;
 			return true;
 		}
 	}
@@ -104,30 +106,84 @@ struct CGData::CGITtemTex16::PrivateData
 	ImageData imageData;
 
 	int hTex = -1;
+	int vertexBufferId = -1;
+	int indexBufferId = -1;
+	int vsShader = -1;
+	int fsShader = -1;
 };
 
-
+// 10.f,  10.f, 0.0f,    1.0f, 1.0f,   // 右上
+// 10.f, -10.f, 0.0f,    1.0f, 0.0f,   // 右下
+//-10.f, -10.f, 0.0f,    0.0f, 0.0f,   // 左下
+//-10.f,  10.f, 0.0f,    0.0f, 1.0f    // 左上
 CGData::CGITtemTex16::CGITtemTex16(const std::wstring& path) :m_priv(new PrivateData)
 {
 	auto& d = *m_priv;
+	setPrimitiveType(GLPrimitiveTypes::TRIANGLELIST);
+
 	d.path = path;
 	getImageData(d.path, d.imageData);
+	auto& data = *getItemData();
+
+	//float Texwidth = d.imageData.width;
+	//float Texheight = d.imageData.height;
+
+	float proportion = d.imageData.width / d.imageData.height;
+	//float Texwidth = 1920;
+	float Texwidth = d.imageData.width/10;
+	float Texheight = Texwidth / proportion;
+
+	data.vertexes.clear();
+	data.vertexes.push_back({ {-Texwidth,	Texheight,	0},Color(),{0,	1} });
+	data.vertexes.push_back({ {-Texwidth,	-Texheight,	0},Color(),{0,	0} });
+	data.vertexes.push_back({ {Texwidth,	-Texheight,	0},Color(),{1,	0} });
+	data.vertexes.push_back({ {Texwidth,	Texheight,	0},Color(),{1,	1} });
+
+	data.indexes.clear();
+	data.indexes.push_back(0);
+	data.indexes.push_back(1);
+	data.indexes.push_back(3);
+	data.indexes.push_back(1);
+	data.indexes.push_back(2);
+	data.indexes.push_back(3);
 
 }
 
 CGITtemTex16::~CGITtemTex16()
 {
-
+	if (m_priv)
+	{
+		delete m_priv;
+		m_priv = nullptr;
+	}
 }
 
 void CGData::CGITtemTex16::build(int Device)
 {
 	auto& d = *m_priv;
-	d.hTex = CGRender_CreateTextureFromData(Device, d.imageData.data, d.imageData.width, d.imageData.height, GLTextureType::GLTexture_Raw16);
+	auto data = *getItemData();
 
+	d.hTex = CGRender_CreateTextureFromData(Device, d.imageData.data, d.imageData.width, d.imageData.height, GLTextureType::GLTexture_Raw16);
+	if (d.vertexBufferId == -1)
+		d.vertexBufferId = CGRender_CreateBuffer(Device, sizeof(CGData::Vertex), data.vertexes.size(), &data.vertexes[0], GLBufferType::VertexBuffer, GetPrimitiveType());
+	if (d.indexBufferId == -1)
+		d.indexBufferId = CGRender_CreateBuffer(Device, sizeof(uint32_t), data.indexes.size(), data.indexes.data(), GLBufferType::IndexBuffer, GetPrimitiveType());
+
+	d.vsShader = CGRender_CreateShader(Device, ShaderCodeName::VS_POS_COLOR_TEX_viewMatrix);
+	d.fsShader = CGRender_CreateShader(Device, ShaderCodeName::FS_Tex_Gray);
 }
 
 void CGData::CGITtemTex16::Render(int device, const glm::mat4& matrix)
 {
+	build(device);
+	auto& d = *m_priv;
+	glm::mat4 aa = matrix;
+	int uniformBufferid = CGRender_CreateBuffer(device, sizeof(glm::mat4), 1, &aa, GLBufferType::uniformBuffer);
 
+	CGRender_SetShader(device, d.vsShader, ShaderType::VERTEX);
+	CGRender_SetShader(device, d.fsShader, ShaderType::FRAGMENT);
+
+	CGRender_SetUniformBuffer(device, uniformBufferid, 0, ShaderType::VERTEX);
+
+	CGRender_Render(device, d.vertexBufferId, d.indexBufferId, GetPrimitiveType(), 0, 0, 0);
 }

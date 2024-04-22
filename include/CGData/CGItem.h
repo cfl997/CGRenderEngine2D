@@ -7,8 +7,11 @@
 
 #include <Windows.h>
 
+
 namespace CGData
 {
+	static const float g_itemZDistance = .1f;
+
 	struct Vertex
 	{
 		glm::vec3 vertex;
@@ -30,7 +33,7 @@ namespace CGData
 		typedef CGObject super;
 	public:
 		CGItem();
-		~CGItem();
+		virtual ~CGItem();
 
 	public:
 		void setPrimitiveType(GLPrimitiveTypes type);

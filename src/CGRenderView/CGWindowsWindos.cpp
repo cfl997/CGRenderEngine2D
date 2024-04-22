@@ -30,6 +30,7 @@
 #include <tuple>
 
 #define use_opengl_4_6
+//#define use_Window_Title //标题栏会导致 页面发生偏差
 
 
 #include "CGData.h"
@@ -79,7 +80,9 @@ namespace CGRender
 
 		std::tuple<float, float> getWorldPos(glm::vec2 pos)
 		{
-			glm::vec3 worldPos = CGRender_GetWorldPos(pos, camera->GetViewMatrix(), super->getPerspectiveMatrix(), glm::vec4(0, 0, Width, Height));
+			//glm::mat4 aa = glm::mat4{ 1 };
+			//glm::vec3 worldPos = screenToWorld({ pos.x,Height - pos.y,1. }, super->getViewMatrix(), super->getPerspectiveMatrix(), {0,0,Width,Height});
+			auto worldPos = CGRender_GetWorldPos(pos, camera->GetViewMatrix(), super->getPerspectiveMatrix(), glm::vec4(0, 0, Width, Height));
 			return std::make_tuple(worldPos.x, worldPos.y);//yes
 			//{
 
@@ -232,6 +235,7 @@ namespace CGRender
 			CGRender_SetViewport(d.glContextID, 0, 0, d.Width, d.Height);
 			CGRender_SetScissor(d.glContextID, 0, 0, d.Width, d.Height);
 
+			CGRender_ClearTexture(d.glContextID, renderTarget, 0x00ffff00);
 			CGRender_ClearTexture(d.glContextID, renderTarget, 0x00000000);
 			glm::mat4 transform = glm::mat4(1.0f);
 			glm::mat4 view = getViewMatrix();
@@ -240,8 +244,23 @@ namespace CGRender
 			glm::mat4 aa = Perspective * view * transform;//test
 			//aa = glm::mat4{ 1 };
 
-			d.layer->Render(d.glContextID, aa);
+			//d.layer->Render(d.glContextID, aa);
 			//return;
+			//glClear(GL_DEPTH_BUFFER_BIT);
+			//auto error=glGetError();
+			//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+			//glEnable(GL_DEPTH_TEST);
+			//glDepthFunc(GL_LESS);
+			if (1)
+			{
+				const static std::wstring tex16file = L"E:/A/work/Render2D/src/gTestCGRenderView/testFiles/010_L01S.img";
+				CGData::CGITtemTex16* tex16 = new CGData::CGITtemTex16(tex16file);
+				d.layer->addItem(tex16);
+				d.layer->Render(d.glContextID, aa);
+				d.layer->removeItem(tex16->GUID());
+				return;
+			}
+
 			{
 				//CGRender_ClearTexture(d.glContextID, renderTarget, 0xFFFFFFFF);
 				CGData::CGItemRectangle* itemRectangle = new CGData::CGItemRectangle();
@@ -251,17 +270,29 @@ namespace CGRender
 				d.layer->Render(d.glContextID, aa);
 				d.layer->removeItem(itemRectangle->GUID());
 			}
+			return;
 			if (1)
 			{
 				CGData::CGItemRectangle* itemRectangle = new CGData::CGItemRectangle();
 				itemRectangle->setWidth(30);
 				itemRectangle->setHeight(50);
-				itemRectangle->setColor(0x0fff0000);
+				itemRectangle->setColor(0x0ffffff00);
 				glm::mat4 transform = glm::mat4{ 1 };
-				transform = glm::translate(transform, glm::vec3{ 10,10,0 });
-				aa = aa * transform;
+				transform = glm::translate(transform, glm::vec3{ 100,100,0 });
+				glm::mat4 bb = aa * transform;
 				d.layer->addItem(itemRectangle);
-				d.layer->Render(d.glContextID, aa);
+				//d.layer->Render(d.glContextID, bb);
+				d.layer->removeItem(itemRectangle->GUID());
+			}
+
+			{
+				CGData::CGItemRectangle* itemRectangle = new CGData::CGItemRectangle();
+				itemRectangle->setColor(0x0ff0000ff);
+				glm::mat4 transform = glm::mat4{ 1 };
+				transform = glm::translate(transform, glm::vec3{ 100,-100,0 });
+				glm::mat4 bb = aa * transform;
+				d.layer->addItem(itemRectangle);
+				//d.layer->Render(d.glContextID, bb);
 				d.layer->removeItem(itemRectangle->GUID());
 			}
 			return;
@@ -287,7 +318,7 @@ namespace CGRender
 		int uniformBufferid = CGRender_CreateBuffer(d.glContextID, sizeof(UniformBufferData), 1, &unidata, GLBufferType::uniformBuffer);
 
 		//int psshader = CGRender_CreateShader(d.glContextID, ShaderCodeName::FSTestUniform);
-		int psshader = CGRender_CreateShader(d.glContextID, ShaderCodeName::FSRotate90);
+		int psshader = CGRender_CreateShader(d.glContextID, ShaderCodeName::FS_Tex_Rotate90);
 		CGRender_SetShader(d.glContextID, psshader, ShaderType::FRAGMENT);
 		CGRender_SetUniformBuffer(d.glContextID, uniformBufferid, 0, ShaderType::VERTEX);
 
@@ -304,7 +335,7 @@ namespace CGRender
 		//int renderTarget= CGRender_CreateTextureFromData(d.glContextID, 0, 1280, 720,GLTexture_Normal2DTex);
 		//CGRender_SetRenderTarget(d.glContextID, renderTarget);
 
-		int psGray = CGRender_CreateShader(d.glContextID, ShaderCodeName::FSGray);
+		int psGray = CGRender_CreateShader(d.glContextID, ShaderCodeName::FS_Tex_Gray);
 		CGRender_SetShader(d.glContextID, psGray, ShaderType::FRAGMENT);
 
 		CGRender_Render(1, 1, 2, GLPrimitiveTypes::TRIANGLELIST, 0, 0, 0);
@@ -344,8 +375,11 @@ namespace CGRender
 
 			}
 			//glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
+#ifdef use_Window_Title
 			// 设置窗口属性，隐藏标题栏
-			//glfwWindowHint(GLFW_DECORATED, GLFW_FALSE);
+			glfwWindowHint(GLFW_DECORATED, GLFW_FALSE);
+#endif // use_Window_Title
+
 #ifdef use_opengl_4_6
 			glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
 			glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
@@ -365,7 +399,13 @@ namespace CGRender
 		}
 
 		std::wstring_convert<std::codecvt_utf8<wchar_t>> m_cv;
+		//这个会导致  发生偏移 c++ 
+#ifdef use_Window_Title
 		m_Window = glfwCreateWindow(d.parent, (int)props.Width, (int)props.Height, m_cv.to_bytes(d.Title).c_str(), nullptr, d.shareWindow);
+#else
+		m_Window = glfwCreateWindow(d.parent, (int)props.Width, (int)props.Height + 25, m_cv.to_bytes(d.Title).c_str(), nullptr, d.shareWindow);
+#endif // use_Window_Title
+
 
 		glfwMakeContextCurrent(m_Window);
 
@@ -386,7 +426,7 @@ namespace CGRender
 			d.layer = std::make_unique<CGData::CGLayer>();
 		}
 		//cfl-test
-		if (0)
+		if (1)
 		{
 			auto defaultRenderEvent = CGRenderEvnetFactory::instance()->createRenderEvent(RenderEvent_Rectangle, this);
 			addCGRenderEvent(defaultRenderEvent);
@@ -523,7 +563,7 @@ namespace CGRender
 				MouseMovedEvent event((float)worldx, (float)worldy);
 				data.EventCallback(event);
 			});
-	}
+		}
 
 	void WindowsWindow::Shutdown()
 	{
@@ -601,4 +641,4 @@ namespace CGRender
 
 	}
 
-}
+	}

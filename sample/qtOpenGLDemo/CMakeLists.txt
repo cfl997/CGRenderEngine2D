@@ -4,6 +4,11 @@ project(qtOpenGLDemo LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 
+if(MSVC)
+    # Add /permissive- compiler option
+    add_compile_options(/permissive-)
+endif()
+
 #if(WIN32)
 #	if (QTDIR OR DEFINED ENV{QTDIR} OR DEFINED ENV{QTDIR32} OR DEFINED ENV{QTDIR64})
 #		# Qt path set by user or env var
@@ -73,9 +78,12 @@ SET_PROPERTY(TARGET ${PROJECT_NAME} PROPERTY FOLDER "sample")
 add_dependencies(${PROJECT_NAME} CGData CGRenderView)
 
 # 添加包含 DLL 的文件夹路径
-set(EXTRA_DLL_PATH "C:/Qt/6.6.3/msvc2019_64/bin")
+#set(EXTRA_DLL_PATH "C:/Qt/6.6.3/msvc2019_64/bin")
+set(EXTRA_DLL_PATH "C:/Qt/6.6.3/mingw_64/bin")
 
 # 设置环境变量 PATH，告诉程序运行时去哪里找 DLL
 set_target_properties(${PROJECT_NAME} PROPERTIES
     VS_DEBUGGER_ENVIRONMENT "PATH=%PATH%;${EXTRA_DLL_PATH}"
 )
+
+

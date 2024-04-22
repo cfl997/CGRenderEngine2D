@@ -16,10 +16,10 @@ enum ShaderCodeName
 	VS_POS_COLOR_TEX_viewMatrix = 0,
 	VS_POS_TEX_MVP3Matrix,
 	VS_POS_TEX_MVPMatrix,
-	FS,
+	FS_Tex,
 	FS_COLOR,
-	FSRotate90,
-	FSGray,
+	FS_Tex_Rotate90,
+	FS_Tex_Gray,
 	FSTwoTex,
 	ShaderCodeCount,
 	//test
@@ -91,6 +91,12 @@ struct SetShaderTextureIn
 	int hTexture;
 	int nRegisterIndex;
 	ShaderType nShaderType;
+};
+
+struct SaveTextureIn
+{
+	int hTexture;
+	std::wstring filePath;
 };
 
 struct SetViewport

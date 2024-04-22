@@ -4,8 +4,9 @@
 
 #include "CGObject.h"
 #include "CGItem.h"
-#include "CGItemRectangle.h"
 #include "CGLayer.h"
+#include "CGItemRectangle.h"
+#include "CGItemTex16.h"
 
 #if defined(_MSC_VER) || defined(WIN32) || defined(WIN64)
 #ifdef _DEBUG
