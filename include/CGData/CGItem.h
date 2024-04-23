@@ -34,7 +34,9 @@ namespace CGData
 	public:
 		CGItem();
 		virtual ~CGItem();
-
+		
+		void ContextID(int Device);
+		const int ContextID()const;
 	public:
 		void setPrimitiveType(GLPrimitiveTypes type);
 		GLPrimitiveTypes GetPrimitiveType();

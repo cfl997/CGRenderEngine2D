@@ -147,11 +147,11 @@ struct UniformBufferData
 	glm::mat4 matrix;
 };
 
-//static const int WindowWidth = 800;
-//static const int WindowHeight = 600;
+static const int WindowWidth = 800;
+static const int WindowHeight = 600;
 
-static const int WindowWidth = 1920;
-static const int WindowHeight = 1000;
+//static const int WindowWidth = 1920;
+//static const int WindowHeight = 1000;
 int main()
 {
 
@@ -178,7 +178,7 @@ int main()
 	//renderView->createWindow({ L"opengl", 1280,720,nullptr });
 	auto window = renderView->getWindowByType(CGRender::WindowType::Window_Main);
 	//window->addCGRenderEvent(CGRenderEventType::BoxRenderEvent);
-	int contextID = window->getGLContextID();
+	int contextID = window->ContextID();
 
 	ImageData imageData;
 	getImageData(L"D:/document/2024/March/20240327/010_L01S.img", imageData);

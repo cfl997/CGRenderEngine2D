@@ -21,7 +21,7 @@ public:
 	// Sets up the test fixture.
 	virtual void SetUp()override
 	{
-		contextID = window->getGLContextID();
+		contextID = window->ContextID();
 
 		m_windowswin = dynamic_cast<CGRender::WindowsWindow*>(window);
 		EXPECT_NE(m_windowswin, nullptr);

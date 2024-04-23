@@ -5,6 +5,7 @@ using namespace CGData;
 
 struct CGItem::PrivateData
 {
+	int DeviceId;
 	ItemData m_itemData;
 	DWORD color;
 
@@ -21,6 +22,17 @@ CGItem::~CGItem()
 {
 	delete m_priv;
 	m_priv = nullptr;
+}
+
+void CGData::CGItem::ContextID(int Device)
+{
+	auto& d = *m_priv;
+	d.DeviceId = Device;
+}
+
+const int CGData::CGItem::ContextID() const
+{
+	return m_priv->DeviceId;
 }
 
 void CGData::CGItem::setPrimitiveType(GLPrimitiveTypes type)

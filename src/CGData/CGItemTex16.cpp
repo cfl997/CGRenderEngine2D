@@ -116,8 +116,10 @@ struct CGData::CGITtemTex16::PrivateData
 // 10.f, -10.f, 0.0f,    1.0f, 0.0f,   // ÓÒÏÂ
 //-10.f, -10.f, 0.0f,    0.0f, 0.0f,   // ×óÏÂ
 //-10.f,  10.f, 0.0f,    0.0f, 1.0f    // ×óÉÏ
-CGData::CGITtemTex16::CGITtemTex16(const std::wstring& path) :m_priv(new PrivateData)
+CGData::CGITtemTex16::CGITtemTex16(int DeviceId, const std::wstring& path) :m_priv(new PrivateData)
 {
+	ContextID(DeviceId);
+
 	auto& d = *m_priv;
 	setPrimitiveType(GLPrimitiveTypes::TRIANGLELIST);
 
@@ -130,7 +132,7 @@ CGData::CGITtemTex16::CGITtemTex16(const std::wstring& path) :m_priv(new Private
 
 	float proportion = d.imageData.width / d.imageData.height;
 	//float Texwidth = 1920;
-	float Texwidth = d.imageData.width/10;
+	float Texwidth = d.imageData.width / 10;
 	float Texheight = Texwidth / proportion;
 
 	data.vertexes.clear();
@@ -151,6 +153,8 @@ CGData::CGITtemTex16::CGITtemTex16(const std::wstring& path) :m_priv(new Private
 
 CGITtemTex16::~CGITtemTex16()
 {
+	auto& d = *m_priv;
+	CGRender_DeleteTexture(ContextID(), d.hTex);
 	if (m_priv)
 	{
 		delete m_priv;
@@ -163,7 +167,8 @@ void CGData::CGITtemTex16::build(int Device)
 	auto& d = *m_priv;
 	auto data = *getItemData();
 
-	d.hTex = CGRender_CreateTextureFromData(Device, d.imageData.data, d.imageData.width, d.imageData.height, GLTextureType::GLTexture_Raw16);
+	if (d.hTex == -1)
+		d.hTex = CGRender_CreateTextureFromData(Device, d.imageData.data, d.imageData.width, d.imageData.height, GLTextureType::GLTexture_Raw16);
 	if (d.vertexBufferId == -1)
 		d.vertexBufferId = CGRender_CreateBuffer(Device, sizeof(CGData::Vertex), data.vertexes.size(), &data.vertexes[0], GLBufferType::VertexBuffer, GetPrimitiveType());
 	if (d.indexBufferId == -1)

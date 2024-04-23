@@ -180,7 +180,7 @@ int main(int argc, char* argv[])
 	//auto newWidget = QWidget::find((WId)hwnd); //ÐèÒªÓÃ£¨WID£©
 	int i = 0;
 
-	int contextID = mainwindow->getGLContextID();
+	int contextID = mainwindow->ContextID();
 
 	int renderTarget = 0;
 

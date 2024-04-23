@@ -9,6 +9,7 @@ SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE "${CGRender_ROOT_DIR}/bin64/")
 
 
 add_definitions(-DCGRENDERVIEW_EXPORTS)
+add_definitions(-Duse_Window_Title)#标题栏会导致 页面发生偏差
 
 
 include_directories(
@@ -84,7 +85,7 @@ ADD_LIBRARY(${LIB_NAME} SHARED
 if(${CMAKE_BUILD_TYPE} MATCHES "Debug")
 	target_link_libraries(${PROJECT_NAME} ${CGRender_ROOT_DIR}/third/glfw-3.4/lib/Debug/glfw3.lib )
 	#target_link_libraries(${PROJECT_NAME} ${CGRender_ROOT_DIR}/third/glfw-3.4/lib/Debug/glfw3dll.lib )
-	add_definitions("-DGLRender_DEBUG")
+	#add_definitions("-DGLRender_DEBUG")
 else()
 	target_link_libraries(${PROJECT_NAME} ${CGRender_ROOT_DIR}/third/glfw-3.4/lib/Release/glfw3.lib )
 endif()

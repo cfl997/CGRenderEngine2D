@@ -30,7 +30,7 @@
 #include <tuple>
 
 #define use_opengl_4_6
-//#define use_Window_Title //标题栏会导致 页面发生偏差
+
 
 
 #include "CGData.h"
@@ -177,7 +177,7 @@ namespace CGRender
 		return d.eventManager->removeCGRenderEvent(renderEventType);
 	}
 
-	int WindowsWindow::getGLContextID()
+	int WindowsWindow::ContextID()
 	{
 		auto& d = *m_priv;
 		return d.glContextID;
@@ -254,7 +254,7 @@ namespace CGRender
 			if (1)
 			{
 				const static std::wstring tex16file = L"E:/A/work/Render2D/src/gTestCGRenderView/testFiles/010_L01S.img";
-				CGData::CGITtemTex16* tex16 = new CGData::CGITtemTex16(tex16file);
+				CGData::CGITtemTex16* tex16 = new CGData::CGITtemTex16(ContextID(), tex16file);
 				d.layer->addItem(tex16);
 				d.layer->Render(d.glContextID, aa);
 				d.layer->removeItem(tex16->GUID());
@@ -375,7 +375,7 @@ namespace CGRender
 
 			}
 			//glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
-#ifdef use_Window_Title
+#ifndef use_Window_Title
 			// 设置窗口属性，隐藏标题栏
 			glfwWindowHint(GLFW_DECORATED, GLFW_FALSE);
 #endif // use_Window_Title
@@ -400,7 +400,7 @@ namespace CGRender
 
 		std::wstring_convert<std::codecvt_utf8<wchar_t>> m_cv;
 		//这个会导致  发生偏移 c++ 
-#ifdef use_Window_Title
+#ifndef use_Window_Title
 		m_Window = glfwCreateWindow(d.parent, (int)props.Width, (int)props.Height, m_cv.to_bytes(d.Title).c_str(), nullptr, d.shareWindow);
 #else
 		m_Window = glfwCreateWindow(d.parent, (int)props.Width, (int)props.Height + 25, m_cv.to_bytes(d.Title).c_str(), nullptr, d.shareWindow);
@@ -464,6 +464,12 @@ namespace CGRender
 				//WindowResizeEvent event(width, height);
 				//data.EventCallback(event);
 
+
+//#ifndef use_Window_Title
+//				glfwSetWindowSize((GLFWwindow*)data.super->GetNativeWindow(), width, height);
+//#else
+//				glfwSetWindowSize((GLFWwindow*)data.super->GetNativeWindow(), width, height + 25);
+//#endif // use_Window_Title
 
 
 				CGRender_SetViewport(data.glContextID, 0, 0, data.Width, data.Height);
@@ -563,7 +569,7 @@ namespace CGRender
 				MouseMovedEvent event((float)worldx, (float)worldy);
 				data.EventCallback(event);
 			});
-		}
+	}
 
 	void WindowsWindow::Shutdown()
 	{
@@ -592,7 +598,7 @@ namespace CGRender
 #else
 		CGRender_Present(d.glContextID);
 #endif
-	}
+}
 
 	inline uint32_t WindowsWindow::GetWidth() const
 	{
@@ -638,7 +644,7 @@ namespace CGRender
 
 	void WindowsWindow::OnWindowClose()
 	{
-
+		GLRender_LOG("onWindowsClose","");
 	}
 
-	}
+}

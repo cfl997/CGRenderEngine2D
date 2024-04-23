@@ -59,7 +59,7 @@ namespace CGRender
 		virtual bool addCGRenderEvent(CGRenderEventType EventType) = 0;
 		virtual bool removeCGRenderEvent(CGRenderEventType renderEventType) = 0;
 
-		virtual int getGLContextID() = 0;
+		virtual int ContextID() = 0;
 
 		static Window* Create(const WindowProps& props = WindowProps());
 	};

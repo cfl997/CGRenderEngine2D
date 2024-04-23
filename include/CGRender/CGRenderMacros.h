@@ -86,6 +86,13 @@ struct ClearTextureIn
 	void* pData;
 };
 
+struct ResizeTextureIn
+{
+	int hTexture;
+	unsigned int width;
+	unsigned int height;
+};
+
 struct SetShaderTextureIn
 {
 	int hTexture;

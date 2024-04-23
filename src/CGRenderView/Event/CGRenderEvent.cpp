@@ -87,7 +87,7 @@ bool CGRender::CGRenderEvent::OnWindowClose(WindowCloseEvent& e)
 	auto& d = *m_priv;
 	if (!d.window)
 		return false;
-	SAFE_DELETE(d.window);
+	//SAFE_DELETE(d.window);
 	return true;
 }
 

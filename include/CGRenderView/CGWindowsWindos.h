@@ -47,7 +47,7 @@ namespace CGRender
 		virtual bool addCGRenderEvent(CGRenderEventType EventType) override;
 		virtual bool removeCGRenderEvent(CGRenderEventType renderEventType)override;
 	public:
-		int getGLContextID()override;
+		int ContextID()override;
 	public:
 		/*
 		* camera

@@ -9,8 +9,9 @@ namespace CGData
 
 	class CGDATA_API CGITtemTex16 : public CGItem
 	{
+		typedef CGItem super;
 	public:
-		CGITtemTex16(const std::wstring&path);
+		CGITtemTex16(int DeviceId,const std::wstring&path);
 		~CGITtemTex16();
 	public:
 		void build(int Device)override;
