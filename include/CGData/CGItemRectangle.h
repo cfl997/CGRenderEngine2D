@@ -15,8 +15,10 @@ namespace CGData
 
 		void setPos(glm::vec3 pos);
 		void setDirection(glm::vec3 direction);
-		void setWidth(float width);
-		void setHeight(float height);
+		void Width(float width);
+		const float Width()const;
+		void Height(float height);
+		const float Height()const;
 	public:
 		void build(int Device)override;
 

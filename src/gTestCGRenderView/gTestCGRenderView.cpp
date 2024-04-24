@@ -88,7 +88,7 @@ TEST_F(MyTest, CGItemTex16)
 	auto layer = m_windowswin->getCurLayer();
 
 
-	CGData::CGITtemTex16* itemTex = new CGData::CGITtemTex16(tex16file);
+	CGData::CGITtemTex16* itemTex = new CGData::CGITtemTex16(contextID, tex16file);
 	layer->addItem(itemTex);
 
 	//m_renderView->Render();
@@ -96,9 +96,9 @@ TEST_F(MyTest, CGItemTex16)
 
 
 	layer->removeItem(itemTex->GUID());
-//	int target = CGRender_GetRenderTarget(contextID);
-//	//CGRender_SaveTextue(contextID, target, RESOURCE_FILE_PATH L"Mytest-saveImageTarget.png");
-//	CGRender_SaveTextue(contextID, target, PICTUREFILENAME);
+	//	int target = CGRender_GetRenderTarget(contextID);
+	//	//CGRender_SaveTextue(contextID, target, RESOURCE_FILE_PATH L"Mytest-saveImageTarget.png");
+	//	CGRender_SaveTextue(contextID, target, PICTUREFILENAME);
 }
 
 

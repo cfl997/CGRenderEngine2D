@@ -110,6 +110,9 @@ struct CGData::CGITtemTex16::PrivateData
 	int indexBufferId = -1;
 	int vsShader = -1;
 	int fsShader = -1;
+
+	//test
+	int uniformBufferid = -1;
 };
 
 // 10.f,  10.f, 0.0f,    1.0f, 1.0f,   // срио
@@ -155,6 +158,16 @@ CGITtemTex16::~CGITtemTex16()
 {
 	auto& d = *m_priv;
 	CGRender_DeleteTexture(ContextID(), d.hTex);
+	if (d.vertexBufferId > 0)
+		CGRender_DeleteBuffer(ContextID(), d.vertexBufferId);
+	d.vertexBufferId = -1;
+	if (d.indexBufferId > 0)
+		CGRender_DeleteBuffer(ContextID(), d.indexBufferId);
+	d.indexBufferId = -1;
+	if (d.uniformBufferid > 0)
+		CGRender_DeleteBuffer(ContextID(), d.uniformBufferid);
+	d.uniformBufferid = -1;
+
 	if (m_priv)
 	{
 		delete m_priv;
@@ -183,12 +196,18 @@ void CGData::CGITtemTex16::Render(int device, const glm::mat4& matrix)
 	build(device);
 	auto& d = *m_priv;
 	glm::mat4 aa = matrix;
-	int uniformBufferid = CGRender_CreateBuffer(device, sizeof(glm::mat4), 1, &aa, GLBufferType::uniformBuffer);
+	if (d.uniformBufferid < 0)
+		d.uniformBufferid = CGRender_CreateBuffer(device, sizeof(glm::mat4), 1, &aa, GLBufferType::uniformBuffer);
+	else
+		CGRender_ModifyBuffer(device, d.uniformBufferid, sizeof(glm::mat4) * 1, &aa);
 
 	CGRender_SetShader(device, d.vsShader, ShaderType::VERTEX);
 	CGRender_SetShader(device, d.fsShader, ShaderType::FRAGMENT);
 
-	CGRender_SetUniformBuffer(device, uniformBufferid, 0, ShaderType::VERTEX);
+	CGRender_SetUniformBuffer(device, d.uniformBufferid, 0, ShaderType::VERTEX);
 
 	CGRender_Render(device, d.vertexBufferId, d.indexBufferId, GetPrimitiveType(), 0, 0, 0);
+
+	//CGRender_DeleteBuffer(device, uniformBufferid);
+
 }

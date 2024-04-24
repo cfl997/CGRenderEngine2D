@@ -237,6 +237,7 @@ namespace CGRender
 
 			CGRender_ClearTexture(d.glContextID, renderTarget, 0x00ffff00);
 			CGRender_ClearTexture(d.glContextID, renderTarget, 0x00000000);
+
 			glm::mat4 transform = glm::mat4(1.0f);
 			glm::mat4 view = getViewMatrix();
 			glm::mat4 Perspective = getPerspectiveMatrix();
@@ -244,8 +245,8 @@ namespace CGRender
 			glm::mat4 aa = Perspective * view * transform;//test
 			//aa = glm::mat4{ 1 };
 
-			//d.layer->Render(d.glContextID, aa);
-			//return;
+			d.layer->Render(d.glContextID, aa);
+			return;
 			//glClear(GL_DEPTH_BUFFER_BIT);
 			//auto error=glGetError();
 			//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -253,12 +254,7 @@ namespace CGRender
 			//glDepthFunc(GL_LESS);
 			if (1)
 			{
-				const static std::wstring tex16file = L"E:/A/work/Render2D/src/gTestCGRenderView/testFiles/010_L01S.img";
-				CGData::CGITtemTex16* tex16 = new CGData::CGITtemTex16(ContextID(), tex16file);
-				d.layer->addItem(tex16);
-				d.layer->Render(d.glContextID, aa);
-				d.layer->removeItem(tex16->GUID());
-				return;
+
 			}
 
 			{
@@ -274,8 +270,8 @@ namespace CGRender
 			if (1)
 			{
 				CGData::CGItemRectangle* itemRectangle = new CGData::CGItemRectangle();
-				itemRectangle->setWidth(30);
-				itemRectangle->setHeight(50);
+				itemRectangle->Width(30);
+				itemRectangle->Height(50);
 				itemRectangle->setColor(0x0ffffff00);
 				glm::mat4 transform = glm::mat4{ 1 };
 				transform = glm::translate(transform, glm::vec3{ 100,100,0 });
@@ -428,8 +424,16 @@ namespace CGRender
 		//cfl-test
 		if (1)
 		{
+
+			const static std::wstring tex16file = L"E:/A/work/Render2D/src/gTestCGRenderView/testFiles/010_L01S.img";
+			CGData::CGITtemTex16* tex16 = new CGData::CGITtemTex16(ContextID(), tex16file);
+			d.layer->addItem(tex16);
+
+
 			auto defaultRenderEvent = CGRenderEvnetFactory::instance()->createRenderEvent(RenderEvent_Rectangle, this);
 			addCGRenderEvent(defaultRenderEvent);
+
+
 		}
 
 
@@ -598,7 +602,7 @@ namespace CGRender
 #else
 		CGRender_Present(d.glContextID);
 #endif
-}
+	}
 
 	inline uint32_t WindowsWindow::GetWidth() const
 	{
@@ -644,7 +648,7 @@ namespace CGRender
 
 	void WindowsWindow::OnWindowClose()
 	{
-		GLRender_LOG("onWindowsClose","");
+		GLRender_LOG("onWindowsClose", "");
 	}
 
 }

@@ -22,17 +22,18 @@ m_priv(new PrivateData)
 	d.isPressLeft = false;
 
 	Window* curwindow = getCurWindow();
-	
+
 	d.itemRect = new CGData::CGItemRectangle();
 	d.win = dynamic_cast<WindowsWindow*>(curwindow);
 	assert(d.win != nullptr);
 
-	auto layer= d.win->getCurLayer();
+	auto layer = d.win->getCurLayer();
 	layer->addItem(d.itemRect);
 }
 
 CGRender::CGRenderEventRectangle::~CGRenderEventRectangle()
 {
+	SAFE_DELETE(m_priv);
 }
 
 bool CGRender::CGRenderEventRectangle::OnMouseScoll(MouseScrolledEvent& e)
@@ -53,8 +54,8 @@ bool CGRender::CGRenderEventRectangle::OnMouseMove(MouseMovedEvent& e)
 	float width = d.releasePos.x - d.pressPos.x;
 	float height = d.releasePos.y - d.pressPos.y;
 
-	d.itemRect->setWidth(width);
-	d.itemRect->setHeight(-height);
+	d.itemRect->Width(width);
+	d.itemRect->Height(-height);
 
 	return false;
 }
@@ -82,11 +83,9 @@ bool CGRender::CGRenderEventRectangle::OnMouseButtonRelease(MouseButtonReleasedE
 		float posx = e.GetX();
 		float posy = e.GetY();
 		d.releasePos = glm::vec2{ posx,posy };
-
 	}
 	if (!d.isPressLeft)
 	{
-
 	}
 
 

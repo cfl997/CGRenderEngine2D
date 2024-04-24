@@ -163,6 +163,13 @@ struct CreateBufferIn
 	GLPrimitiveTypes nPriType;
 };
 
+struct ModifyBufferIn
+{
+	int hBuffer;
+	int buffersize;
+	void* pBuffer;
+};
+
 struct RenderIn
 {
 	int hVertexBuffer;

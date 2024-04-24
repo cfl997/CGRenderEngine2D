@@ -32,6 +32,7 @@ void CGData::CGItem::ContextID(int Device)
 
 const int CGData::CGItem::ContextID() const
 {
+	assert(m_priv->DeviceId > 0);
 	return m_priv->DeviceId;
 }
 

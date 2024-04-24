@@ -11,10 +11,13 @@ struct CGItemRectangle::PrivateData
 	float width;
 	float height;
 
-	int indexBufferId;
-	int vertexBufferId;
+	int indexBufferId = -1;
+	int vertexBufferId = -1;
 	int vsShader;
 	int fsShader;
+
+	//test
+	int uniformBufferid = -1;
 };
 
 
@@ -40,6 +43,13 @@ CGItemRectangle::CGItemRectangle() :m_priv(new PrivateData)
 
 CGItemRectangle::~CGItemRectangle()
 {
+	auto& d = *m_priv;
+	if (d.vertexBufferId > 0)
+		CGRender_DeleteBuffer(ContextID(), d.vertexBufferId);
+	if (d.indexBufferId > 0)
+		CGRender_DeleteBuffer(ContextID(), d.indexBufferId);
+	if (d.uniformBufferid > 0)
+		CGRender_DeleteBuffer(ContextID(), d.uniformBufferid);
 	if (m_priv)
 	{
 		delete m_priv;
@@ -57,14 +67,24 @@ void CGData::CGItemRectangle::setDirection(glm::vec3 direction)
 	m_priv->xDirection = glm::normalize(direction);
 }
 
-void CGData::CGItemRectangle::setWidth(float width)
+void CGData::CGItemRectangle::Width(float width)
 {
 	m_priv->width = width;
 }
 
-void CGData::CGItemRectangle::setHeight(float height)
+const float CGData::CGItemRectangle::Width() const
+{
+	return m_priv->width;
+}
+
+void CGData::CGItemRectangle::Height(float height)
 {
 	m_priv->height = height;
+}
+
+const float CGData::CGItemRectangle::Height() const
+{
+	return m_priv->height;
 }
 
 void CGData::CGItemRectangle::build(int Device)
@@ -89,8 +109,13 @@ void CGData::CGItemRectangle::build(int Device)
 
 	auto sizea = sizeof(glm::vec3);
 
+
+
 	//d.vertexBufferId = CGRender_CreateBuffer(getGLContextID(), sizeof(CGData::Vertex), data.vertexes.size(), data.vertexes.data(), GLBufferType::VertexBuffer, GetPrimitiveType());
-	d.vertexBufferId = CGRender_CreateBuffer(Device, sizeof(CGData::Vertex), data.vertexes.size(), &data.vertexes[0], GLBufferType::VertexBuffer, GetPrimitiveType());
+	if (d.vertexBufferId < 1)
+		d.vertexBufferId = CGRender_CreateBuffer(Device, sizeof(CGData::Vertex), data.vertexes.size(), &data.vertexes[0], GLBufferType::VertexBuffer, GetPrimitiveType());
+	else
+		CGRender_ModifyBuffer(Device, d.vertexBufferId, data.vertexes.size() * sizeof(CGData::Vertex), &data.vertexes[0]);
 	{
 		auto& itemData = *getItemData();
 		itemData.indexes.clear();
@@ -103,7 +128,10 @@ void CGData::CGItemRectangle::build(int Device)
 		itemData.indexes.push_back(3);
 		itemData.indexes.push_back(0);
 
-		d.indexBufferId = CGRender_CreateBuffer(Device, sizeof(uint32_t), itemData.indexes.size(), itemData.indexes.data(), GLBufferType::IndexBuffer, GetPrimitiveType());
+		if (d.indexBufferId < 1)
+			d.indexBufferId = CGRender_CreateBuffer(Device, sizeof(uint32_t), itemData.indexes.size(), itemData.indexes.data(), GLBufferType::IndexBuffer, GetPrimitiveType());
+		else
+			CGRender_ModifyBuffer(Device, d.indexBufferId, itemData.indexes.size() * sizeof(uint32_t), itemData.indexes.data());
 
 		d.vsShader = CGRender_CreateShader(Device, ShaderCodeName::VS_POS_COLOR_TEX_viewMatrix);
 		//d.vsShader = CGRender_CreateShader(Device, ShaderCodeName::VS_POS_COLOR_TEX);
@@ -122,13 +150,23 @@ void CGData::CGItemRectangle::Render(int device, const glm::mat4& matrix)
 
 	glm::mat4 a = matrix;
 
-	int uniformBufferid = CGRender_CreateBuffer(device, sizeof(glm::mat4), 1, &a, GLBufferType::uniformBuffer);
+	if (d.uniformBufferid < 0)
+		d.uniformBufferid = CGRender_CreateBuffer(device, sizeof(glm::mat4), 1, &a, GLBufferType::uniformBuffer);
+	else
+		CGRender_ModifyBuffer(device, d.uniformBufferid, sizeof(glm::mat4) * 1, &a);
 
 	CGRender_SetShader(device, d.vsShader, ShaderType::VERTEX);
 	CGRender_SetShader(device, d.fsShader, ShaderType::FRAGMENT);
 
-	CGRender_SetUniformBuffer(device, uniformBufferid, 0, ShaderType::VERTEX);
+	CGRender_SetUniformBuffer(device, d.uniformBufferid, 0, ShaderType::VERTEX);
 
 	CGRender_Render(device, d.vertexBufferId, d.indexBufferId, 0, 0, 0, 0);
+
+	/*
+	* ceshi
+	*/
+
+
+
 }
 

@@ -293,7 +293,7 @@ int main()
 
 	}
 	} };
-	renderThread.detach();
+	//renderThread.detach();
 
 	renderView->Render();
 
