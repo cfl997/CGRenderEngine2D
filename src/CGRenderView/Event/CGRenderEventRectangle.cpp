@@ -83,9 +83,11 @@ bool CGRender::CGRenderEventRectangle::OnMouseButtonRelease(MouseButtonReleasedE
 		float posx = e.GetX();
 		float posy = e.GetY();
 		d.releasePos = glm::vec2{ posx,posy };
+
 	}
 	if (!d.isPressLeft)
 	{
+
 	}
 
 

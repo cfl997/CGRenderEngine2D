@@ -7,20 +7,38 @@
 
 namespace CGData
 {
+	enum class CGItemType
+	{
+		CGObject,
+		CGItem,
+		CGLayer,
+		CGItemRectangle,
+		CGITtemTex16,
+		CGDataType_unknow,
+	};
 
+#define CGItemType(x)\
+virtual CGItemType CGType(){return CGItemType::x;}
+}
+
+
+namespace CGData
+{
 	class CGDATA_API CGObject
 	{
 	public:
 		CGObject();
 		~CGObject();
 
+		CGItemType(CGObject);
+
 		const std::wstring& GUID()const noexcept;
 		const std::wstring& Name()const noexcept;
+		void Name(const std::wstring& name);
+
 	private:
 		struct PrivateData;
 		PrivateData* m_priv;
 	};
-
-
 }
 #endif // !_CGOBJECT_H_

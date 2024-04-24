@@ -13,6 +13,8 @@ namespace CGData
 	public:
 		CGITtemTex16(int DeviceId,const std::wstring&path);
 		~CGITtemTex16();
+
+		CGItemType(CGITtemTex16);
 	public:
 		void build(int Device)override;
 

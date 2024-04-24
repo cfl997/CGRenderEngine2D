@@ -13,6 +13,9 @@ namespace CGData
 		CGItemRectangle();
 		~CGItemRectangle();
 
+		CGItemType(CGItemRectangle);
+
+
 		void setPos(glm::vec3 pos);
 		void setDirection(glm::vec3 direction);
 		void Width(float width);

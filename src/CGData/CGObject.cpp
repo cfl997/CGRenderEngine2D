@@ -88,6 +88,13 @@ const std::wstring&  CGData::CGObject::Name()const noexcept
 	return m_priv->name;
 }
 
+void CGData::CGObject::Name(const std::wstring& name)
+{
+	auto& d = *m_priv;
+	d.name = name;
+}
+
+
 
 
 

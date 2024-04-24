@@ -11,6 +11,8 @@ namespace CGData
 		CGLayer();
 		~CGLayer();
 
+		CGItemType(CGLayer);
+
 		void addItem(CGItem* item);
 		CGItem* getItem(const std::wstring& guid);
 		bool removeItem(const std::wstring& guid);

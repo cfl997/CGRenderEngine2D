@@ -151,7 +151,6 @@ CGData::CGITtemTex16::CGITtemTex16(int DeviceId, const std::wstring& path) :m_pr
 	data.indexes.push_back(1);
 	data.indexes.push_back(2);
 	data.indexes.push_back(3);
-
 }
 
 CGITtemTex16::~CGITtemTex16()

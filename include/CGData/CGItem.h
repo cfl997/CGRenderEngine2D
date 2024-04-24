@@ -34,6 +34,8 @@ namespace CGData
 	public:
 		CGItem();
 		virtual ~CGItem();
+
+		CGItemType(CGItem);
 		
 		void ContextID(int Device);
 		const int ContextID()const;
