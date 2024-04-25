@@ -12,6 +12,8 @@ set(CMAKE_CXX_STANDARD 17)
 add_definitions(-DCGDATA_EXPORTS)
 
 
+#find_package(Freetype REQUIRED)
+
 include_directories(
 	${CGRender_ROOT_DIR}/include
 	${CGRender_ROOT_DIR}/include/CGRender
@@ -26,6 +28,7 @@ set(COMMON_HEAD_PUBLIC
 	${CGRender_ROOT_DIR}/include/CGData/CGItemRectangle.h
 	${CGRender_ROOT_DIR}/include/CGData/CGLayer.h
 	${CGRender_ROOT_DIR}/include/CGData/CGItemTex16.h
+	${CGRender_ROOT_DIR}/include/CGData/CGItemText.h
 )
 
 SET(COMMON_HEAD_FILES
@@ -38,6 +41,7 @@ SET(COMMON_SOURCE_FILES
 	CGItemRectangle.cpp
 	CGLayer.cpp
 	CGItemTex16.cpp
+	CGItemText.cpp
 )
 
 
@@ -52,6 +56,8 @@ endif()
 include_directories(
 	${CGRender_ROOT_DIR}/include/CGRenderGL
 	${CGRender_ROOT_DIR}/third/glm-1.0.1
+	#${CGRender_ROOT_DIR}/third/freetype-2.13.0/Debug/include
+	${CGRender_ROOT_DIR}/third/freetype-2.13.0/Debug/include/freetype2
 	
 )
 link_directories(
@@ -67,7 +73,11 @@ ADD_LIBRARY(${LIB_NAME} SHARED
 	${COMMON_HEAD_PUBLIC}
 )
 
-
+if(CMAKE_BUILD_TYPE MATCHES "Debug") 
+target_link_libraries(${PROJECT_NAME} ${CGRender_ROOT_DIR}/third/freetype-2.13.0/Debug/lib/freetyped.lib)
+else()
+target_link_libraries(${PROJECT_NAME} ${CGRender_ROOT_DIR}/third/freetype-2.13.0/Release/lib/freetype.lib)
+endif()
 
 #add_dependencies(${PROJECT_NAME} CGRender)
 

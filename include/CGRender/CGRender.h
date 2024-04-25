@@ -6,6 +6,7 @@
 #include "CGRenderMacros.h"
 #include "CGRenderAPI.h"
 #include "CGglm.h"
+#include "CGPath.h"
 
 
 #if defined(_MSC_VER) || defined(WIN32) || defined(WIN64)

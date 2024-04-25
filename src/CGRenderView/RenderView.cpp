@@ -5,6 +5,7 @@
 #include <mutex>
 #include <memory>
 
+#include "CGRender.h"
 
 
 using namespace CGRender;
@@ -22,6 +23,8 @@ struct CGRenderView::PrivateRenderView
 
 CGRender::CGRenderView::CGRenderView(uint32_t width, uint32_t height, void* parent) :m_priv(new PrivateRenderView)
 {
+	CGPath_Init();
+
 	auto& d = *m_priv;
 	d.m_Running = true;
 	//手动创建主窗口，并作为主资源
@@ -30,6 +33,8 @@ CGRender::CGRenderView::CGRenderView(uint32_t width, uint32_t height, void* pare
 }
 CGRenderView::~CGRenderView()
 {
+	CGPath_Release();
+
 	auto& d = *m_priv;
 	d.m_Running = false;
 	d.cgWindows.clear();

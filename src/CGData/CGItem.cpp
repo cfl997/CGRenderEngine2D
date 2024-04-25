@@ -1,5 +1,6 @@
 #include "CGItem.h"
 
+#include "CGRender.h"
 
 using namespace CGData;
 
@@ -47,9 +48,14 @@ GLPrimitiveTypes CGData::CGItem::GetPrimitiveType()
 	return m_priv->m_itemData.PrimitiveType;
 }
 
-void CGData::CGItem::setColor(DWORD color)
+void CGData::CGItem::Color(DWORD color)
 {
 	m_priv->color = color;
+}
+
+void CGData::CGItem::Color(CGRGBA rgba)
+{
+	CGRender_RGBA2DWORD(m_priv->color, rgba);
 }
 
 const DWORD CGData::CGItem::Color()const

@@ -16,11 +16,13 @@ enum ShaderCodeName
 	VS_POS_COLOR_TEX_viewMatrix = 0,
 	VS_POS_TEX_MVP3Matrix,
 	VS_POS_TEX_MVPMatrix,
+
 	FS_Tex,
 	FS_COLOR,
 	FS_Tex_Rotate90,
 	FS_Tex_Gray,
 	FSTwoTex,
+	FS_Text,
 	ShaderCodeCount,
 	//test
 	FSTestUniform,
@@ -54,6 +56,7 @@ struct ShaderData
 enum GLTextureType
 {
 	GLTexture_Normal2DTex = 0,
+	GLTexture_RED,
 	GLTexture_Raw16,
 	GLTexture_Count
 };
@@ -191,3 +194,13 @@ struct EasyRenderIn
 	int nVertexBase;
 };
 
+
+//common
+
+struct CGRGBA
+{
+	float R;
+	float G;
+	float B;
+	float A;
+};

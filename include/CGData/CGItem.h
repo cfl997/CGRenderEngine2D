@@ -43,7 +43,8 @@ namespace CGData
 		void setPrimitiveType(GLPrimitiveTypes type);
 		GLPrimitiveTypes GetPrimitiveType();
 
-		void setColor(DWORD color);
+		void Color(DWORD color);
+		void Color(CGRGBA rgba);
 		const DWORD Color()const;
 
 		ItemData* getItemData();

@@ -14,6 +14,7 @@ namespace CGData
 		CGLayer,
 		CGItemRectangle,
 		CGITtemTex16,
+		CGItemText,
 		CGDataType_unknow,
 	};
 

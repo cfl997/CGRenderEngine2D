@@ -29,7 +29,7 @@ CGItemRectangle::CGItemRectangle() :m_priv(new PrivateData)
 	itemData.PrimitiveType = GLPrimitiveTypes::LINE_LIST;
 	itemData.PrimitiveType = GLPrimitiveTypes::LINE_LIST_STRIP;
 
-	setColor(0xFF0000ff);
+	Color(0xFF0000ff);
 
 
 

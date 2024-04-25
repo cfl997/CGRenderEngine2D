@@ -272,7 +272,7 @@ namespace CGRender
 				CGData::CGItemRectangle* itemRectangle = new CGData::CGItemRectangle();
 				itemRectangle->Width(30);
 				itemRectangle->Height(50);
-				itemRectangle->setColor(0x0ffffff00);
+				itemRectangle->Color(0x0ffffff00);
 				glm::mat4 transform = glm::mat4{ 1 };
 				transform = glm::translate(transform, glm::vec3{ 100,100,0 });
 				glm::mat4 bb = aa * transform;
@@ -283,7 +283,7 @@ namespace CGRender
 
 			{
 				CGData::CGItemRectangle* itemRectangle = new CGData::CGItemRectangle();
-				itemRectangle->setColor(0x0ff0000ff);
+				itemRectangle->Color(0x0ff0000ff);
 				glm::mat4 transform = glm::mat4{ 1 };
 				transform = glm::translate(transform, glm::vec3{ 100,-100,0 });
 				glm::mat4 bb = aa * transform;
@@ -360,15 +360,10 @@ namespace CGRender
 			glfwSetErrorCallback(GLFWErrorCallback);
 			s_GLFWInitialized = true;
 
+			TCHAR* szfile = CGPath_GetPath(CGPathType::CG_PATH_PLUGIN);
 			{
-				TCHAR szFilePath[MAX_PATH + 1] = { 0 };
-				GetModuleFileName(NULL, szFilePath, MAX_PATH);
-				(_tcsrchr(szFilePath, _T('\\')))[1] = 0; // 删除文件名，只获得路径字串
-				_tcscat(szFilePath, L"plugin");
-
-				bool isInit = CGRender_Init(szFilePath);//是否包含glew32.dll
+				bool isInit = CGRender_Init(szfile);//是否包含glew32.dll
 				assert(isInit);
-
 			}
 			//glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
 #ifndef use_Window_Title
@@ -394,12 +389,12 @@ namespace CGRender
 			//defaultRenderEvent->setWindow(this);
 		}
 
-		std::wstring_convert<std::codecvt_utf8<wchar_t>> m_cv;
+		std::string title = wstr2utf8(d.Title);
 		//这个会导致  发生偏移 c++ 
 #ifndef use_Window_Title
-		m_Window = glfwCreateWindow(d.parent, (int)props.Width, (int)props.Height, m_cv.to_bytes(d.Title).c_str(), nullptr, d.shareWindow);
+		m_Window = glfwCreateWindow(d.parent, (int)props.Width, (int)props.Height, title.c_str(), nullptr, d.shareWindow);
 #else
-		m_Window = glfwCreateWindow(d.parent, (int)props.Width, (int)props.Height + 25, m_cv.to_bytes(d.Title).c_str(), nullptr, d.shareWindow);
+		m_Window = glfwCreateWindow(d.parent, (int)props.Width, (int)props.Height + 25, title.c_str(), nullptr, d.shareWindow);
 #endif // use_Window_Title
 
 
@@ -427,13 +422,15 @@ namespace CGRender
 
 			const static std::wstring tex16file = L"E:/A/work/Render2D/src/gTestCGRenderView/testFiles/010_L01S.img";
 			CGData::CGITtemTex16* tex16 = new CGData::CGITtemTex16(ContextID(), tex16file);
-			d.layer->addItem(tex16);
+			//d.layer->addItem(tex16);
 
 
 			auto defaultRenderEvent = CGRenderEvnetFactory::instance()->createRenderEvent(RenderEvent_Rectangle, this);
 			addCGRenderEvent(defaultRenderEvent);
 
 
+			CGData::CGItemText* text = new CGData::CGItemText(ContextID());
+			d.layer->addItem(text);
 		}
 
 

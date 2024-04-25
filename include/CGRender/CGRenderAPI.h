@@ -39,6 +39,12 @@ bool GLRENDER_API CGRender_Render(int hDevice, int hVertexBuffer, int hIndexBuff
 bool GLRENDER_API CGRender_Render(int hDevice, int hVertexBuffer, int hIndexBuffer, int hVertexShader, int hGeometryShader, int hPixShader, int nStart, int nVertexCount, int nVertexBase);
 
 
-
 glm::vec3 GLRENDER_API CGRender_GetWorldPos(glm::vec2 screenPos, const glm::mat4& view, const  glm::mat4& perspective, glm::vec4 viewPort);
+
+bool GLRENDER_API CGRender_SaveImageByVoid(const void* buffer, unsigned int width, unsigned int height, unsigned int pixsize,
+	const std::string& fileName = "e:/saveImageByVoid.png", int stride_bytes = 0, bool isOverTurnY = true);
+
+void GLRENDER_API CGRender_DWORD2RGBA(const DWORD& color, CGRGBA& rgba);
+void GLRENDER_API CGRender_RGBA2DWORD(DWORD& color, const CGRGBA& rgba);
+
 #endif // !_CGRENDERAPI_H_
