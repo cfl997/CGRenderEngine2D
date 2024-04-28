@@ -1,6 +1,6 @@
 #include <QApplication>
-#include "QtDisplayWidget.h"
 #include "qwindow.h"
+#include <qwidget.h>
 
 #include <string>
 #include <fstream>
@@ -21,6 +21,8 @@
 #include "CGRender.h"
 #include "CGRenderView.h"
 #include "CGglm.h"
+
+#include "QtDisplayWidget.h"
 
 struct ImageData
 {
@@ -158,10 +160,17 @@ int main(int argc, char* argv[])
 	QGuiApplication::setHighDpiScaleFactorRoundingPolicy(Qt::HighDpiScaleFactorRoundingPolicy::PassThrough);
 #endif
 	QCoreApplication::addLibraryPath(".");
-	//QCoreApplication::setEventDispatcher(nullptr);
+	QApplication* app = new QApplication(argc, argv);
+
+	QTDisplayWidget w;
+	w.show();
+	return app->exec();
+
+#if 0
+
 
 	QApplication* app = new QApplication(argc, argv);
-	QTDisplayWidget w;
+	QWidget w;
 	w.resize(WindowWidth, WindowHeight);
 	w.show();
 	HWND parentHwnd = reinterpret_cast<HWND>(w.winId()); // »ñÈ¡´°¿Ú¾ä±ú
@@ -183,7 +192,9 @@ int main(int argc, char* argv[])
 	int contextID = mainwindow->ContextID();
 
 	int renderTarget = 0;
-
+	renderTarget = CGRender_CreateTextureFromData(contextID, 0, WindowWidth, WindowHeight, GLTexture_Normal2DTex);
+	CGRender_SetRenderTarget(contextID, renderTarget);
+	if(0)
 	{
 		ImageData imageData;
 		getImageData(L"D:/document/2024/March/20240327/010_L01S.img", imageData);
@@ -199,9 +210,8 @@ int main(int argc, char* argv[])
 		int uniformBufferid = -1;
 
 		{
-			textureid1 = CGRender_CreateTextureFromFile(contextID, L"D:/document/2024/March/20240327/20240401095541.png", 0, 0, GLTexture_Normal2DTex);
+			textureid1 = CGRender_CreateTextureFromFile(contextID, L"D:/document/2024/March/20240327/20240401095541.png",  GLTexture_Normal2DTex);
 			textureid = CGRender_CreateTextureFromData(contextID, imageData.data, imageData.width, imageData.height, GLTextureType::GLTexture_Raw16);
-			renderTarget = CGRender_CreateTextureFromData(contextID, 0, WindowWidth, WindowHeight, GLTexture_Normal2DTex);
 			//renderTarget = CGRender_CreateTextureFromData(contextID, 0, imageData.width, imageData.height, GLTexture_Normal2DTex);
 			std::cout << "renderTarget:  " << renderTarget << std::endl;
 			assert(renderTarget > 0);
@@ -247,7 +257,6 @@ int main(int argc, char* argv[])
 		CGRender_SetShaderTexture(contextID, textureid1, 1, ShaderType::FRAGMENT);
 		CGRender_SetShaderTexture(contextID, textureid, 0, ShaderType::FRAGMENT);
 
-		CGRender_SetRenderTarget(contextID, renderTarget);
 		//CGRender_SetViewport(contextID, 0, 0, 1920, 1080);
 		CGRender_SetViewport(contextID, 0, 0, WindowWidth, WindowHeight);
 
@@ -255,17 +264,20 @@ int main(int argc, char* argv[])
 
 
 	}
-	std::thread renderThread{ [&] {
-	while (true)
-	{
-		renderView->Render();
-	}
-	} };
+	//std::thread renderThread{ [&] {
+	//while (true)
+	//{
+	//}
+	//} };
+	//renderThread.detach();
+	
+	renderView->Render();
 
-	renderThread.detach();
 
 
 	return app->exec();
+#endif // 0
+
 #if 0
 	//std::wstring szBinPath = qApp->applicationDirPath().toStdWString();
 	//std::wstring  strBin(szBinPath);

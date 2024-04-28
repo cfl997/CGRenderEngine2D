@@ -19,8 +19,12 @@ enum ShaderCodeName
 
 	FS_Tex,
 	FS_COLOR,
+	
 	FS_Tex_Rotate90,
+	FS_Tex_XReversal,
 	FS_Tex_Gray,
+	FS_Tex_Invert,
+
 	FSTwoTex,
 	FS_Text,
 	ShaderCodeCount,
@@ -81,6 +85,13 @@ struct CreateTextureIn
 	unsigned int width;
 	unsigned int height;
 	int Type;
+};
+
+struct GetTextureInfoOut
+{
+	int *width;
+	int *height;
+	int *Type;
 };
 
 struct ClearTextureIn

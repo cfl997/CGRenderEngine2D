@@ -2,7 +2,9 @@
 
 #include <map>
 
+#include "CGRender.h"
 
+#include <mutex>
 
 using namespace CGData;
 
@@ -13,14 +15,26 @@ struct CGLayer::PrivateData
 	//move
 	bool isMove = false;
 	glm::vec2 pressPos;
+
+	//imageShader
+	int imagefsShader = -1;
+
+	std::recursive_mutex reMutex;
+
+
+
+	void sortRenderItem();
+	std::vector<CGItem*>m_vSortRenderItem;
 };
 
 
-CGLayer::CGLayer() :m_priv(new PrivateData)
+CGLayer::CGLayer(int Device) :m_priv(new PrivateData)
 {
+	ContextID(Device);
 	auto& d = *m_priv;
 	d.position = glm::vec3{ 0 };
 	d.isMove = false;
+	setImageShader(ShaderCodeName::FS_Tex);
 }
 
 CGLayer::~CGLayer()
@@ -44,12 +58,14 @@ CGLayer::~CGLayer()
 void CGData::CGLayer::addItem(CGItem* item)
 {
 	auto& d = *m_priv;
+	std::lock_guard a(d.reMutex);
 	d.m_items[item->GUID()] = item;
 }
 
 CGItem* CGData::CGLayer::getItem(const std::wstring& guid)
 {
 	auto& d = *m_priv;
+	std::lock_guard a(d.reMutex);
 	auto item = d.m_items.find(guid);
 	if (item == d.m_items.end())
 		return nullptr;
@@ -63,6 +79,7 @@ bool CGData::CGLayer::removeItem(const std::wstring& guid)
 	if (item == d.m_items.end())
 		return false;
 
+	std::lock_guard a(d.reMutex);
 	auto item1 = d.m_items[guid];
 	d.m_items.erase(guid);
 
@@ -73,9 +90,50 @@ bool CGData::CGLayer::removeItem(const std::wstring& guid)
 	return true;
 }
 
+bool CGData::CGLayer::removeItem(CGItemType itemType)
+{
+	auto& d = *m_priv;
+	std::lock_guard a(d.reMutex);
+
+	for (auto iter = d.m_items.begin(); iter != d.m_items.end(); )
+	{
+		if (iter->second->CGType() == itemType)
+		{
+			delete iter->second;
+			iter->second = nullptr;
+			iter = d.m_items.erase(iter);
+		}
+		else
+		{
+			iter++;
+		}
+	}
+	return true;
+}
+
+std::vector<CGItem*> CGData::CGLayer::getItem(CGItemType itemType)
+{
+	auto& d = *m_priv;
+	std::vector<CGItem*>result;
+	std::lock_guard a(d.reMutex);
+	for (auto& data : d.m_items)
+	{
+		if (data.second->CGType() == itemType)
+			result.emplace_back(data.second);
+	}
+	return result;
+}
+
+void CGData::CGLayer::setImageShader(ShaderCodeName name)
+{
+	auto& d = *m_priv;
+	d.imagefsShader = CGRender_CreateShader(ContextID(), name);
+}
+
 void CGData::CGLayer::Render(int device, const glm::mat4& matrix)
 {
 	auto& d = *m_priv;
+	std::lock_guard a(d.reMutex);
 	if (d.position != glm::vec3{ 0 })
 	{
 		//__debugbreak();
@@ -83,9 +141,18 @@ void CGData::CGLayer::Render(int device, const glm::mat4& matrix)
 
 	glm::mat4 transform = glm::translate(g_Mat4Normal, d.position);
 	glm::mat4 renderMat4 = matrix * transform;
-	for (auto& data : d.m_items)
+
+	CGRender_SetShaderTexture(device, 0, 0);
+	d.sortRenderItem();
+
+	for (auto& data : d.m_vSortRenderItem)
 	{
-		data.second->Render(device, renderMat4);
+		if (data->CGType() == CGItemType::CGITtemTex16 ||
+			data->CGType() == CGItemType::CGItemImage)
+		{
+			CGRender_SetShader(ContextID(), d.imagefsShader, ShaderType::FRAGMENT);
+		}
+		data->Render(device, renderMat4);
 	}
 	//for (auto iter = d.m_items.cbegin(); iter != d.m_items.cend(); iter++)
 	//{
@@ -130,3 +197,18 @@ void CGData::CGLayer::ProcessMouseRelease(float x, float y)
 	d.isMove = false;
 }
 
+void CGLayer::PrivateData::sortRenderItem()
+{
+	m_vSortRenderItem.clear();
+	for (auto& data : m_items)
+	{
+		if (data.second->CGType() == CGItemType::CGItemImage ||
+			data.second->CGType() == CGItemType::CGITtemTex16)
+		{
+			m_vSortRenderItem.insert(m_vSortRenderItem.begin(), data.second);
+			continue;
+		}
+		m_vSortRenderItem.insert(m_vSortRenderItem.end(), data.second);
+
+	}
+}

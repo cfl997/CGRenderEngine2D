@@ -4,19 +4,18 @@ project(qtOpenGLDemo LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 
-if(MSVC)
-    # Add /permissive- compiler option
+# 添加编译器选项
+if (MSVC)
     add_compile_options(/permissive-)
 endif()
-
-#if(WIN32)
-#	if (QTDIR OR DEFINED ENV{QTDIR} OR DEFINED ENV{QTDIR32} OR DEFINED ENV{QTDIR64})
-#		# Qt path set by user or env var
-#	else()
-#		set(QTDIR "" CACHE PATH "Path to Qt (e.g. C:/Qt/5.7/msvc2015_64)")
-#		message(WARNING "QTDIR variable is missing.  Please set this variable to specify path to Qt (e.g. C:/Qt/5.7/msvc2015_64)")
-#	endif()
-#endif()
+if(WIN32)
+	if (QTDIR OR DEFINED ENV{QTDIR} OR DEFINED ENV{QTDIR32} OR DEFINED ENV{QTDIR64})
+		# Qt path set by user or env var
+	else()
+		set(QTDIR "C:/Qt/6.6.3/msvc2019_64" CACHE PATH "Path to Qt (e.g. C:/Qt/5.7/msvc2015_64)")
+		#message(WARNING "QTDIR variable is missing.  Please set this variable to specify path to Qt (e.g. C:/Qt/5.7/msvc2015_64)")
+	endif()
+endif()
 
 if(MSVC)
     add_compile_definitions(_HAS_CXX17=1)
@@ -39,6 +38,15 @@ set(CMAKE_AUTOUIC ON)
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
+
+# 指定UI文件所在目录
+set(ui_files
+    "QtDisplayWidget.ui"
+    # 添加其他UI文件，如果有多个的话
+)
+
+
+
 set(includes 
 "QtDisplayWidget.h"
 )
@@ -49,11 +57,13 @@ set(src
 )
 find_package(Qt6Core REQUIRED)
 find_package(Qt6Widgets REQUIRED)
+find_package(Qt6UiTools REQUIRED)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}
 	"${CGRender_ROOT_DIR}/include"
 	${CGRender_ROOT_DIR}/include/CGRender
 	${CGRender_ROOT_DIR}/include/CGRenderView
+	${CGRender_ROOT_DIR}/include/CGData
 )
 
 	link_directories(
@@ -63,10 +73,18 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}
 add_executable(${PROJECT_NAME}  
 ${src}
 ${includes}
+${ui_files}
 )
-target_link_libraries(${PROJECT_NAME} Qt6::Widgets Qt6::Core)
+target_link_libraries(${PROJECT_NAME} Qt6::Widgets Qt6::Core Qt6::UiTools )
 SET_PROPERTY(TARGET ${PROJECT_NAME} PROPERTY FOLDER "sample")
 
+# 使用Qt的UI文件生成器生成对应的C++代码
+#qt6_wrap_ui(ui_generated_files ${ui_files})
+qt6_wrap_ui(ui_generated_files ${ui_files} OPTIONS -o ${CMAKE_CURRENT_BINARY_DIR}/Generated_uis)
+
+
+# 将UI文件目录添加到包含目录中，确保可以找到生成的头文件
+include_directories(${CMAKE_CURRENT_BINARY_DIR}/generated_uis)
 
 #if(${CMAKE_BUILD_TYPE} MATCHES "Debug")
 #	set_target_properties(${PROJECT_NAME}
@@ -79,11 +97,10 @@ add_dependencies(${PROJECT_NAME} CGData CGRenderView)
 
 # 添加包含 DLL 的文件夹路径
 #set(EXTRA_DLL_PATH "C:/Qt/6.6.3/msvc2019_64/bin")
-set(EXTRA_DLL_PATH "C:/Qt/6.6.3/mingw_64/bin")
 
-# 设置环境变量 PATH，告诉程序运行时去哪里找 DLL
-set_target_properties(${PROJECT_NAME} PROPERTIES
-    VS_DEBUGGER_ENVIRONMENT "PATH=%PATH%;${EXTRA_DLL_PATH}"
-)
+## 设置环境变量 PATH，告诉程序运行时去哪里找 DLL
+#set_target_properties(${PROJECT_NAME} PROPERTIES
+#    VS_DEBUGGER_ENVIRONMENT "PATH=%PATH%;${EXTRA_DLL_PATH}"
+#)
 
 

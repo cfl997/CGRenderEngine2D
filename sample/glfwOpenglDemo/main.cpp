@@ -195,7 +195,7 @@ int main()
 
 	int renderTarget = 0;
 	{
-		textureid1 = CGRender_CreateTextureFromFile(contextID, L"D:/document/2024/March/20240327/20240401095541.png", 0, 0, GLTexture_Normal2DTex);
+		textureid1 = CGRender_CreateTextureFromFile(contextID, L"D:/document/2024/March/20240327/20240401095541.png", GLTexture_Normal2DTex);
 		textureid = CGRender_CreateTextureFromData(contextID, imageData.data, imageData.width, imageData.height, GLTextureType::GLTexture_Raw16);
 
 		{

@@ -64,6 +64,8 @@ namespace CGRender
 		*/
 		const glm::mat4 getViewMatrix()const;
 		const glm::mat4& getPerspectiveMatrix()noexcept;
+	public:
+		void addImage(const std::wstring& path);
 
 	private:
 		void renderTest();

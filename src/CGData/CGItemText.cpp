@@ -42,13 +42,17 @@ CGItemText::CGItemText(int deviceID) :m_priv(new PrivateData)
 
 	std::wstring pathstr = CGPath_GetPath(CGPathType::CG_PATH_FONTS);
 
-	std::wstring font = pathstr + L"/arial.ttf";
+	//std::wstring font = pathstr + L"/arial.ttf";
+	//std::wstring font = pathstr + L"/ARIALUNI.TTF";
+	std::wstring font = pathstr + L"/simhei.ttf";
 
 	FT_Face face;
 	if (FT_New_Face(ft, wstr2utf8(font).c_str(), 0, &face))
 		std::cout << "ERROR::FREETYPE: Failed to load font" << std::endl;
 
-	FT_Set_Pixel_Sizes(face, 0, 48);
+	FT_Select_Charmap(face, FT_ENCODING_UNICODE);
+
+	FT_Set_Pixel_Sizes(face, 30, 30);
 
 	//if (FT_Load_Char(face, 'X', FT_LOAD_RENDER))
 	//	std::cout << "ERROR::FREETYTPE: Failed to load Glyph" << std::endl;
@@ -70,21 +74,51 @@ CGItemText::CGItemText(int deviceID) :m_priv(new PrivateData)
 		//}
 
 	}
+	auto fn = [&](char c)
+		{
 
+
+			int texture = CGRender_CreateTextureFromData(ContextID(), face->glyph->bitmap.buffer, face->glyph->bitmap.width, face->glyph->bitmap.rows, GLTextureType::GLTexture_RED);
+
+			//std::string imagename = "e:/picture/textfont" + c + std::string{ ".png" };
+			//CGRender_SaveImageByVoid(face->glyph->bitmap.buffer, face->glyph->bitmap.width, face->glyph->bitmap.rows, 1, imagename, 0, false);
+
+			Character character = {
+				texture,
+				glm::ivec2(face->glyph->bitmap.width, face->glyph->bitmap.rows),
+				glm::ivec2(face->glyph->bitmap_left, face->glyph->bitmap_top),
+				face->glyph->advance.x
+			};
+			d.Characters.insert(std::pair<char, Character>(c, character));
+		};
+
+	{
+		std::string chinese = wstr2utf8(L"文32132");
+		for (int i = 0; i < chinese.size(); i++)
+		{
+			if (FT_Load_Char(face, chinese.c_str()[i], FT_LOAD_RENDER))
+				//if (FT_Load_Char(face, c, FT_LOAD_RENDER))
+			{
+				std::cout << "ERROR::FREETYTPE: Failed to load Glyph" << std::endl;
+				continue;
+			}
+			fn(chinese.c_str()[i]);
+		}
+		return;
+	}
 	{
 		for (unsigned char c = 0; c < 128; c++)
 		{
 			// 加载字符的字形 
 			//if (FT_Load_Char(face, c, FT_LOAD_RENDER))
-			std::string chinese = wstr2utf8(L"文32132");
 
 			wchar_t* chinese_char = L"周zhou";
-			//if (FT_Load_Char(face, chinese.c_str()[0], FT_LOAD_RENDER))s
 			if (FT_Load_Char(face, c, FT_LOAD_RENDER))
 			{
 				std::cout << "ERROR::FREETYTPE: Failed to load Glyph" << std::endl;
 				continue;
 			}
+			
 			//// 生成纹理
 			//GLuint texture;
 			//glGenTextures(1, &texture);
@@ -126,6 +160,7 @@ CGItemText::CGItemText(int deviceID) :m_priv(new PrivateData)
 
 CGItemText::~CGItemText()
 {
+
 }
 
 using GLfloat = float;
@@ -142,7 +177,8 @@ void CGData::CGItemText::build(int Device)
 	float x = 0.0f;
 	float y = 0.0f;
 
-	std::string text = "1234567890qweczxvdsafpoui";
+	//std::string text = "1234567890qweczxvdsafpoui";
+	std::string text = wstr2utf8(L"文32132");
 	std::string::const_iterator c;
 	for (c = text.begin(); c != text.end(); c++)
 	{

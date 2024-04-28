@@ -1,140 +1,111 @@
 #include "QtDisplayWidget.h"
+#include "ui_QtDisplayWidget.h"
 
-static inline long long color_to_int(const QColor& color)
+
+#include "CGRenderView.h"
+#include "CGRender.h"
+#include "CGData.h"
+
+#include <memory>
+#include <thread>
+#include <qtimer.h>
+//#include <qfile.h>
+#include <qfiledialog.h>
+//static inline long long color_to_int(const QColor& color)
+//{
+//	auto shift = [&](unsigned val, int shift) {
+//		return ((val & 0xff) << shift);
+//		};
+//
+//	return shift(color.red(), 0) | shift(color.green(), 8) |
+//		shift(color.blue(), 16) | shift(color.alpha(), 24);
+//}
+//
+//static inline QColor rgba_to_color(uint32_t rgba)
+//{
+//	return QColor::fromRgb(rgba & 0xFF, (rgba >> 8) & 0xFF,
+//		(rgba >> 16) & 0xFF, (rgba >> 24) & 0xFF);
+//}
+
+struct QTDisplayWidget::PrivateData
 {
-	auto shift = [&](unsigned val, int shift) {
-		return ((val & 0xff) << shift);
-	};
+	Ui_MainWidget ui;
+	std::unique_ptr<CGRender::CGRenderView>renderview = nullptr;
+	CGRender::WindowsWindow* glWindow = nullptr;
+};
 
-	return shift(color.red(), 0) | shift(color.green(), 8) |
-		shift(color.blue(), 16) | shift(color.alpha(), 24);
-}
-
-static inline QColor rgba_to_color(uint32_t rgba)
+QTDisplayWidget::QTDisplayWidget(QWidget* parent)
+	: QWidget(parent), m_priv(new PrivateData)
 {
-	return QColor::fromRgb(rgba & 0xFF, (rgba >> 8) & 0xFF,
-		(rgba >> 16) & 0xFF, (rgba >> 24) & 0xFF);
-}
+	auto& d = *m_priv;
+	d.ui.setupUi(this);
+	d.ui.leImagePath->setReadOnly(true);
 
-QTDisplayWidget::QTDisplayWidget(QWidget* parent, Qt::WindowFlags flags)
-	: QWidget(parent, flags)
-{
-	//setAttribute(Qt::WA_PaintOnScreen);
-	//setAttribute(Qt::WA_StaticContents);
-	//setAttribute(Qt::WA_NoSystemBackground);
-	//setAttribute(Qt::WA_OpaquePaintEvent);
-	//setAttribute(Qt::WA_DontCreateNativeAncestors);
-	//setAttribute(Qt::WA_NativeWindow);
+	int width = d.ui.w_glwindow->geometry().width();
+	int height = d.ui.w_glwindow->geometry().height();
 
+	HWND parentHwnd = reinterpret_cast<HWND>(d.ui.w_glwindow->winId()); // 获取窗口句柄
+	d.renderview = std::make_unique<CGRender::CGRenderView>(width, height, parentHwnd);
+	{
 
-	auto windowVisible = [this](bool visible) {
-		if (!visible) {
-#if !defined(_WIN32) && !defined(__APPLE__)
-			//display = nullptr;
-#endif
-			return;
-		}
+		auto renderWindow = d.renderview->getWindowByType(CGRender::WindowType::Window_Main);
+		d.glWindow = dynamic_cast<CGRender::WindowsWindow*>(renderWindow.get());
+		assert(d.glWindow);
 
-		//if (!display) {
-		//	CreateDisplay();
-		//}
-		//else {
-		//	QSize size = GetPixelSize(this);
-		//	obs_display_resize(display, size.width(),
-		//		size.height());
-		//}
-	};
+		int contextId = renderWindow->ContextID();
+		int renderTarget = CGRender_CreateTextureFromData(contextId, 0, width, height, GLTexture_Normal2DTex);
+		CGRender_SetRenderTarget(contextId, renderTarget);
 
-	//auto screenChanged = [this](QScreen*) {
-	//	CreateDisplay();
-
-	//	QSize size = GetPixelSize(this);
-	//	obs_display_resize(display, size.width(), size.height());
-	//};
-
-	//connect(windowHandle(), &QWindow::visibleChanged, windowVisible);
-	//connect(windowHandle(), &QWindow::screenChanged, screenChanged);
-
-#ifdef ENABLE_WAYLAND
-	if (obs_get_nix_platform() == OBS_NIX_PLATFORM_WAYLAND)
-		windowHandle()->installEventFilter(
-			new SurfaceEventFilter(this));
-#endif
-}
-
-QColor QTDisplayWidget::GetDisplayBackgroundColor() const
-{
-	return rgba_to_color(backgroundColor);
-}
-
-void QTDisplayWidget::SetDisplayBackgroundColor(const QColor& color)
-{
-	uint32_t newBackgroundColor = (uint32_t)color_to_int(color);
-
-	if (newBackgroundColor != backgroundColor) {
-		backgroundColor = newBackgroundColor;
-		UpdateDisplayBackgroundColor();
+		//主循环
+		QTimer* timer = new QTimer(this);
+		connect(timer, &QTimer::timeout, this, &QTDisplayWidget::runLoop);
+		timer->start(10);
 	}
+
+	connect(d.ui.pbOpenImage, &QPushButton::clicked, this, [&]() {
+		// 设置文件过滤器，仅显示 PNG 和 JPEG 格式的文件
+		QStringList filters;
+		//filters << "PNG Files (*.png)" << "JPEG Files (*.jpeg *.jpg)";
+		filters << "PNG Files (*.png);;JPEG Files (*.jpeg *.jpg)";
+
+		// 弹出文件选择对话框，设置过滤器
+		QString selectedFile = QFileDialog::getOpenFileName(this, "Select Image", QDir::homePath(), filters.join(";;"));
+
+		// 如果用户选择了文件，则输出文件路径
+		if (selectedFile.isEmpty())
+			return;
+		{
+			qDebug() << "Selected file:" << selectedFile;
+		}
+		d.glWindow->addImage(selectedFile.toStdWString());
+		d.ui.leImagePath->setText(selectedFile);
+		});
+
+	connect(d.ui.pbGrayColor, &QPushButton::clicked, this, [&]() {
+		auto layer= d.glWindow->getCurLayer();
+		layer->setImageShader(ShaderCodeName::FS_Tex_Gray);
+		});
+
+	connect(d.ui.pbInvertColor, &QPushButton::clicked, this, [&]() {
+		auto layer = d.glWindow->getCurLayer();
+		layer->setImageShader(ShaderCodeName::FS_Tex_Invert);
+		});
+
+	connect(d.ui.pbNormalColor, &QPushButton::clicked, this, [&]() {
+		auto layer = d.glWindow->getCurLayer();
+		layer->setImageShader(ShaderCodeName::FS_Tex);
+		});
+
 }
 
-void QTDisplayWidget::UpdateDisplayBackgroundColor()
+QTDisplayWidget::~QTDisplayWidget()
 {
-	//obs_display_set_background_color(display, backgroundColor);
+
 }
 
-void QTDisplayWidget::CreateDisplay(bool force)
+
+void QTDisplayWidget::runLoop()
 {
-	//if (display)
-	//	return;
-
-	//if (!windowHandle()->isExposed() && !force)
-	//	return;
-
-	//QSize size = GetPixelSize(this);
-
-	//gs_init_data info = {};
-	//info.cx = size.width();
-	//info.cy = size.height();
-	//info.format = GS_BGRA;
-	//info.zsformat = GS_ZS_NONE;
-
-	//if (!QTToGSWindow(windowHandle(), info.window))
-	//	return;
-
-	//display = obs_display_create(&info, backgroundColor);
-
-	//emit DisplayCreated(this);
-}
-
-void QTDisplayWidget::resizeEvent(QResizeEvent* event)
-{
-	//QWidget::resizeEvent(event);
-
-	//CreateDisplay();
-
-	//if (isVisible() && display) {
-	//	QSize size = GetPixelSize(this);
-	//	obs_display_resize(display, size.width(), size.height());
-	//}
-
-	//emit DisplayResized();
-	return ;
-}
-
-void QTDisplayWidget::paintEvent(QPaintEvent* event)
-{
-	//CreateDisplay();
-
-	//QWidget::paintEvent(event);
-	return;
-}
-
-bool QTDisplayWidget::eventFilter(QObject* obj, QEvent* event)
-{
-	return true;
-}
-
-QPaintEngine* QTDisplayWidget::paintEngine() const
-{
-	return nullptr;
+	auto& d = *m_priv;
+	d.renderview->Render();
 }

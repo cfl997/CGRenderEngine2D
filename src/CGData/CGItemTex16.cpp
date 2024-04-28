@@ -109,7 +109,6 @@ struct CGData::CGITtemTex16::PrivateData
 	int vertexBufferId = -1;
 	int indexBufferId = -1;
 	int vsShader = -1;
-	int fsShader = -1;
 
 	//test
 	int uniformBufferid = -1;
@@ -187,7 +186,6 @@ void CGData::CGITtemTex16::build(int Device)
 		d.indexBufferId = CGRender_CreateBuffer(Device, sizeof(uint32_t), data.indexes.size(), data.indexes.data(), GLBufferType::IndexBuffer, GetPrimitiveType());
 
 	d.vsShader = CGRender_CreateShader(Device, ShaderCodeName::VS_POS_COLOR_TEX_viewMatrix);
-	d.fsShader = CGRender_CreateShader(Device, ShaderCodeName::FS_Tex_Gray);
 }
 
 void CGData::CGITtemTex16::Render(int device, const glm::mat4& matrix)
@@ -201,7 +199,6 @@ void CGData::CGITtemTex16::Render(int device, const glm::mat4& matrix)
 		CGRender_ModifyBuffer(device, d.uniformBufferid, sizeof(glm::mat4) * 1, &aa);
 
 	CGRender_SetShader(device, d.vsShader, ShaderType::VERTEX);
-	CGRender_SetShader(device, d.fsShader, ShaderType::FRAGMENT);
 
 	CGRender_SetUniformBuffer(device, d.uniformBufferid, 0, ShaderType::VERTEX);
 

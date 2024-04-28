@@ -216,6 +216,24 @@ namespace CGRender
 		return d.perspectiveMatrix;
 	}
 
+	void WindowsWindow::addImage(const std::wstring& path)
+	{
+		auto& d = *m_priv;
+		//auto items = d.layer->getItem(CGData::CGItemType::CGItemImage);
+
+		//for (auto& data : items)
+		//{
+		//	//CGData::CGItemImage* image = dynamic_cast<CGData::CGItemImage*>(data);
+		//	//image->updateData(path);
+		//	d.layer->removeItem(data->GUID());
+		//}
+		d.layer->removeItem(CGData::CGItemType::CGItemImage);
+
+		CGData::CGItemImage* image = new CGData::CGItemImage(ContextID(), path);
+		d.layer->addItem(image);
+
+	}
+
 	struct UniformBufferData
 	{
 		//matrix4f matrix;
@@ -377,7 +395,7 @@ namespace CGRender
 			glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 #endif // use_opengl_4_6
 
-		}
+		}//s_GLFWInitialized
 
 		{
 			//event
@@ -391,11 +409,15 @@ namespace CGRender
 
 		std::string title = wstr2utf8(d.Title);
 		//这个会导致  发生偏移 c++ 
+		int windowheigt = props.Height;
+
 #ifndef use_Window_Title
-		m_Window = glfwCreateWindow(d.parent, (int)props.Width, (int)props.Height, title.c_str(), nullptr, d.shareWindow);
+		//m_Window = glfwCreateWindow(d.parent, (int)props.Width, (int)props.Height, title.c_str(), nullptr, d.shareWindow);
 #else
-		m_Window = glfwCreateWindow(d.parent, (int)props.Width, (int)props.Height + 25, title.c_str(), nullptr, d.shareWindow);
+		if (!d.parent)
+			windowheigt += 25;
 #endif // use_Window_Title
+		m_Window = glfwCreateWindow(d.parent, (int)props.Width, windowheigt, title.c_str(), nullptr, d.shareWindow);
 
 
 		glfwMakeContextCurrent(m_Window);
@@ -414,23 +436,28 @@ namespace CGRender
 			getPerspectiveMatrix();
 		}
 		{
-			d.layer = std::make_unique<CGData::CGLayer>();
+			d.layer = std::make_unique<CGData::CGLayer>(ContextID());
 		}
 		//cfl-test
 		if (1)
 		{
 
-			const static std::wstring tex16file = L"E:/A/work/Render2D/src/gTestCGRenderView/testFiles/010_L01S.img";
-			CGData::CGITtemTex16* tex16 = new CGData::CGITtemTex16(ContextID(), tex16file);
+			//const static std::wstring tex16file = L"E:/A/work/Render2D/src/gTestCGRenderView/testFiles/010_L01S.img";
+			//CGData::CGITtemTex16* tex16 = new CGData::CGITtemTex16(ContextID(), tex16file);
 			//d.layer->addItem(tex16);
 
+			////std::wstring filepath = L"E:/A/work/Render2D/bin64/色卡.jpg";
+			//std::wstring filepath = L"E:/A/work/Render2D/bin64/4k-pexels-pixabay-33109.jpg";
+			//CGData::CGItemImage* image = new CGData::CGItemImage(ContextID(), filepath);
+			//d.layer->addItem(image);
 
 			auto defaultRenderEvent = CGRenderEvnetFactory::instance()->createRenderEvent(RenderEvent_Rectangle, this);
 			addCGRenderEvent(defaultRenderEvent);
 
 
-			CGData::CGItemText* text = new CGData::CGItemText(ContextID());
-			d.layer->addItem(text);
+
+			//CGData::CGItemText* text = new CGData::CGItemText(ContextID());
+			//d.layer->addItem(text);
 		}
 
 

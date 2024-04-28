@@ -17,6 +17,7 @@ CGItem::CGItem() :m_priv(new PrivateData)
 {
 	auto& d = *m_priv;
 	d.modelMatrix = glm::mat4{ 1 };
+	d.m_itemData.PrimitiveType = GLPrimitiveTypes::TRIANGLELIST;
 }
 
 CGItem::~CGItem()

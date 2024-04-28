@@ -8,6 +8,7 @@
 #include "CGItemRectangle.h"
 #include "CGItemTex16.h"
 #include "CGItemText.h"
+#include "CGItemImage.h"
 
 #if defined(_MSC_VER) || defined(WIN32) || defined(WIN64)
 #ifdef _DEBUG

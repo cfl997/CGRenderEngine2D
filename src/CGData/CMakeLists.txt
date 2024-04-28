@@ -29,6 +29,7 @@ set(COMMON_HEAD_PUBLIC
 	${CGRender_ROOT_DIR}/include/CGData/CGLayer.h
 	${CGRender_ROOT_DIR}/include/CGData/CGItemTex16.h
 	${CGRender_ROOT_DIR}/include/CGData/CGItemText.h
+	${CGRender_ROOT_DIR}/include/CGData/CGItemImage.h
 )
 
 SET(COMMON_HEAD_FILES
@@ -42,6 +43,7 @@ SET(COMMON_SOURCE_FILES
 	CGLayer.cpp
 	CGItemTex16.cpp
 	CGItemText.cpp
+	CGItemImage.cpp
 )
 
 

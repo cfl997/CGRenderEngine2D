@@ -23,6 +23,10 @@ struct CGRenderView::PrivateRenderView
 
 CGRender::CGRenderView::CGRenderView(uint32_t width, uint32_t height, void* parent) :m_priv(new PrivateRenderView)
 {
+	// 设置C语言的字符集环境  
+
+	setlocale(LC_ALL, "");
+
 	CGPath_Init();
 
 	auto& d = *m_priv;
@@ -70,7 +74,7 @@ std::shared_ptr<CGRender::Window> CGRender::CGRenderView::getWindowByType(Window
 void CGRender::CGRenderView::Render()
 {
 	auto& d = *m_priv;
-	while (d.m_Running)
+	//while (d.m_Running)//这个交给qt，不然事件冲突
 	{
 		for (auto& win : d.cgWindows)
 		{
