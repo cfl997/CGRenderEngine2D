@@ -48,7 +48,7 @@ namespace CGRender
 		//window
 		void* parent;
 		std::wstring Title;
-		uint32_t Width, Height;
+		uint32_t windowWidth, windowHeight;
 		bool VSync;
 		GLFWwindow* shareWindow;
 		WindowType type;
@@ -69,7 +69,10 @@ namespace CGRender
 		std::unique_ptr<CGData::CGLayer>layer = nullptr;
 
 
-
+		//imageData
+		int imageWidth = -1;
+		int imageHeight = -1;
+		int imageChange = false;
 
 		glm::mat4 getInverseScreenMatrix()
 		{
@@ -81,22 +84,22 @@ namespace CGRender
 		std::tuple<float, float> getWorldPos(glm::vec2 pos)
 		{
 			//glm::mat4 aa = glm::mat4{ 1 };
-			//glm::vec3 worldPos = screenToWorld({ pos.x,Height - pos.y,1. }, super->getViewMatrix(), super->getPerspectiveMatrix(), {0,0,Width,Height});
-			auto worldPos = CGRender_GetWorldPos(pos, camera->GetViewMatrix(), super->getPerspectiveMatrix(), glm::vec4(0, 0, Width, Height));
+			//glm::vec3 worldPos = screenToWorld({ pos.x,windowHeight - pos.y,1. }, super->getViewMatrix(), super->getPerspectiveMatrix(), {0,0,windowWidth,windowHeight});
+			auto worldPos = CGRender_GetWorldPos(pos, camera->GetViewMatrix(), super->getPerspectiveMatrix(), glm::vec4(0, 0, windowWidth, windowHeight));
 			return std::make_tuple(worldPos.x, worldPos.y);//yes
 			//{
 
 			//	float z = 1.0f;
 
 
-			//	glm::vec3 win(pos.x, Height - pos.y, z);
-			//	glm::vec4 viewport(0.0f, 0.0f, (float)Width, (float)Height);
+			//	glm::vec3 win(pos.x, windowHeight - pos.y, z);
+			//	glm::vec4 viewport(0.0f, 0.0f, (float)windowWidth, (float)windowHeight);
 			//	glm::vec3 world = glm::unProject(win, view, persp, viewport);
 			//	return { world.x,world.y };
 			//}
 
 			glm::mat4 inverseSM = getInverseScreenMatrix();
-			//glm::vec2 devicePos = ScreenToNormalizedDeviceCoords(pos.x, pos.y, Width, Height);
+			//glm::vec2 devicePos = ScreenToNormalizedDeviceCoords(pos.x, pos.y, windowWidth, windowHeight);
 			//glm::vec2 devicePos = pos;
 			glm::vec2 devicePos = glm::vec2{ pos.x  , pos.y };
 			glm::vec4 worldpos = inverseSM * glm::vec4(devicePos, 1, 1);
@@ -206,32 +209,52 @@ namespace CGRender
 	const glm::mat4& WindowsWindow::getPerspectiveMatrix()noexcept
 	{
 		auto& d = *m_priv;
-		if (d.Height <= 0)
+		if (d.windowHeight <= 0)
 		{
 			__debugbreak();
 			return std::move(glm::mat4{ 1 });
 		}
+		double defaultZoom = d.camera->Zoom;
+		if (d.imageWidth > 0 && d.imageHeight > 0 && d.imageChange)
+		{
+			d.imageChange = false;
+			float imageProportion = (float)d.imageWidth / (float)d.imageHeight;
+			float windowProportion = (float)d.windowWidth / (float)d.windowHeight;
+
+			float widthProportion = (float)d.imageWidth / (float)d.windowWidth;
+			float heightProportion = (float)d.imageHeight / (float)d.windowHeight;
+
+			double realHeight = d.imageHeight;
+			if (imageProportion > 1)
+			{
+				realHeight = d.imageWidth / windowProportion;
+			}
+
+			double opposite = realHeight / 2.;
+			double adjacent = 2460-0.1;
+
+			defaultZoom = atan(opposite / adjacent) * 180 / glm::pi<double>();
+			//double angle = atan(adjacent / opposite) * 180 / glm::pi<double>();
+			d.camera->Zoom = defaultZoom;
+		}
 		//右手坐标系，z越大，越近
-		d.perspectiveMatrix = glm::perspective(glm::radians(d.camera->Zoom), static_cast<float>(d.Width) / static_cast<float>(d.Height), 0.1f, 1000.f);
+		//d.perspectiveMatrix = glm::perspective(glm::radians(d.camera->Zoom), static_cast<double>(d.windowWidth) / static_cast<double>(d.windowHeight), 0.1, 1000.);
+		d.perspectiveMatrix = glm::perspective(glm::radians(defaultZoom), static_cast<double>(d.windowWidth) / static_cast<double>(d.windowHeight), 0.1, 1000.);
 		return d.perspectiveMatrix;
 	}
 
 	void WindowsWindow::addImage(const std::wstring& path)
 	{
 		auto& d = *m_priv;
-		//auto items = d.layer->getItem(CGData::CGItemType::CGItemImage);
 
-		//for (auto& data : items)
-		//{
-		//	//CGData::CGItemImage* image = dynamic_cast<CGData::CGItemImage*>(data);
-		//	//image->updateData(path);
-		//	d.layer->removeItem(data->GUID());
-		//}
 		d.layer->removeItem(CGData::CGItemType::CGItemImage);
 
 		CGData::CGItemImage* image = new CGData::CGItemImage(ContextID(), path);
 		d.layer->addItem(image);
 
+		d.imageWidth = image->width();
+		d.imageHeight = image->height();
+		d.imageChange = true;
 	}
 
 	struct UniformBufferData
@@ -250,8 +273,8 @@ namespace CGRender
 		int renderTarget = CGRender_GetRenderTarget(d.glContextID);
 		if (1)
 		{
-			CGRender_SetViewport(d.glContextID, 0, 0, d.Width, d.Height);
-			CGRender_SetScissor(d.glContextID, 0, 0, d.Width, d.Height);
+			CGRender_SetViewport(d.glContextID, 0, 0, d.windowWidth, d.windowHeight);
+			CGRender_SetScissor(d.glContextID, 0, 0, d.windowWidth, d.windowHeight);
 
 			CGRender_ClearTexture(d.glContextID, renderTarget, 0x00ffff00);
 			CGRender_ClearTexture(d.glContextID, renderTarget, 0x00000000);
@@ -365,8 +388,8 @@ namespace CGRender
 		auto& d = *m_priv;
 		d.parent = props.parentWindow;
 		d.Title = props.Title;
-		d.Width = props.Width;
-		d.Height = props.Height;
+		d.windowWidth = props.windowWidth;
+		d.windowHeight = props.windowHeight;
 		d.shareWindow = (GLFWwindow*)props.share_Window;
 		d.type = props.type;
 
@@ -409,15 +432,15 @@ namespace CGRender
 
 		std::string title = wstr2utf8(d.Title);
 		//这个会导致  发生偏移 c++ 
-		int windowheigt = props.Height;
+		int windowheigt = props.windowHeight;
 
 #ifndef use_Window_Title
-		//m_Window = glfwCreateWindow(d.parent, (int)props.Width, (int)props.Height, title.c_str(), nullptr, d.shareWindow);
+		//m_Window = glfwCreateWindow(d.parent, (int)props.windowWidth, (int)props.windowHeight, title.c_str(), nullptr, d.shareWindow);
 #else
 		if (!d.parent)
 			windowheigt += 25;
 #endif // use_Window_Title
-		m_Window = glfwCreateWindow(d.parent, (int)props.Width, windowheigt, title.c_str(), nullptr, d.shareWindow);
+		m_Window = glfwCreateWindow(d.parent, (int)props.windowWidth, windowheigt, title.c_str(), nullptr, d.shareWindow);
 
 
 		glfwMakeContextCurrent(m_Window);
@@ -428,7 +451,7 @@ namespace CGRender
 			d.hWnd = glfwGetWin32Window(m_Window);
 			HGLRC hGLRC = glfwGetWGLContext(m_Window);
 			//d.glContext->setWindowData(hwnd, hGLRC);
-			d.glContextID = CGRender_CreateContext(d.hWnd, hGLRC, d.Width, d.Height);
+			d.glContextID = CGRender_CreateContext(d.hWnd, hGLRC, d.windowWidth, d.windowHeight);
 		}
 
 		{
@@ -446,10 +469,13 @@ namespace CGRender
 			//CGData::CGITtemTex16* tex16 = new CGData::CGITtemTex16(ContextID(), tex16file);
 			//d.layer->addItem(tex16);
 
-			////std::wstring filepath = L"E:/A/work/Render2D/bin64/色卡.jpg";
-			//std::wstring filepath = L"E:/A/work/Render2D/bin64/4k-pexels-pixabay-33109.jpg";
+			//std::wstring filepath = L"D:/document/2024/picture/色卡.jpg";
+			//std::wstring filepath = L"D:/document/2024/picture/4k-pexels-pixabay-33109.jpg";
+			std::wstring filepath = L"D:/document/2024/picture/800600.png";
 			//CGData::CGItemImage* image = new CGData::CGItemImage(ContextID(), filepath);
 			//d.layer->addItem(image);
+
+			//addImage(filepath);
 
 			auto defaultRenderEvent = CGRenderEvnetFactory::instance()->createRenderEvent(RenderEvent_Rectangle, this);
 			addCGRenderEvent(defaultRenderEvent);
@@ -486,8 +512,8 @@ namespace CGRender
 					int i = 0;
 					return;
 				}
-				data.Width = width;
-				data.Height = height;
+				data.windowWidth = width;
+				data.windowHeight = height;
 
 				//WindowResizeEvent event(width, height);
 				//data.EventCallback(event);
@@ -500,8 +526,8 @@ namespace CGRender
 //#endif // use_Window_Title
 
 
-				CGRender_SetViewport(data.glContextID, 0, 0, data.Width, data.Height);
-				CGRender_ResizeWindow(data.glContextID, data.Width, data.Height);
+				CGRender_SetViewport(data.glContextID, 0, 0, data.windowWidth, data.windowHeight);
+				CGRender_ResizeWindow(data.glContextID, data.windowWidth, data.windowHeight);
 			});
 
 		glfwSetWindowCloseCallback(m_Window, [](GLFWwindow* window)
@@ -630,12 +656,12 @@ namespace CGRender
 
 	inline uint32_t WindowsWindow::GetWidth() const
 	{
-		return m_priv->Width;
+		return m_priv->windowWidth;
 	}
 
 	inline uint32_t WindowsWindow::GetHeight() const
 	{
-		return m_priv->Height;
+		return m_priv->windowHeight;
 	}
 
 	inline void WindowsWindow::SetEventCallback(const EventCallbackFn& callback)

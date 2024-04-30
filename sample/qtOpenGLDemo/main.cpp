@@ -20,7 +20,6 @@
 
 #include "CGRender.h"
 #include "CGRenderView.h"
-#include "CGglm.h"
 
 #include "QtDisplayWidget.h"
 

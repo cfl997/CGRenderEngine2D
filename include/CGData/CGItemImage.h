@@ -14,6 +14,12 @@ namespace CGData
 		~CGItemImage();
 
 		CGItemType(CGItemImage);
+
+	public:
+		const int width()const;
+		const int height()const;
+
+		const int TextureID()const;
 	public:
 		void updateData(const std::wstring& path);
 		void updateData(void* data, int width, int height);

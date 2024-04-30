@@ -11,6 +11,8 @@
 #include <qtimer.h>
 //#include <qfile.h>
 #include <qfiledialog.h>
+#include <iostream>
+
 //static inline long long color_to_int(const QColor& color)
 //{
 //	auto shift = [&](unsigned val, int shift) {
@@ -32,6 +34,9 @@ struct QTDisplayWidget::PrivateData
 	Ui_MainWidget ui;
 	std::unique_ptr<CGRender::CGRenderView>renderview = nullptr;
 	CGRender::WindowsWindow* glWindow = nullptr;
+
+
+	CGData::CGItemImage* image = nullptr;
 };
 
 QTDisplayWidget::QTDisplayWidget(QWidget* parent)
@@ -61,6 +66,16 @@ QTDisplayWidget::QTDisplayWidget(QWidget* parent)
 		connect(timer, &QTimer::timeout, this, &QTDisplayWidget::runLoop);
 		timer->start(10);
 	}
+	auto layoutInsert = [&](bool visible) {
+		for (int i = 0; i < d.ui.vlayoutInsert->count(); ++i) {
+			QWidget* w = d.ui.vlayoutInsert->itemAt(i)->widget();
+			if (w != NULL)
+				w->setVisible(visible);
+		}
+		};
+
+	layoutInsert(false);
+
 
 	connect(d.ui.pbOpenImage, &QPushButton::clicked, this, [&]() {
 		// 设置文件过滤器，仅显示 PNG 和 JPEG 格式的文件
@@ -79,10 +94,12 @@ QTDisplayWidget::QTDisplayWidget(QWidget* parent)
 		}
 		d.glWindow->addImage(selectedFile.toStdWString());
 		d.ui.leImagePath->setText(selectedFile);
+
+		d.image = nullptr;
 		});
 
 	connect(d.ui.pbGrayColor, &QPushButton::clicked, this, [&]() {
-		auto layer= d.glWindow->getCurLayer();
+		auto layer = d.glWindow->getCurLayer();
 		layer->setImageShader(ShaderCodeName::FS_Tex_Gray);
 		});
 
@@ -96,16 +113,106 @@ QTDisplayWidget::QTDisplayWidget(QWidget* parent)
 		layer->setImageShader(ShaderCodeName::FS_Tex);
 		});
 
+	connect(d.ui.pbmove, &QPushButton::clicked, this, [&, layoutInsert]() {
+		if (d.image)
+		{
+			d.image = nullptr;
+			layoutInsert(false);
+			return;
+		}
+		auto layer = d.glWindow->getCurLayer();
+		auto item = layer->getItem(CGData::CGItemType::CGItemImage);
+		if (item.size() <= 0)
+			return;
+
+		d.image = dynamic_cast<CGData::CGItemImage*>(item.at(0));
+		if (!d.image)
+			return;
+
+		layoutInsert(true);
+
+		});
+
+	static int insertHeight = 100;
+	DWORD pbcolor1 = 0xffCDFAFF;
+	DWORD pbcolor2 = 0xffFFFF97;
+
+
+	{
+		QColor color1(0xffFFFACD);
+
+
+		QPalette pbColorPalette = d.ui.pbInsert1->palette();
+		d.ui.pbInsert1->setAutoFillBackground(true);
+		d.ui.pbInsert1->setFlat(true);
+		pbColorPalette.setBrush(QPalette::Button, color1);
+		d.ui.pbInsert1->setPalette(pbColorPalette);
+	}
+
+	{
+		QColor color2(0xff97FFFF);
+
+		QPalette pbColorPalette = d.ui.pbInsert2->palette();
+		d.ui.pbInsert2->setAutoFillBackground(true);
+		d.ui.pbInsert2->setFlat(true);
+		pbColorPalette.setBrush(QPalette::Button, color2);
+		d.ui.pbInsert2->setPalette(pbColorPalette);
+	}
+
+
+	auto insertcolor = [&](DWORD color) {
+		if (!d.image)
+			return;
+		int width = d.image->width();
+		DWORD* colorbuffer = new DWORD[width * insertHeight];
+		for (int i = 0; i < width * insertHeight; i++)
+		{
+			colorbuffer[i] = color;
+		}
+
+		bool moveResult = CGRender_MoveTexturePixel(d.image->ContextID(), d.image->TextureID(), 0, insertHeight);
+		assert(moveResult);
+
+		//bool uploadresult = CGRender_UploadTexture(d.image->ContextID(), d.image->TextureID(), 0, 0, width, insertHeight, colorbuffer);
+		bool uploadresult = CGRender_UploadTexture(d.image->ContextID(), d.image->TextureID(), 0, 0, width, insertHeight, colorbuffer);
+		assert(uploadresult);
+
+		delete[]colorbuffer;
+		};
+
+	connect(d.ui.pbInsert1, &QPushButton::clicked, this, [&, insertcolor, pbcolor1]() {
+		insertcolor(pbcolor1);
+		});
+
+	connect(d.ui.pbInsert2, &QPushButton::clicked, this, [&, insertcolor, pbcolor2]() {
+		insertcolor(pbcolor2);
+		});
+
+
+
 }
 
 QTDisplayWidget::~QTDisplayWidget()
 {
+	auto& d = *m_priv;
+	if (m_priv)
+	{
+		delete m_priv;
+		m_priv = nullptr;
+	}
+	//d.renderview.reset(0);
+}
 
+void QTDisplayWidget::closeEvent(QCloseEvent* event)
+{
+	auto& d = *m_priv;
+	d.renderview.reset(0);
 }
 
 
 void QTDisplayWidget::runLoop()
 {
 	auto& d = *m_priv;
-	d.renderview->Render();
+	if (d.renderview)
+		d.renderview->Render();
 }

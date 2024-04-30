@@ -21,8 +21,8 @@ namespace CGRender
 	{
 		void* parentWindow;
 		std::wstring Title;
-		uint32_t Width;
-		uint32_t Height;
+		uint32_t windowWidth;
+		uint32_t windowHeight;
 		//GLFWwindow* share_Window;
 		void* share_Window;
 		WindowType type;
@@ -31,7 +31,7 @@ namespace CGRender
 			uint32_t width = 1280,
 			uint32_t height = 720,
 			void* shareWindow = nullptr, WindowType windowType = WindowType::Window_Main)
-			:parentWindow(parent), Title(title), Width(width), Height(height), share_Window(shareWindow), type(windowType)
+			:parentWindow(parent), Title(title), windowWidth(width), windowHeight(height), share_Window(shareWindow), type(windowType)
 		{
 		}
 	};

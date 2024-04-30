@@ -107,6 +107,25 @@ struct ResizeTextureIn
 	unsigned int height;
 };
 
+
+struct UploadTextureIn
+{
+	int hTexture;
+	int xoffset;
+	int yoffset;
+	int width;
+	int height;
+	void* buffer;
+};
+
+struct MoveTextureIn
+{
+	int hTexture;
+	int xoffset;
+	int yoffset;
+	bool down;
+};
+
 struct SetShaderTextureIn
 {
 	int hTexture;

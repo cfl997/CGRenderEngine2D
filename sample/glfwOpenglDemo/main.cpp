@@ -284,18 +284,22 @@ int main()
 
 
 
-	std::thread renderThread{ [&] {
-	int nums = 0;
-	while (true)
-	{
+	//std::thread renderThread{ [&] {
+	//int nums = 0;
+	//while (true)
+	//{
 
-		//CGRender_Render(contextID, vboIndex, indexIndex, GLPrimitiveTypes::TRIANGLELIST, 0, 0, 0);
+	//	//CGRender_Render(contextID, vboIndex, indexIndex, GLPrimitiveTypes::TRIANGLELIST, 0, 0, 0);
 
-	}
-	} };
+	//}
+	//} };
 	//renderThread.detach();
 
 	renderView->Render();
+	while ((true))
+	{
+		renderView->Render();
+	}
 
 	return 0;
 }

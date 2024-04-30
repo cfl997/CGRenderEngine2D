@@ -17,6 +17,9 @@ bool GLRENDER_API CGRender_GetTextureInfo(int Device, int hTexture, int* nWidth,
 int  GLRENDER_API CGRender_ClearTexture(int Device, int hTexture, DWORD color);
 bool GLRENDER_API CGRender_DeleteTexture(int Device, int hTexture);
 bool GLRENDER_API CGRender_ResizeTexture(int Device, int hTexture, unsigned int width, unsigned int height);
+bool GLRENDER_API CGRender_UploadTexture(int Device, int hTexture, int xoffset, int yoffset, int width, int height, void* buffer);
+bool GLRENDER_API CGRender_MoveTexturePixel(int Device, int hTexture, int xoffset, int yoffset, bool down = true);
+
 
 bool GLRENDER_API CGRender_SetShaderTexture(int Device, int hTexture, int nRegisterIndex, ShaderType nShaderType = ShaderType::FRAGMENT);
 bool GLRENDER_API CGRender_SaveTextue(int Device, int hTexture, const std::wstring& filePath);

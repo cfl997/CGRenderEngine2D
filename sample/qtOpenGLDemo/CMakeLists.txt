@@ -17,6 +17,16 @@ if(WIN32)
 	endif()
 endif()
 
+
+# 在 Release 模式下禁用某些优化选项
+if(CMAKE_BUILD_TYPE STREQUAL "Release")
+    # 在这里添加你想要禁用的优化选项，例如 -O2 或者 -O3
+    string(REPLACE "-O2" "" CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE}")
+    string(REPLACE "-O3" "" CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE}")
+endif()
+
+
+
 if(MSVC)
     add_compile_definitions(_HAS_CXX17=1)
     add_compile_options(/Zc:__cplusplus)
@@ -24,12 +34,16 @@ endif()
 
 if(DEFINED QTDIR${_lib_suffix})
 	list(APPEND CMAKE_PREFIX_PATH "${QTDIR${_lib_suffix}}")
+	message("aaa1" ${_lib_suffix})
 elseif(DEFINED QTDIR)
 	list(APPEND CMAKE_PREFIX_PATH "${QTDIR}")
+	message("aaa2")
 elseif(DEFINED ENV{QTDIR${_lib_suffix}})
 	list(APPEND CMAKE_PREFIX_PATH "$ENV{QTDIR${_lib_suffix}}")
+	message("aaa3")
 elseif(DEFINED ENV{QTDIR})
 	list(APPEND CMAKE_PREFIX_PATH "$ENV{QTDIR}")
+	message("aaa4")
 endif()
 
 set(CMAKE_AUTOMOC ON)
@@ -83,15 +97,18 @@ SET_PROPERTY(TARGET ${PROJECT_NAME} PROPERTY FOLDER "sample")
 qt6_wrap_ui(ui_generated_files ${ui_files} OPTIONS -o ${CMAKE_CURRENT_BINARY_DIR}/Generated_uis)
 
 
+
+
+
 # 将UI文件目录添加到包含目录中，确保可以找到生成的头文件
 include_directories(${CMAKE_CURRENT_BINARY_DIR}/generated_uis)
 
-#if(${CMAKE_BUILD_TYPE} MATCHES "Debug")
-#	set_target_properties(${PROJECT_NAME}
-#		PROPERTIES
-#		OUTPUT_NAME ${PROJECT_NAME}D
-#		)
-#endif()
+if(${CMAKE_BUILD_TYPE} MATCHES "Debug")
+	set_target_properties(${PROJECT_NAME}
+		PROPERTIES
+		OUTPUT_NAME ${PROJECT_NAME}D
+		)      
+endif()
 #add_dependencies(${PROJECT_NAME} CGRender CGData)
 add_dependencies(${PROJECT_NAME} CGData CGRenderView)
 

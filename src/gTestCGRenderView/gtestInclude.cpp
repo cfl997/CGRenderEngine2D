@@ -13,3 +13,9 @@ int main(int argc, char** argv) {
     ::testing::InitGoogleTest(&argc, argv);
     return RUN_ALL_TESTS();
 }
+
+bool gTest::compareImage(const std::wstring& srcimage, const std::wstring& desimage)
+{
+    
+    return true;
+}

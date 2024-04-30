@@ -49,7 +49,7 @@ bool CGRender::CGRenderView::createWindow(const CGRender::WindowProps& windowsPr
 	auto& d = *m_priv;
 	if (windowsProps.type == WindowType::Window_Main || windowsProps.type == WindowType::Window_unknow)
 		return false;
-	std::shared_ptr<CGRender::Window>window = std::shared_ptr<CGRender::Window>(CGRender::Window::Create({ windowsProps.parentWindow, windowsProps.Title, windowsProps.Width,windowsProps.Height,windowsProps.share_Window }));
+	std::shared_ptr<CGRender::Window>window = std::shared_ptr<CGRender::Window>(CGRender::Window::Create({ windowsProps.parentWindow, windowsProps.Title, windowsProps.windowWidth,windowsProps.windowHeight,windowsProps.share_Window }));
 	d.cgWindows[windowsProps.Title] = window;
 	return true;
 }
@@ -74,6 +74,7 @@ std::shared_ptr<CGRender::Window> CGRender::CGRenderView::getWindowByType(Window
 void CGRender::CGRenderView::Render()
 {
 	auto& d = *m_priv;
+
 	//while (d.m_Running)//这个交给qt，不然事件冲突
 	{
 		for (auto& win : d.cgWindows)

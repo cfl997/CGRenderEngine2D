@@ -57,6 +57,24 @@ CGItemImage::~CGItemImage()
 	}
 }
 
+const int CGData::CGItemImage::width() const
+{
+	auto& d = *m_priv;
+	return d.width;
+}
+
+const int CGData::CGItemImage::height() const
+{
+	auto& d = *m_priv;
+	return d.height;
+}
+
+const int CGData::CGItemImage::TextureID() const
+{
+	auto& d = *m_priv;
+	return d.hTexture;
+}
+
 void CGData::CGItemImage::updateData(const std::wstring& path)
 {
 	auto& d = *m_priv;

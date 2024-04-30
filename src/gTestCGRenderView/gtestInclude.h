@@ -17,6 +17,9 @@
 namespace gTest
 {
 
+
+
+	bool compareImage(const std::wstring& srcimage, const std::wstring& desimage);
 }
 
 #endif // !_GTESTINCLUDE_H_

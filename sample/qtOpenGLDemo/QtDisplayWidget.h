@@ -15,6 +15,9 @@ public:
 public slots:
 	void runLoop();
 
+public:
+	virtual void closeEvent(QCloseEvent* event)override;
+
 private:
 	struct PrivateData;
 	PrivateData* m_priv = nullptr;
