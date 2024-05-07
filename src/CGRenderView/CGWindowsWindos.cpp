@@ -221,9 +221,6 @@ namespace CGRender
 			float imageProportion = (float)d.imageWidth / (float)d.imageHeight;
 			float windowProportion = (float)d.windowWidth / (float)d.windowHeight;
 
-			float widthProportion = (float)d.imageWidth / (float)d.windowWidth;
-			float heightProportion = (float)d.imageHeight / (float)d.windowHeight;
-
 			double realHeight = d.imageHeight;
 			if (imageProportion > 1)
 			{
@@ -231,17 +228,21 @@ namespace CGRender
 			}
 
 			double opposite = realHeight / 2.;
-			double adjacent = 2460-0.1;
+			//double adjacent = 2460;//this is correct
+			double adjacent = 5000;// 
 
 			defaultZoom = atan(opposite / adjacent) * 180 / glm::pi<double>();
-			//double angle = atan(adjacent / opposite) * 180 / glm::pi<double>();
-			d.camera->Zoom = defaultZoom;
+			d.camera->Zoom = defaultZoom * 2;
 		}
-		//右手坐标系，z越大，越近
-		//d.perspectiveMatrix = glm::perspective(glm::radians(d.camera->Zoom), static_cast<double>(d.windowWidth) / static_cast<double>(d.windowHeight), 0.1, 1000.);
+		//这个是对的那个
 		d.perspectiveMatrix = glm::perspective(glm::radians(defaultZoom), static_cast<double>(d.windowWidth) / static_cast<double>(d.windowHeight), 0.1, 1000.);
+
+		//d.perspectiveMatrix = glm::ortho(0., static_cast<double>(d.windowWidth), 0., static_cast<double>(d.windowHeight), 0.1, 1000.);//这个可以整 cfl-202405
+
+
 		return d.perspectiveMatrix;
 	}
+	//右手坐标系，z越大，越近
 
 	void WindowsWindow::addImage(const std::wstring& path)
 	{
@@ -702,3 +703,4 @@ namespace CGRender
 	}
 
 }
+

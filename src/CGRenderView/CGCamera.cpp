@@ -152,7 +152,9 @@ static const float SCALE[24] = { 0.10f,0.20f,0.30f,0.40f,0.50f,0.60f,0.70f,0.80f
 
 void CGCamera::ProcessMouseScroll(float yoffset, float x, float y)
 {
-	Zoom -= (float)yoffset;
+	float offset = yoffset > 0 ? 0.5 : -0.5;
+	//Zoom -= (float)yoffset;
+	Zoom -= offset;
 	if (Zoom < 1.0f)
 		Zoom = 1.0f;
 	if (Zoom > 45.0f)

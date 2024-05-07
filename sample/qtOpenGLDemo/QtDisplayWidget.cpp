@@ -80,8 +80,7 @@ QTDisplayWidget::QTDisplayWidget(QWidget* parent)
 	connect(d.ui.pbOpenImage, &QPushButton::clicked, this, [&]() {
 		// 设置文件过滤器，仅显示 PNG 和 JPEG 格式的文件
 		QStringList filters;
-		//filters << "PNG Files (*.png)" << "JPEG Files (*.jpeg *.jpg)";
-		filters << "PNG Files (*.png);;JPEG Files (*.jpeg *.jpg)";
+		filters << "PNG Files (*.png)" << "JPEG Files (*.jpeg *.jpg)" << "All File(*.*)";
 
 		// 弹出文件选择对话框，设置过滤器
 		QString selectedFile = QFileDialog::getOpenFileName(this, "Select Image", QDir::homePath(), filters.join(";;"));
@@ -195,24 +194,26 @@ QTDisplayWidget::QTDisplayWidget(QWidget* parent)
 QTDisplayWidget::~QTDisplayWidget()
 {
 	auto& d = *m_priv;
+
+	d.renderview.release();
 	if (m_priv)
 	{
 		delete m_priv;
 		m_priv = nullptr;
 	}
-	//d.renderview.reset(0);
 }
 
 void QTDisplayWidget::closeEvent(QCloseEvent* event)
 {
 	auto& d = *m_priv;
-	d.renderview.reset(0);
+	d.renderview.release();
 }
 
 
 void QTDisplayWidget::runLoop()
 {
 	auto& d = *m_priv;
-	if (d.renderview)
+
+	if (d.renderview.get())
 		d.renderview->Render();
 }

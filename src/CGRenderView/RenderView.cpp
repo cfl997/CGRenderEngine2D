@@ -42,6 +42,8 @@ CGRenderView::~CGRenderView()
 	auto& d = *m_priv;
 	d.m_Running = false;
 	d.cgWindows.clear();
+
+	SAFE_DELETE(m_priv);
 }
 
 bool CGRender::CGRenderView::createWindow(const CGRender::WindowProps& windowsProps)

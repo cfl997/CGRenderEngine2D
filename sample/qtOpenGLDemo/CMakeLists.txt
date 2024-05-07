@@ -18,13 +18,12 @@ if(WIN32)
 endif()
 
 
-# 在 Release 模式下禁用某些优化选项
-if(CMAKE_BUILD_TYPE STREQUAL "Release")
-    # 在这里添加你想要禁用的优化选项，例如 -O2 或者 -O3
-    string(REPLACE "-O2" "" CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE}")
-    string(REPLACE "-O3" "" CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE}")
-endif()
-
+## 在 Release 模式下禁用某些优化选项
+#if(CMAKE_BUILD_TYPE STREQUAL "Release")
+#    # 在这里添加你想要禁用的优化选项，例如 -O2 或者 -O3
+#    string(REPLACE "-O2" "" CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE}")
+#    string(REPLACE "-O3" "" CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE}")
+#endif()
 
 
 if(MSVC)
@@ -34,16 +33,13 @@ endif()
 
 if(DEFINED QTDIR${_lib_suffix})
 	list(APPEND CMAKE_PREFIX_PATH "${QTDIR${_lib_suffix}}")
-	message("aaa1" ${_lib_suffix})
+	#message("aaa1" ${_lib_suffix})
 elseif(DEFINED QTDIR)
 	list(APPEND CMAKE_PREFIX_PATH "${QTDIR}")
-	message("aaa2")
 elseif(DEFINED ENV{QTDIR${_lib_suffix}})
 	list(APPEND CMAKE_PREFIX_PATH "$ENV{QTDIR${_lib_suffix}}")
-	message("aaa3")
 elseif(DEFINED ENV{QTDIR})
 	list(APPEND CMAKE_PREFIX_PATH "$ENV{QTDIR}")
-	message("aaa4")
 endif()
 
 set(CMAKE_AUTOMOC ON)

@@ -58,9 +58,7 @@ endif()
 include_directories(
 	${CGRender_ROOT_DIR}/include/CGRenderGL
 	${CGRender_ROOT_DIR}/third/glm-1.0.1
-	#${CGRender_ROOT_DIR}/third/freetype-2.13.0/Debug/include
 	${CGRender_ROOT_DIR}/third/freetype-2.13.0/Debug/include/freetype2
-	
 )
 link_directories(
 	${CGRender_ROOT_DIR}/lib/win64/
