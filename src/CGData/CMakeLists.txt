@@ -30,6 +30,9 @@ set(COMMON_HEAD_PUBLIC
 	${CGRender_ROOT_DIR}/include/CGData/CGItemTex16.h
 	${CGRender_ROOT_DIR}/include/CGData/CGItemText.h
 	${CGRender_ROOT_DIR}/include/CGData/CGItemImage.h
+	${CGRender_ROOT_DIR}/include/CGData/CGItemMeasureDistance.h
+	${CGRender_ROOT_DIR}/include/CGData/CGBounding.h
+	${CGRender_ROOT_DIR}/include/CGData/CGEffector.h
 )
 
 SET(COMMON_HEAD_FILES
@@ -44,6 +47,9 @@ SET(COMMON_SOURCE_FILES
 	CGItemTex16.cpp
 	CGItemText.cpp
 	CGItemImage.cpp
+	CGItemMeasureDistance.cpp
+	CGBounding.cpp
+	CGEffector.cpp
 )
 
 

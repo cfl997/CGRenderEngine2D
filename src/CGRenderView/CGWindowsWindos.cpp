@@ -83,43 +83,10 @@ namespace CGRender
 
 		std::tuple<float, float> getWorldPos(glm::vec2 pos)
 		{
-			//glm::mat4 aa = glm::mat4{ 1 };
-			//glm::vec3 worldPos = screenToWorld({ pos.x,windowHeight - pos.y,1. }, super->getViewMatrix(), super->getPerspectiveMatrix(), {0,0,windowWidth,windowHeight});
 			auto worldPos = CGRender_GetWorldPos(pos, camera->GetViewMatrix(), super->getPerspectiveMatrix(), glm::vec4(0, 0, windowWidth, windowHeight));
+			float scale = camera->ScaleCoefficient();
+			worldPos /= scale;
 			return std::make_tuple(worldPos.x, worldPos.y);//yes
-			//{
-
-			//	float z = 1.0f;
-
-
-			//	glm::vec3 win(pos.x, windowHeight - pos.y, z);
-			//	glm::vec4 viewport(0.0f, 0.0f, (float)windowWidth, (float)windowHeight);
-			//	glm::vec3 world = glm::unProject(win, view, persp, viewport);
-			//	return { world.x,world.y };
-			//}
-
-			glm::mat4 inverseSM = getInverseScreenMatrix();
-			//glm::vec2 devicePos = ScreenToNormalizedDeviceCoords(pos.x, pos.y, windowWidth, windowHeight);
-			//glm::vec2 devicePos = pos;
-			glm::vec2 devicePos = glm::vec2{ pos.x  , pos.y };
-			glm::vec4 worldpos = inverseSM * glm::vec4(devicePos, 1, 1);
-#ifdef _DEBUG
-			{
-				glm::mat4 persp = super->getPerspectiveMatrix();
-				glm::vec4 revertpos = persp * camera->GetViewMatrix() * worldpos;
-				float distance = glm::distance(glm::vec3(devicePos, 0), glm::vec3{ revertpos.x,revertpos.y,revertpos.z });
-				if (distance > 0.001)
-				{
-					//__debugbreak();
-					//assert(0);
-				}
-			}
-#endif // DEBUG
-			if (std::isnan(worldpos.x) || std::isnan(worldpos.y))
-			{
-				__debugbreak();
-			}
-			return std::make_tuple(worldpos.x, worldpos.y);
 		}
 	};
 
@@ -202,7 +169,6 @@ namespace CGRender
 	const glm::mat4 WindowsWindow::getViewMatrix() const
 	{
 		auto& d = *m_priv;
-		//return std::move(d.camera->GetViewMatrix());
 		return d.camera->GetViewMatrix();
 	}
 
@@ -214,6 +180,9 @@ namespace CGRender
 			__debugbreak();
 			return std::move(glm::mat4{ 1 });
 		}
+#ifdef USE_ORTHO
+		d.perspectiveMatrix = glm::ortho(0., static_cast<double>(d.windowWidth), 0., static_cast<double>(d.windowHeight), 0.1, 1000.);
+#else
 		double defaultZoom = d.camera->Zoom;
 		if (d.imageWidth > 0 && d.imageHeight > 0 && d.imageChange)
 		{
@@ -227,22 +196,21 @@ namespace CGRender
 				realHeight = d.imageWidth / windowProportion;
 			}
 
-			double opposite = realHeight / 2.;
+			double opposite = realHeight;
 			//double adjacent = 2460;//this is correct
-			double adjacent = 5000;// 
+			//double adjacent = 10000;// 
+			double adjacent = 1000 - 0.1;// 
 
 			defaultZoom = atan(opposite / adjacent) * 180 / glm::pi<double>();
-			d.camera->Zoom = defaultZoom * 2;
+			//d.camera->Zoom = defaultZoom * 2.;
+			d.camera->Zoom = defaultZoom;
 		}
-		//这个是对的那个
+		//右手坐标系，z越大，越近
 		d.perspectiveMatrix = glm::perspective(glm::radians(defaultZoom), static_cast<double>(d.windowWidth) / static_cast<double>(d.windowHeight), 0.1, 1000.);
-
-		//d.perspectiveMatrix = glm::ortho(0., static_cast<double>(d.windowWidth), 0., static_cast<double>(d.windowHeight), 0.1, 1000.);//这个可以整 cfl-202405
-
+#endif // USE_ORTHO
 
 		return d.perspectiveMatrix;
 	}
-	//右手坐标系，z越大，越近
 
 	void WindowsWindow::addImage(const std::wstring& path)
 	{
@@ -253,19 +221,19 @@ namespace CGRender
 		CGData::CGItemImage* image = new CGData::CGItemImage(ContextID(), path);
 		d.layer->addItem(image);
 
-		d.imageWidth = image->width();
-		d.imageHeight = image->height();
+#ifdef USE_ORTHO
+		float scale = static_cast<float> (d.windowWidth) / static_cast<float> (image->worldWidth());
+		d.camera->ScaleCoefficient(scale);
+		d.camera->ImageMinSclae(scale);
+		d.camera->resetPosition(d.windowWidth, d.windowHeight);
+#else
+		d.imageWidth = image->worldWidth();
+		d.imageHeight = image->worldHeight();
 		d.imageChange = true;
+#endif // USE_ORTHO
+
 	}
 
-	struct UniformBufferData
-	{
-		//matrix4f matrix;
-		//float A;
-		glm::mat4 matrix;
-	};
-
-	//#define useRenderDoc//cfl
 	void WindowsWindow::renderTest()
 	{
 
@@ -284,103 +252,42 @@ namespace CGRender
 			glm::mat4 view = getViewMatrix();
 			glm::mat4 Perspective = getPerspectiveMatrix();
 
+
+			glm::mat4 scale = d.camera->GetSalceMatrix();
+			transform = transform * scale;
+
 			glm::mat4 aa = Perspective * view * transform;//test
-			//aa = glm::mat4{ 1 };
 
 			d.layer->Render(d.glContextID, aa);
-			return;
-			//glClear(GL_DEPTH_BUFFER_BIT);
-			//auto error=glGetError();
-			//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-			//glEnable(GL_DEPTH_TEST);
-			//glDepthFunc(GL_LESS);
-			if (1)
-			{
-
-			}
 
 			{
-				//CGRender_ClearTexture(d.glContextID, renderTarget, 0xFFFFFFFF);
-				CGData::CGItemRectangle* itemRectangle = new CGData::CGItemRectangle();
-				//itemRectangle.setGLContext(d.glContextID);
-				//itemRectangle.Render(d.glContextID, aa);
-				d.layer->addItem(itemRectangle);
-				d.layer->Render(d.glContextID, aa);
-				d.layer->removeItem(itemRectangle->GUID());
-			}
-			return;
-			if (1)
-			{
-				CGData::CGItemRectangle* itemRectangle = new CGData::CGItemRectangle();
-				itemRectangle->Width(30);
-				itemRectangle->Height(50);
-				itemRectangle->Color(0x0ffffff00);
-				glm::mat4 transform = glm::mat4{ 1 };
-				transform = glm::translate(transform, glm::vec3{ 100,100,0 });
-				glm::mat4 bb = aa * transform;
-				d.layer->addItem(itemRectangle);
-				//d.layer->Render(d.glContextID, bb);
-				d.layer->removeItem(itemRectangle->GUID());
+
+				std::vector<CGData::CGItem*> images = d.layer->getItem(CGData::CGItemType::CGItemImage);
+				if (!images.empty())
+				{
+					CGData::CGItem* image1 = images.at(0);
+					CGData::CGItemImage* image = dynamic_cast<CGData::CGItemImage*>(image1);
+					if (image)
+					{
+
+						int texture = image->TextureID();
+						CGData::CGEffector effctor(d.glContextID);
+						int desTexture = -1;
+						effctor.Render(d.glContextID, texture, &desTexture);
+					}
+				}
 			}
 
+
+#ifdef DEBUG
+			if (0)
 			{
-				CGData::CGItemRectangle* itemRectangle = new CGData::CGItemRectangle();
-				itemRectangle->Color(0x0ff0000ff);
-				glm::mat4 transform = glm::mat4{ 1 };
-				transform = glm::translate(transform, glm::vec3{ 100,-100,0 });
-				glm::mat4 bb = aa * transform;
-				d.layer->addItem(itemRectangle);
-				//d.layer->Render(d.glContextID, bb);
-				d.layer->removeItem(itemRectangle->GUID());
+				CGRender_SaveTextue(d.glContextID, renderTarget, L"d:/rendertestTarget.png");
 			}
+#endif // DEBUG
+
 			return;
 		}
-		int vsptmvp = CGRender_CreateShader(d.glContextID, ShaderCodeName::VS_POS_TEX_MVPMatrix);
-		CGRender_SetShader(d.glContextID, vsptmvp, ShaderType::VERTEX);
-
-
-
-		UniformBufferData unidata;
-		glm::mat4 transform = glm::mat4(1.0f);
-		//transform = glm::translate(transform, glm::vec3(-0.5f, 0.5f, 0.0f));
-		//transform = glm::scale(transform, glm::vec3(.5f, .5f, 1.f));
-		//transform = glm::rotate(transform, (float)1.0, glm::vec3(0.0f, 0.0f, 1.0f));
-		glm::mat4 view = getViewMatrix();
-		glm::mat4 Perspective = getPerspectiveMatrix();
-		unidata.matrix = view * transform;
-
-		glm::mat4 aa = Perspective * view * transform;//test
-		//glm::mat4 aa =  view * transform;
-		unidata.matrix = aa;
-
-		int uniformBufferid = CGRender_CreateBuffer(d.glContextID, sizeof(UniformBufferData), 1, &unidata, GLBufferType::uniformBuffer);
-
-		//int psshader = CGRender_CreateShader(d.glContextID, ShaderCodeName::FSTestUniform);
-		int psshader = CGRender_CreateShader(d.glContextID, ShaderCodeName::FS_Tex_Rotate90);
-		CGRender_SetShader(d.glContextID, psshader, ShaderType::FRAGMENT);
-		CGRender_SetUniformBuffer(d.glContextID, uniformBufferid, 0, ShaderType::VERTEX);
-
-#ifndef useRenderDoc
-		//结果作为纹理
-		//CGRender_Render(1, 1, 2, GLPrimitiveTypes::TRIANGLELIST, 0, 0, 0);
-
-
-		//CGRender_ClearTexture(d.glContextID, renderTarget, 0xFFFFFFFF);
-
-		//int rotateTexture = CGRender_GetRenderTarget(d.glContextID);
-		//CGRender_SetShaderTexture(d.glContextID, rotateTexture, 0);
-
-		//int renderTarget= CGRender_CreateTextureFromData(d.glContextID, 0, 1280, 720,GLTexture_Normal2DTex);
-		//CGRender_SetRenderTarget(d.glContextID, renderTarget);
-
-		int psGray = CGRender_CreateShader(d.glContextID, ShaderCodeName::FS_Tex_Gray);
-		CGRender_SetShader(d.glContextID, psGray, ShaderType::FRAGMENT);
-
-		CGRender_Render(1, 1, 2, GLPrimitiveTypes::TRIANGLELIST, 0, 0, 0);
-#else
-		CGRender_ClearTexture(d.glContextID, renderTarget, 0xFFFFFFFF);
-		CGRender_Render(1, 19, 20, GLPrimitiveTypes::TRIANGLELIST, 0, 0, 0);
-#endif // !useRenderDoc
 	}
 
 
@@ -434,16 +341,18 @@ namespace CGRender
 		std::string title = wstr2utf8(d.Title);
 		//这个会导致  发生偏移 c++ 
 		int windowheigt = props.windowHeight;
+		int windowWidth = props.windowWidth;
 
 #ifndef use_Window_Title
 		//m_Window = glfwCreateWindow(d.parent, (int)props.windowWidth, (int)props.windowHeight, title.c_str(), nullptr, d.shareWindow);
 #else
 		if (!d.parent)
+		{
+			windowWidth += 25;
 			windowheigt += 25;
+		}
 #endif // use_Window_Title
-		m_Window = glfwCreateWindow(d.parent, (int)props.windowWidth, windowheigt, title.c_str(), nullptr, d.shareWindow);
-
-
+		m_Window = glfwCreateWindow(d.parent, windowWidth, windowheigt, title.c_str(), nullptr, d.shareWindow);
 		glfwMakeContextCurrent(m_Window);
 
 		{
@@ -453,11 +362,16 @@ namespace CGRender
 			HGLRC hGLRC = glfwGetWGLContext(m_Window);
 			//d.glContext->setWindowData(hwnd, hGLRC);
 			d.glContextID = CGRender_CreateContext(d.hWnd, hGLRC, d.windowWidth, d.windowHeight);
+
 		}
 
+		CGRender_SetViewport(d.glContextID, 0, 0, d.windowWidth, d.windowHeight);
+		CGRender_SetScissor(d.glContextID, 0, 0, d.windowWidth, d.windowHeight);
 		{
 			d.camera = std::make_unique<CGCamera>();
-			getPerspectiveMatrix();
+#ifdef USE_ORTHO
+			d.camera->resetPosition(d.windowWidth, d.windowHeight);
+#endif // USE_ORTHO
 		}
 		{
 			d.layer = std::make_unique<CGData::CGLayer>(ContextID());
@@ -486,20 +400,6 @@ namespace CGRender
 			//CGData::CGItemText* text = new CGData::CGItemText(ContextID());
 			//d.layer->addItem(text);
 		}
-
-
-		//int status = gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
-		//GLCORE_ASSERT(status, "Failed to initialize Glad!");
-
-		//LOG_INFO("OpenGL Info:");
-		//LOG_INFO("  Vendor: {0}", glGetString(GL_VENDOR));
-		//LOG_INFO("  Renderer: {0}", glGetString(GL_RENDERER));
-		//LOG_INFO("  Version: {0}", glGetString(GL_VERSION));
-
-		//std::cout << "  Vendor: " << glGetString(GL_VENDOR) << std::endl;
-		//std::cout << "  Renderer: " << glGetString(GL_RENDERER) << std::endl;
-		//std::cout << "  Version: " << glGetString(GL_VERSION) << std::endl;
-
 		glfwSetWindowUserPointer(m_Window, m_priv);
 
 		SetVSync(true);
@@ -519,15 +419,19 @@ namespace CGRender
 				//WindowResizeEvent event(width, height);
 				//data.EventCallback(event);
 
-
 //#ifndef use_Window_Title
 //				glfwSetWindowSize((GLFWwindow*)data.super->GetNativeWindow(), width, height);
 //#else
 //				glfwSetWindowSize((GLFWwindow*)data.super->GetNativeWindow(), width, height + 25);
 //#endif // use_Window_Title
 
+#ifdef USE_ORTHO
+				data.camera->resetPosition(data.windowWidth, data.windowHeight);
+#endif // USE_ORTHO
+
 
 				CGRender_SetViewport(data.glContextID, 0, 0, data.windowWidth, data.windowHeight);
+				CGRender_SetScissor(data.glContextID, 0, 0, data.windowWidth, data.windowHeight);
 				CGRender_ResizeWindow(data.glContextID, data.windowWidth, data.windowHeight);
 			});
 

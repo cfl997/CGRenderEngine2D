@@ -1,24 +1,20 @@
-#ifndef _CGRENDEREVENTRECTANGLE_H_
-#define _CGRENDEREVENTRECTANGLE_H_
+#ifndef _CGRENDEREVENTMEASUREDISTANCE_H_
+#define _CGRENDEREVENTMEASUREDISTANCE_H_
 
 #include "CGglm.h"
 #include "CGRenderEvent.h"
 
 namespace CGRender
 {
-	class CGRenderEventRectangle :public CGRenderEvent
+	class CGRenderEventMeasureDistance :public CGRenderEvent
 	{
 		typedef CGRenderEvent super;
 	public:
-		CGRenderEventRectangle(Window*window);
-		~CGRenderEventRectangle();
+		CGRenderEventMeasureDistance(Window* window);
+		~CGRenderEventMeasureDistance();
 
 
 	public:
-		/*
-		* 所有的事件
-		*/
-		virtual bool OnMouseScoll(MouseScrolledEvent& e);
 		virtual bool OnMouseMove(MouseMovedEvent& e);
 		virtual bool OnMouseButtonPress(MouseButtonPressedEvent& e);
 		virtual bool OnMouseButtonRelease(MouseButtonReleasedEvent& e);
@@ -29,4 +25,4 @@ namespace CGRender
 
 
 }
-#endif // !_CGRENDEREVENTRECTANGLE_H_
+#endif // !_CGRENDEREVENTMEASUREDISTANCE_H_

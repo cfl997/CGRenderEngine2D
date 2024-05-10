@@ -9,6 +9,9 @@
 #include "CGItemTex16.h"
 #include "CGItemText.h"
 #include "CGItemImage.h"
+#include "CGItemMeasureDistance.h"
+#include "CGBounding.h"
+#include "CGEffector.h"
 
 #if defined(_MSC_VER) || defined(WIN32) || defined(WIN64)
 #ifdef _DEBUG

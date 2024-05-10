@@ -23,8 +23,7 @@ m_priv(new PrivateData)
 
 	Window* curwindow = getCurWindow();
 
-	d.itemRect = new CGData::CGItemRectangle();
-	d.itemRect->ContextID(curwindow->ContextID());
+	d.itemRect = new CGData::CGItemRectangle(curwindow->ContextID());
 	d.win = dynamic_cast<WindowsWindow*>(curwindow);
 	assert(d.win != nullptr);
 

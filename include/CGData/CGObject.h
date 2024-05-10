@@ -16,6 +16,8 @@ namespace CGData
 		CGITtemTex16,
 		CGItemText,
 		CGItemImage,
+		CGItemMeasureDistance,
+		CGEffector,
 		CGDataType_unknow,
 	};
 

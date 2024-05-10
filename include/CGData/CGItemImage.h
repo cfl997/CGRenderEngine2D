@@ -5,6 +5,8 @@
 
 namespace CGData
 {
+	class CGEffector;
+	static const float g_ImageWHProportion = 10.f;
 	class CGDATA_API CGItemImage : public CGItem
 	{
 		typedef CGItem Super;
@@ -18,12 +20,15 @@ namespace CGData
 	public:
 		const int width()const;
 		const int height()const;
+		const int worldWidth()const;
+		const int worldHeight()const;
 
 		const int TextureID()const;
 	public:
 		void updateData(const std::wstring& path);
 		void updateData(void* data, int width, int height);
 	public:
+		void Effector(CGEffector* effector = nullptr);
 		void build(int Device)override;
 
 		void Render(int device, const glm::mat4& matrix)override;

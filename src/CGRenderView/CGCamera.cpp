@@ -12,6 +12,10 @@ struct CGCamera::PrivateData
 
 	glm::mat4 viewMatrix;
 
+	glm::mat4 scaleMatrix;
+	float scaleCoefficient = 1.f;
+	float imageMinScale = .1f;//图片的比例
+	int scaleFlag = 10;
 };
 
 CGCamera::CGCamera(glm::vec3 position, glm::vec3 up, float yaw, float pitch) :
@@ -28,6 +32,10 @@ CGCamera::CGCamera(glm::vec3 position, glm::vec3 up, float yaw, float pitch) :
 	updateCameraVectors();
 
 	m_priv->viewMatrix = glm::lookAt(Position, Position + Front, Up);
+
+
+	m_priv->scaleMatrix = glm::mat4{ 1 };
+
 }
 
 
@@ -36,14 +44,13 @@ CGRender::CGCamera::~CGCamera()
 	SAFE_DELETE(m_priv);
 }
 
-//CGCamera::CGCamera(float posX, float posY, float posZ, float upX, float upY, float upZ, float yaw, float pitch) : Front(glm::vec3(0.0f, 0.0f, -1.0f)), MovementSpeed(SPEED), MouseSensitivity(SENSITIVITY), Zoom(ZOOM)
-//{
-//    Position = glm::vec3(posX, posY, posZ);
-//    WorldUp = glm::vec3(upX, upY, upZ);
-//    Yaw = yaw;
-//    Pitch = pitch;
-//    updateCameraVectors();
-//}
+#ifdef USE_ORTHO
+void CGRender::CGCamera::resetPosition(uint32_t windowWidth, uint32_t windowHeight)
+{
+	Position.x = -static_cast<float>(windowWidth) / 2.;
+	Position.y = -static_cast<float>(windowHeight) / 2.;
+}
+#endif //USE_ORTHO
 
 glm::mat4 CGCamera::GetViewMatrix()
 {
@@ -59,54 +66,51 @@ glm::mat4 CGCamera::GetViewMatrix()
 	return d.viewMatrix;
 }
 
+glm::mat4 CGRender::CGCamera::GetSalceMatrix()
+{
+	auto& d = *m_priv;
+	if (d.scaleCoefficient > 0)
+	{
+		d.scaleMatrix[0][0] = d.scaleCoefficient;
+		d.scaleMatrix[1][1] = d.scaleCoefficient;
+	}
+	return d.scaleMatrix;
+}
+
+float CGRender::CGCamera::ScaleCoefficient()
+{
+	auto& d = *m_priv;
+	return d.scaleCoefficient;
+}
+
+void CGRender::CGCamera::ScaleCoefficient(float scale)
+{
+	auto& d = *m_priv;
+	d.scaleCoefficient = scale;
+}
+
+void CGRender::CGCamera::ImageMinSclae(float scale)
+{
+	auto& d = *m_priv;
+	d.imageMinScale = scale;
+}
+
 void CGRender::CGCamera::ProcessMouseMoveXY(float x, float y)
 {
-	//cfl-20240416
-	//return;
 	auto& d = *m_priv;
 	if (d.isMove)
 	{
 		glm::vec2 offset = glm::vec2{ x,y } - d.pressPos;
-		//offset=glm::normalize(offset);
-		//d.position += glm::vec3((glm::vec2{ x,y } - d.pressPos),0.0);
+#ifdef USE_ORTHO
+		//先移动 layer 再同步到 camera
+		offset *= d.scaleCoefficient;
+#endif // USE_ORTHO
+
 		Position.x -= offset.x;
 		Position.y -= offset.y;
 
-		//d.position = d.position - glm::vec3(offset, 0);
 		d.pressPos = glm::vec2{ x,y };
 		return;
-
-		static const float movePosSpeed = 1.f;
-		auto xoffset = (x - d.pressPos.x) * movePosSpeed;
-		Position.x -= xoffset;
-		auto fn = [](float& a) {
-			if (a < -1000)
-				a = -1000;
-			if (a > 1000)
-				a = 1000;
-			};
-
-		//fn(Position.x);
-
-
-		auto yoffset = (y - d.pressPos.y) * movePosSpeed;
-
-		Position.y += yoffset;
-		//fn(Position.y);
-
-		if (std::isnan(Position.x) || std::isnan(Position.y))
-		{
-			__debugbreak();
-		}
-
-		d.pressPos.x = x;
-		d.pressPos.y = y;
-
-		//d.pressPos.x = Position.x;
-		//d.pressPos.y = Position.y;
-
-		GLRender_LOG("cameraPosition: x", Position.x);
-		GLRender_LOG("cameraPosition: y", Position.y);
 	}
 
 }
@@ -147,18 +151,40 @@ void CGCamera::ProcessMouseMovement(float xoffset, float yoffset, bool constrain
 	updateCameraVectors();
 }
 
-static const float SCALE[24] = { 0.10f,0.20f,0.30f,0.40f,0.50f,0.60f,0.70f,0.80f,0.90f,1.00f,1.20f,1.40f,
-	1.60f,2.00f,3.00f,4.00f,5.00f,6.00f,8.00f,10.0f,12.0f,14.0f,16.0f,20.0f };
+
+#define SCALE_NUMS 24
+static const float SCALE[SCALE_NUMS] = {
+	0.10f,0.20f,0.30f,0.40f,0.50f,0.60f,0.70f,0.80f,0.90f,1.00f,
+	1.20f,1.40f,1.60f,2.00f,3.00f,4.00f,5.00f,6.00f,8.00f,10.0f,
+	12.0f,14.0f,16.0f,20.0f };
 
 void CGCamera::ProcessMouseScroll(float yoffset, float x, float y)
 {
+
+
+#ifdef USE_ORTHO
+	auto& d = *m_priv;
+
+	yoffset > 0 ? d.scaleFlag++ : d.scaleFlag--;
+	if (d.scaleFlag < 0)
+		d.scaleFlag = 0;
+	if (d.scaleFlag > SCALE_NUMS - 1)
+		d.scaleFlag = SCALE_NUMS - 1;
+	d.scaleCoefficient = SCALE[d.scaleFlag];
+	if (d.scaleCoefficient < d.imageMinScale)
+	{
+		d.scaleCoefficient = d.imageMinScale;
+	}
+
+	GLRender_LOG("camera sclaeCoefficient :", d.scaleCoefficient);
+#else
 	float offset = yoffset > 0 ? 0.5 : -0.5;
-	//Zoom -= (float)yoffset;
 	Zoom -= offset;
 	if (Zoom < 1.0f)
 		Zoom = 1.0f;
 	if (Zoom > 45.0f)
 		Zoom = 45.0f;
+#endif // USE_ORTHO
 }
 
 void CGCamera::updateCameraVectors()

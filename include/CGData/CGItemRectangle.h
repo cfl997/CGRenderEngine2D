@@ -10,7 +10,7 @@ namespace CGData
 	class CGDATA_API CGItemRectangle :public CGItem
 	{
 	public:
-		CGItemRectangle();
+		CGItemRectangle(int Device);
 		~CGItemRectangle();
 
 		CGItemType(CGItemRectangle);
@@ -30,6 +30,8 @@ namespace CGData
 	private:
 		struct PrivateData;
 		PrivateData* m_priv = nullptr;
+	private:
+		CGItemRectangle() = delete;
 	};
 
 }

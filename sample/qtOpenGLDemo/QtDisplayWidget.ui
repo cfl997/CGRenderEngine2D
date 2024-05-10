@@ -33,7 +33,7 @@
     </property>
     <layout class="QHBoxLayout" name="horizontalLayout">
      <property name="spacing">
-      <number>6</number>
+      <number>0</number>
      </property>
      <property name="sizeConstraint">
       <enum>QLayout::SetNoConstraint</enum>
@@ -126,6 +126,20 @@
           <widget class="QPushButton" name="pbInvertColor">
            <property name="text">
             <string>Invert</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="pbRotate90">
+           <property name="text">
+            <string>Rotate90</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="pbClearAll">
+           <property name="text">
+            <string>ClearAll</string>
            </property>
           </widget>
          </item>

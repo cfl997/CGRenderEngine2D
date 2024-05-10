@@ -1,10 +1,12 @@
 #include "CGLayer.h"
+#include "CGRender.h"
+#include "CGEffector.h"
+#include "CGItemImage.h"
 
 #include <map>
-
-#include "CGRender.h"
-
 #include <mutex>
+
+
 
 using namespace CGData;
 
@@ -25,6 +27,9 @@ struct CGLayer::PrivateData
 
 	void sortRenderItem();
 	std::vector<CGItem*>m_vSortRenderItem;
+
+	
+	CGEffector* imageEffector = nullptr;
 };
 
 
@@ -35,6 +40,9 @@ CGLayer::CGLayer(int Device) :m_priv(new PrivateData)
 	d.position = glm::vec3{ 0 };
 	d.isMove = false;
 	setImageShader(ShaderCodeName::FS_Tex);
+
+	d.imageEffector = new CGEffector(ContextID());
+
 }
 
 CGLayer::~CGLayer()
@@ -47,6 +55,11 @@ CGLayer::~CGLayer()
 			delete it->second;
 			it->second = nullptr;
 		}
+	}
+	if (d.imageEffector)
+	{
+		delete d.imageEffector;
+		d.imageEffector = nullptr;
 	}
 	if (m_priv)
 	{
@@ -130,6 +143,24 @@ void CGData::CGLayer::setImageShader(ShaderCodeName name)
 	d.imagefsShader = CGRender_CreateShader(ContextID(), name);
 }
 
+void CGData::CGLayer::addImageShader(ShaderCodeName name)
+{
+	auto& d = *m_priv;
+	d.imageEffector->addEffector(name);
+}
+
+void CGData::CGLayer::removeImageShader(ShaderCodeName name)
+{
+	auto& d = *m_priv;
+	d.imageEffector->removeEffector(name);
+}
+
+void CGData::CGLayer::removeAllImageShader()
+{
+	auto &d= *m_priv;
+	d.imageEffector->removeAllEffctor();
+}
+
 void CGData::CGLayer::Render(int device, const glm::mat4& matrix)
 {
 	auto& d = *m_priv;
@@ -138,7 +169,6 @@ void CGData::CGLayer::Render(int device, const glm::mat4& matrix)
 	{
 		//__debugbreak();
 	}
-
 	glm::mat4 transform = glm::translate(g_Mat4Normal, d.position);
 	glm::mat4 renderMat4 = matrix * transform;
 
@@ -150,7 +180,8 @@ void CGData::CGLayer::Render(int device, const glm::mat4& matrix)
 		if (data->CGType() == CGItemType::CGITtemTex16 ||
 			data->CGType() == CGItemType::CGItemImage)
 		{
-			CGRender_SetShader(ContextID(), d.imagefsShader, ShaderType::FRAGMENT);
+			CGItemImage* iamge = dynamic_cast<CGItemImage*>(data);
+			iamge->Effector(d.imageEffector);
 		}
 		data->Render(device, renderMat4);
 	}
@@ -161,7 +192,7 @@ void CGData::CGLayer::Render(int device, const glm::mat4& matrix)
 
 }
 
-void CGData::CGLayer::setPosition(const glm::vec3& pos)
+void CGData::CGLayer::resetPosition(const glm::vec3& pos)
 {
 	auto& d = *m_priv;
 	d.position = pos;

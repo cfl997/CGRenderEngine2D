@@ -21,9 +21,11 @@ link_directories(
 set(common_src
 	gTestCGRenderView.cpp
 	gtestInclude.cpp
+	gTestCGData.cpp
 )
 set(common_header
 	gtestInclude.h
+	gTestEnviroment.h
 )
 
 add_executable(${PROJECT_NAME}

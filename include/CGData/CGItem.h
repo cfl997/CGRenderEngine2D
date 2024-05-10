@@ -10,7 +10,7 @@
 
 namespace CGData
 {
-	static const float g_itemZDistance = .1f;
+	static const float g_itemZDistance = .0f;
 
 	struct Vertex
 	{

@@ -33,6 +33,11 @@ bool GLRENDER_API CGRender_DeleteBuffer(int Device, int hBuffer);
 
 bool GLRENDER_API CGRender_SetViewport(int Device, uint32_t x, uint32_t y, uint32_t width, uint32_t height);
 bool GLRENDER_API CGRender_SetScissor(int Device, uint32_t x, uint32_t y, uint32_t width, uint32_t height);
+bool GLRENDER_API CGRender_SetViewport(int Device, CGRECT viewPort);
+bool GLRENDER_API CGRender_SetScissor(int Device, CGRECT scissor);
+bool GLRENDER_API CGRender_GetViewport(int Device, CGRECT* rect);
+bool GLRENDER_API CGRender_GetScissor(int Device, CGRECT* rect);
+
 bool GLRENDER_API CGRender_SetUniformBuffer(int hDevice, int hBuffer, int nRegisterIndex, ShaderType nShaderType);
 
 bool GLRENDER_API CGRender_SetRenderTarget(int Device, int hTexture);

@@ -20,10 +20,13 @@ namespace CGData
 		std::vector<CGItem*>getItem(CGItemType itemType);
 	public:
 		void setImageShader(ShaderCodeName shadercodeName);
+		void addImageShader(ShaderCodeName name);
+		void removeImageShader(ShaderCodeName name);
+		void removeAllImageShader();
 
 		void Render(int device, const glm::mat4& matrix);
 
-		void setPosition(const glm::vec3& pos);
+		void resetPosition(const glm::vec3& pos);
 
 	public:
 		void ProcessMouseMoveXY(float x, float y);

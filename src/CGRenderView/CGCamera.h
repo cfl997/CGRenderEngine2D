@@ -46,9 +46,23 @@ namespace CGRender
 		//CGCamera(float posX, float posY, float posZ, float upX, float upY, float upZ, float yaw, float pitch);
 
 		~CGCamera();
-
+	public:
+#ifdef USE_ORTHO
+		/*
+		* reset camera position
+		*/
+		void resetPosition(uint32_t windowWidth, uint32_t windowHeight);
+#endif // USE_ORTHO
+	public:
 		glm::mat4 GetViewMatrix();
-
+		glm::mat4 GetSalceMatrix();
+		float ScaleCoefficient();
+		void ScaleCoefficient(float scale);
+		void ImageMinSclae(float scale);
+	public:
+		/*
+		* event
+		*/
 		void ProcessMouseMoveXY(float x, float y);
 		void ProcessMousePress(float x, float y);
 		void ProcessMouseRelease(float x, float y);

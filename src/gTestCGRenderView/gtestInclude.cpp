@@ -7,6 +7,7 @@
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "../third/stb_image_write.h"
 
+#include "gTestEnviroment.h"
 
 
 int main(int argc, char** argv) {

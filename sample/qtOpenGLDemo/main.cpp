@@ -258,6 +258,7 @@ int main(int argc, char* argv[])
 
 		//CGRender_SetViewport(contextID, 0, 0, 1920, 1080);
 		CGRender_SetViewport(contextID, 0, 0, WindowWidth, WindowHeight);
+		CGRender_SetScissor(contextID, 0, 0, WindowWidth, WindowHeight);
 
 		//glfw_ContainerWidget->resize(WindowWidth, WindowHeight);
 

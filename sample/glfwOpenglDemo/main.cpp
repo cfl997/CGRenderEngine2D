@@ -281,6 +281,7 @@ int main()
 	CGRender_SetRenderTarget(contextID, renderTarget);
 	//CGRender_SetViewport(contextID, 0, 0, 1920, 1080);
 	CGRender_SetViewport(contextID, 0, 0, WindowWidth, WindowHeight);
+	CGRender_SetScissor(contextID, 0, 0, WindowWidth, WindowHeight);
 
 
 

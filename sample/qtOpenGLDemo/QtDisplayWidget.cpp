@@ -50,6 +50,9 @@ QTDisplayWidget::QTDisplayWidget(QWidget* parent)
 	int height = d.ui.w_glwindow->geometry().height();
 
 	HWND parentHwnd = reinterpret_cast<HWND>(d.ui.w_glwindow->winId()); // »ñÈ¡´°¿Ú¾ä±ú
+	RECT rect;
+	GetWindowRect(parentHwnd, &rect);
+
 	d.renderview = std::make_unique<CGRender::CGRenderView>(width, height, parentHwnd);
 	{
 
@@ -100,18 +103,31 @@ QTDisplayWidget::QTDisplayWidget(QWidget* parent)
 	connect(d.ui.pbGrayColor, &QPushButton::clicked, this, [&]() {
 		auto layer = d.glWindow->getCurLayer();
 		layer->setImageShader(ShaderCodeName::FS_Tex_Gray);
+		layer->addImageShader(ShaderCodeName::FS_Tex_Gray);
 		});
 
 	connect(d.ui.pbInvertColor, &QPushButton::clicked, this, [&]() {
 		auto layer = d.glWindow->getCurLayer();
 		layer->setImageShader(ShaderCodeName::FS_Tex_Invert);
+		layer->addImageShader(ShaderCodeName::FS_Tex_Invert);
 		});
 
 	connect(d.ui.pbNormalColor, &QPushButton::clicked, this, [&]() {
 		auto layer = d.glWindow->getCurLayer();
 		layer->setImageShader(ShaderCodeName::FS_Tex);
+		layer->addImageShader(ShaderCodeName::FS_Tex);
 		});
-
+	connect(d.ui.pbRotate90, &QPushButton::clicked, this, [&]() {
+		auto layer = d.glWindow->getCurLayer();
+		layer->setImageShader(ShaderCodeName::FS_Tex_Rotate90);
+		layer->addImageShader(ShaderCodeName::FS_Tex_Rotate90);
+		});
+	connect(d.ui.pbClearAll, &QPushButton::clicked, this, [&]() {
+		auto layer = d.glWindow->getCurLayer();
+		layer->removeAllImageShader();
+		});
+	
+	
 	connect(d.ui.pbmove, &QPushButton::clicked, this, [&, layoutInsert]() {
 		if (d.image)
 		{
@@ -169,12 +185,7 @@ QTDisplayWidget::QTDisplayWidget(QWidget* parent)
 			colorbuffer[i] = color;
 		}
 
-		bool moveResult = CGRender_MoveTexturePixel(d.image->ContextID(), d.image->TextureID(), 0, insertHeight);
-		assert(moveResult);
-
-		//bool uploadresult = CGRender_UploadTexture(d.image->ContextID(), d.image->TextureID(), 0, 0, width, insertHeight, colorbuffer);
-		bool uploadresult = CGRender_UploadTexture(d.image->ContextID(), d.image->TextureID(), 0, 0, width, insertHeight, colorbuffer);
-		assert(uploadresult);
+		d.image->updateData(colorbuffer, width, insertHeight);
 
 		delete[]colorbuffer;
 		};

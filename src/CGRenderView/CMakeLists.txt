@@ -10,6 +10,7 @@ SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE "${CGRender_ROOT_DIR}/bin64/")
 
 add_definitions(-DCGRENDERVIEW_EXPORTS)
 add_definitions(-Duse_Window_Title)#标题栏会导致 页面发生偏差
+add_definitions(-DUSE_ORTHO)#使用平截头体（正射投影）
 
 
 include_directories(
@@ -27,23 +28,26 @@ set(COMMON_HEAD_PUBLIC
 	${CGRender_ROOT_DIR}/include/CGRenderView/CGRenderView.h
 	${CGRender_ROOT_DIR}/include/CGRenderView/CGRenderType.h
 	${CGRender_ROOT_DIR}/include/CGRenderView/RenderView.h
+	${CGRender_ROOT_DIR}/include/CGRenderView/RenderView.h
 )
 
 SET(COMMON_HEAD_FILES
 	CGCamera.h
 	CGCore.h
 )
-SET(EVENT_FILES
-	Event/Event.h
-	Event/WindowsEvent.h
-	Event/KeyEvent.h
-	Event/MouseEvent.h
-	Event/CGRenderEvent.cpp
-	Event/CGRenderEvent.h
-	Event/CGRenderEventManager.h
-	Event/CGRenderEventManager.cpp
-	Event/CGRenderEventFactory.h
+
+set(EVENT_FILES
+    Event/Event.h
+    Event/WindowsEvent.h
+    Event/KeyEvent.h
+    Event/MouseEvent.h
+    Event/CGRenderEvent.cpp
+    Event/CGRenderEvent.h
+    Event/CGRenderEventManager.h
+    Event/CGRenderEventManager.cpp
+    Event/CGRenderEventFactory.h
 )
+
 
 SET(COMMON_SOURCE_FILES
 	CGWindowsWindos.cpp
@@ -54,6 +58,8 @@ SET(COMMON_SOURCE_FILES
 SET(ITEM_EVENT
 	Event/CGRenderEventRectangle.h
 	Event/CGRenderEventRectangle.cpp
+	Event/CGRenderEventMeasureDistance.cpp
+    Event/CGRenderEventMeasureDistance.h
 )
 
 

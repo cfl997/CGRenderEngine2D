@@ -1,6 +1,7 @@
 #include "CGItemImage.h"
 
 #include "CGRender.h"
+#include "CGEffector.h"
 
 using namespace CGData;
 
@@ -16,7 +17,10 @@ struct CGItemImage::PrivateData
 	int vertexBufferId = -1;
 	int indexBufferId = -1;
 	int vsShader = -1;
+	int fsShader = -1;
 	int uniformBufferid = -1;
+
+	CGEffector* effector = nullptr;
 };
 
 CGData::CGItemImage::CGItemImage(int Device, const std::wstring& path) :m_priv(new PrivateData)
@@ -40,9 +44,6 @@ CGData::CGItemImage::CGItemImage(int Device, int width, int height) :m_priv(new 
 
 	//创建屏幕大小的一个纹理
 	d.hTexture = CGRender_CreateTextureFromData(ContextID(), 0, width, height, GLTexture_Normal2DTex);
-
-
-
 }
 
 CGItemImage::~CGItemImage()
@@ -69,6 +70,18 @@ const int CGData::CGItemImage::height() const
 	return d.height;
 }
 
+const int CGData::CGItemImage::worldWidth() const
+{
+	auto& d = *m_priv;
+	return d.width / g_ImageWHProportion;
+}
+
+const int CGData::CGItemImage::worldHeight() const
+{
+	auto& d = *m_priv;
+	return d.height / g_ImageWHProportion;
+}
+
 const int CGData::CGItemImage::TextureID() const
 {
 	auto& d = *m_priv;
@@ -91,25 +104,19 @@ void CGData::CGItemImage::updateData(const std::wstring& path)
 
 void CGData::CGItemImage::updateData(void* data, int width, int height)
 {
-	std::vector<char>allBuffer;
-	allBuffer.resize(1920 * 1080 * 4);
-	allBuffer.assign(1920 * 1080 * 4, 0);
+	bool moveResult = CGRender_MoveTexturePixel(ContextID(), TextureID(), 0, height);
+	assert(moveResult);
 
-	std::vector<char>buffer;
-
-	int bufferSize = width * height * 4;
-	buffer.resize(bufferSize);
-
-	//allBuffer.insert(allBuffer.begin(), buffer.begin(), buffer.end());
-
-	// 删除allBuffer末尾的size大小的内容
-	allBuffer.erase(allBuffer.end() - bufferSize, allBuffer.end());
-
-	std::copy(buffer.begin(), buffer.end(), allBuffer.begin());
-
-
+	bool uploadresult = CGRender_UploadTexture(ContextID(), TextureID(), 0, 0, width, height, data);
+	assert(uploadresult);
 }
 
+
+void CGData::CGItemImage::Effector(CGEffector* effector)
+{
+	auto& d = *m_priv;
+	d.effector = effector;
+}
 
 void CGData::CGItemImage::build(int Device)
 {
@@ -121,6 +128,15 @@ void CGData::CGItemImage::Render(int device, const glm::mat4& matrix)
 	build(device);
 	auto& d = *m_priv;
 
+	int renderTexture = d.hTexture;
+
+	if (!(renderTexture > 0 && d.indexBufferId > 0 && d.vertexBufferId > 0 && d.vsShader > 0))
+		return;
+
+	if (d.effector != nullptr)
+	{
+		d.effector->Render(device, d.hTexture, &renderTexture);
+	}
 
 	glm::mat4 aa = matrix;
 	if (d.uniformBufferid < 0)
@@ -128,16 +144,19 @@ void CGData::CGItemImage::Render(int device, const glm::mat4& matrix)
 	else
 		CGRender_ModifyBuffer(device, d.uniformBufferid, sizeof(glm::mat4) * 1, &aa);
 
-	if (!(d.hTexture > 0 && d.uniformBufferid > 0 && d.indexBufferId > 0 && d.vertexBufferId > 0 && d.vsShader > 0))
-		return;
 
-	CGRender_SetShaderTexture(device, d.hTexture, 0, ShaderType::FRAGMENT);
+
+	CGRender_SetShaderTexture(device, renderTexture, 0, ShaderType::FRAGMENT);
 
 	CGRender_SetShader(device, d.vsShader, ShaderType::VERTEX);
+	CGRender_SetShader(ContextID(), d.fsShader, ShaderType::FRAGMENT);
 
 	CGRender_SetUniformBuffer(device, d.uniformBufferid, 0, ShaderType::VERTEX);
 
 	CGRender_Render(device, d.vertexBufferId, d.indexBufferId, GetPrimitiveType(), 0, 0, 0);
+
+	if (renderTexture != d.hTexture)
+		CGRender_DeleteTexture(device, renderTexture);
 }
 
 void CGData::CGItemImage::clearResourse()
@@ -164,15 +183,15 @@ void CGData::CGItemImage::loadPathData()
 	auto& data = *getItemData();
 
 	float proportion = d.width / d.height;
-	float Texwidth = d.width / 10.f;
+	float Texwidth = d.width / g_ImageWHProportion;
 	//float Texheight = Texwidth / proportion;
-	float Texheight = d.height / 10.f;
+	float Texheight = d.height / g_ImageWHProportion;
 
 	data.vertexes.clear();
-	data.vertexes.push_back({ {-Texwidth,	Texheight,	0},Color(),{0,	1} });
-	data.vertexes.push_back({ {-Texwidth,	-Texheight,	0},Color(),{0,	0} });
-	data.vertexes.push_back({ {Texwidth,	-Texheight,	0},Color(),{1,	0} });
-	data.vertexes.push_back({ {Texwidth,	Texheight,	0},Color(),{1,	1} });
+	data.vertexes.push_back({ {-Texwidth / 2,	Texheight / 2,	0},Color(),{0,	1} });
+	data.vertexes.push_back({ {-Texwidth / 2,	-Texheight / 2,	0},Color(),{0,	0} });
+	data.vertexes.push_back({ {Texwidth / 2,	-Texheight / 2,	0},Color(),{1,	0} });
+	data.vertexes.push_back({ {Texwidth / 2,	Texheight / 2,	0},Color(),{1,	1} });
 
 	data.indexes.clear();
 	data.indexes.push_back(0);
@@ -188,4 +207,5 @@ void CGData::CGItemImage::loadPathData()
 		d.indexBufferId = CGRender_CreateBuffer(ContextID(), sizeof(uint32_t), data.indexes.size(), data.indexes.data(), GLBufferType::IndexBuffer, GetPrimitiveType());
 
 	d.vsShader = CGRender_CreateShader(ContextID(), ShaderCodeName::VS_POS_COLOR_TEX_viewMatrix);
+	d.fsShader = CGRender_CreateShader(ContextID(), ShaderCodeName::FS_Tex);
 }

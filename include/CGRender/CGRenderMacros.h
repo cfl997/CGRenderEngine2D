@@ -13,13 +13,14 @@
 enum ShaderCodeName
 {
 	VS_POS_COLOR_TEX = 0,
-	VS_POS_COLOR_TEX_viewMatrix = 0,
+	VS_POS_COLOR_TEX_viewMatrix = 1,
 	VS_POS_TEX_MVP3Matrix,
 	VS_POS_TEX_MVPMatrix,
+	VS_Count,
 
 	FS_Tex,
 	FS_COLOR,
-	
+
 	FS_Tex_Rotate90,
 	FS_Tex_XReversal,
 	FS_Tex_Gray,
@@ -27,6 +28,7 @@ enum ShaderCodeName
 
 	FSTwoTex,
 	FS_Text,
+	FS_Count,
 	ShaderCodeCount,
 	//test
 	FSTestUniform,
@@ -165,7 +167,13 @@ struct SetShaderIn
 	int id;
 };
 
-
+struct CGRECT
+{
+	int x;
+	int y;
+	int width;
+	int height;
+};
 
 /*
 *

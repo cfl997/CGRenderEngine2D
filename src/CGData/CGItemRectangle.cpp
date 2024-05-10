@@ -21,12 +21,12 @@ struct CGItemRectangle::PrivateData
 };
 
 
-CGItemRectangle::CGItemRectangle() :m_priv(new PrivateData)
+CGItemRectangle::CGItemRectangle(int Device) :m_priv(new PrivateData)
 {
+	ContextID(Device);
 	auto& d = *m_priv;
 
 	auto& itemData = *getItemData();
-	itemData.PrimitiveType = GLPrimitiveTypes::LINE_LIST;
 	itemData.PrimitiveType = GLPrimitiveTypes::LINE_LIST_STRIP;
 
 	Color(0xFF0000ff);
@@ -146,7 +146,6 @@ void CGData::CGItemRectangle::Render(int device, const glm::mat4& matrix)
 {
 	build(device);
 	auto& d = *m_priv;
-	auto& itemData = *getItemData();
 
 	glm::mat4 a = matrix;
 
@@ -157,16 +156,13 @@ void CGData::CGItemRectangle::Render(int device, const glm::mat4& matrix)
 
 	CGRender_SetShader(device, d.vsShader, ShaderType::VERTEX);
 	CGRender_SetShader(device, d.fsShader, ShaderType::FRAGMENT);
+	CGRender_SetShaderTexture(device, 0, 0, ShaderType::FRAGMENT);
 
 	CGRender_SetUniformBuffer(device, d.uniformBufferid, 0, ShaderType::VERTEX);
 
 	CGRender_Render(device, d.vertexBufferId, d.indexBufferId, 0, 0, 0, 0);
-
 	/*
 	* ceshi
 	*/
-
-
-
 }
 
