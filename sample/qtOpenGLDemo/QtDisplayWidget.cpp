@@ -56,7 +56,7 @@ QTDisplayWidget::QTDisplayWidget(QWidget* parent)
 	d.renderview = std::make_unique<CGRender::CGRenderView>(width, height, parentHwnd);
 	{
 
-		auto renderWindow = d.renderview->getWindowByType(CGRender::WindowType::Window_Main);
+		auto renderWindow = d.renderview->getWindowByTitle(CGRender::g_windowMainStr);
 		d.glWindow = dynamic_cast<CGRender::WindowsWindow*>(renderWindow.get());
 		assert(d.glWindow);
 
@@ -126,8 +126,8 @@ QTDisplayWidget::QTDisplayWidget(QWidget* parent)
 		auto layer = d.glWindow->getCurLayer();
 		layer->removeAllImageShader();
 		});
-	
-	
+
+
 	connect(d.ui.pbmove, &QPushButton::clicked, this, [&, layoutInsert]() {
 		if (d.image)
 		{
@@ -197,8 +197,6 @@ QTDisplayWidget::QTDisplayWidget(QWidget* parent)
 	connect(d.ui.pbInsert2, &QPushButton::clicked, this, [&, insertcolor, pbcolor2]() {
 		insertcolor(pbcolor2);
 		});
-
-
 
 }
 

@@ -32,7 +32,6 @@
 #define use_opengl_4_6
 
 
-
 #include "CGData.h"
 
 namespace CGRender
@@ -260,25 +259,6 @@ namespace CGRender
 
 			d.layer->Render(d.glContextID, aa);
 
-			{
-
-				std::vector<CGData::CGItem*> images = d.layer->getItem(CGData::CGItemType::CGItemImage);
-				if (!images.empty())
-				{
-					CGData::CGItem* image1 = images.at(0);
-					CGData::CGItemImage* image = dynamic_cast<CGData::CGItemImage*>(image1);
-					if (image)
-					{
-
-						int texture = image->TextureID();
-						CGData::CGEffector effctor(d.glContextID);
-						int desTexture = -1;
-						effctor.Render(d.glContextID, texture, &desTexture);
-					}
-				}
-			}
-
-
 #ifdef DEBUG
 			if (0)
 			{
@@ -318,6 +298,7 @@ namespace CGRender
 #ifndef use_Window_Title
 			// 设置窗口属性，隐藏标题栏
 			glfwWindowHint(GLFW_DECORATED, GLFW_FALSE);
+			//glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);//
 #endif // use_Window_Title
 
 #ifdef use_opengl_4_6
@@ -348,7 +329,7 @@ namespace CGRender
 #else
 		if (!d.parent)
 		{
-			windowWidth += 25;
+			//windowWidth += 25;
 			windowheigt += 25;
 		}
 #endif // use_Window_Title

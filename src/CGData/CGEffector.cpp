@@ -49,6 +49,13 @@ CGEffector::CGEffector(int Device) :m_priv(new PrivateData)
 
 CGEffector::~CGEffector()
 {
+	auto& d = *m_priv;
+	if (d.vertexBufferId > 0)
+		CGRender_DeleteBuffer(d.Device, d.vertexBufferId);
+	d.vertexBufferId = -1;
+	if (d.indexBufferId > 0)
+		CGRender_DeleteBuffer(d.Device, d.indexBufferId);
+	d.indexBufferId = -1;
 }
 
 void CGData::CGEffector::addEffector(ShaderCodeName name)
@@ -105,6 +112,9 @@ void CGData::CGEffector::Render(int device, int hTexture, int* desTexture)
 
 		CGRender_SetShader(device, d.vsShader, ShaderType::VERTEX);
 
+		int tempTarget = -1;
+		if (d.m_fs.size() > 1)
+			tempTarget = CGRender_CreateTextureFromData(device, 0, nwidth, nheight, GLTexture_Normal2DTex);
 
 		for (auto iter = d.m_fs.begin(); iter != d.m_fs.end(); iter++)
 		{
@@ -123,7 +133,7 @@ void CGData::CGEffector::Render(int device, int hTexture, int* desTexture)
 				continue;
 			}
 
-			int tempTarget = CGRender_CreateTextureFromData(device, 0, nwidth, nheight, GLTexture_Normal2DTex);
+
 			CGRender_SetRenderTarget(device, tempTarget);
 
 			CGRender_SetShaderTexture(device, newTarget, 0, ShaderType::FRAGMENT);
@@ -133,8 +143,14 @@ void CGData::CGEffector::Render(int device, int hTexture, int* desTexture)
 				CGRender_SaveTextue(device, tempTarget, L"d:/effecttempTarget.png");
 			}
 
-			CGRender_DeleteTexture(device, newTarget);
+			int tmep = newTarget;
 			newTarget = tempTarget;
+			tempTarget = tmep;
+
+		}
+		if (tempTarget != -1)
+		{
+			CGRender_DeleteTexture(device, tempTarget);
 		}
 
 		*desTexture = newTarget;

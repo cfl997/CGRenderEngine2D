@@ -8,6 +8,7 @@
 namespace CGRender
 {
 
+
 	class CGRENDERVIEW_API CGRenderView
 	{
 	public:
@@ -23,7 +24,8 @@ namespace CGRender
 
 		bool deleteWindow(const std::wstring& title);
 
-		std::shared_ptr<CGRender::Window>getWindowByType(WindowType windowType);
+		//std::shared_ptr<CGRender::Window>getWindowByType(CGRender::WindowType type);
+		std::shared_ptr<CGRender::Window>getWindowByTitle(const std::wstring& title);
 	public:
 		/*
 		* event

@@ -13,6 +13,7 @@ namespace CGData
 }
 namespace CGRender
 {
+	static const std::wstring g_windowMainStr = L"CGRenderViewMainWindow";
 	class CGRenderEvent;
 	class CGCamera;
 	class CGRENDERVIEW_API WindowsWindow : public Window

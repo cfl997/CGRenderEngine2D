@@ -6,18 +6,17 @@
 #include <memory>
 
 #include "CGRender.h"
-
+#include "CGWindowsWindos.h"
 
 using namespace CGRender;
 
-static const std::wstring windowMainStr = L"CGRenderViewMainWindow";
 
 struct CGRenderView::PrivateRenderView
 {
 	bool m_Running = false;
 	std::map<std::wstring, std::shared_ptr<CGRender::Window>> cgWindows;
 
-	std::shared_ptr<CGRender::Window>getMainWindos() { return cgWindows[windowMainStr]; }
+	std::shared_ptr<CGRender::Window>getMainWindos() { return cgWindows[g_windowMainStr]; }
 };
 
 
@@ -32,8 +31,8 @@ CGRender::CGRenderView::CGRenderView(uint32_t width, uint32_t height, void* pare
 	auto& d = *m_priv;
 	d.m_Running = true;
 	//手动创建主窗口，并作为主资源
-	std::shared_ptr<CGRender::Window>window = std::shared_ptr<CGRender::Window>(CGRender::Window::Create({ parent, windowMainStr, width, height,nullptr ,WindowType::Window_Main }));
-	d.cgWindows[windowMainStr] = window;
+	std::shared_ptr<CGRender::Window>window = std::shared_ptr<CGRender::Window>(CGRender::Window::Create({ parent, g_windowMainStr, width, height,nullptr ,WindowType::Window_Main }));
+	d.cgWindows[g_windowMainStr] = window;
 }
 CGRenderView::~CGRenderView()
 {
@@ -66,11 +65,17 @@ bool CGRender::CGRenderView::deleteWindow(const std::wstring& title)
 	return true;
 }
 
-std::shared_ptr<CGRender::Window> CGRender::CGRenderView::getWindowByType(WindowType windowType)
+std::shared_ptr<CGRender::Window> CGRender::CGRenderView::getWindowByTitle(const std::wstring& title)
 {
 	auto& d = *m_priv;
-	return d.cgWindows[windowMainStr];
+	return d.cgWindows[title];
 }
+
+//std::shared_ptr<CGRender::Window> CGRender::CGRenderView::getWindowByType(const std::wstring& title)
+//{
+//	auto& d = *m_priv;
+//	return d.cgWindows[title];
+//}
 
 
 void CGRender::CGRenderView::Render()

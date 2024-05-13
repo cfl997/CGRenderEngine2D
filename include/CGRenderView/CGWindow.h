@@ -14,6 +14,7 @@ namespace CGRender
 	enum WindowType
 	{
 		Window_Main = 0,
+		Window_One = 1,
 		Window_unknow = 0xff
 	};
 	//WindowsWindow
