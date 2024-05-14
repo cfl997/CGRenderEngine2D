@@ -17,8 +17,11 @@ namespace CGRender
 		void OnEvent(Event& e);
 		bool addCGRenderEvent(CGRenderEvent* renderEvent);
 		bool removeCGRenderEvent(CGRenderEventType renderEventType);
+
+		void setCurrentEvent(CGRenderEventType type);
 	private:
 		std::map<CGRenderEventType, CGRenderEvent*>m_CGrenderEvents;
+		CGRenderEventType m_currentType;
 	};
 
 }

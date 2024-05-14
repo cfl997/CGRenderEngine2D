@@ -7,17 +7,25 @@
 
 namespace CGData
 {
+	enum RectangleType
+	{
+		Normal = 0,
+		Window = 1,
+	};
 	class CGDATA_API CGItemRectangle :public CGItem
 	{
 	public:
-		CGItemRectangle(int Device);
+		CGItemRectangle(int Device, RectangleType type = RectangleType::Normal);
 		~CGItemRectangle();
 
-		CGItemType(CGItemRectangle);
+		RectangleType type();
 
+		CGItemType(CGItemRectangle);
+	public:
 
 		void setPos(glm::vec3 pos);
 		void setDirection(glm::vec3 direction);
+
 		void Width(float width);
 		const float Width()const;
 		void Height(float height);
@@ -25,7 +33,7 @@ namespace CGData
 	public:
 		void build(int Device)override;
 
-		void Render(int device, const glm::mat4 &matrix)override;
+		void Render(int device, const glm::mat4& matrix)override;
 
 	private:
 		struct PrivateData;
@@ -33,6 +41,5 @@ namespace CGData
 	private:
 		CGItemRectangle() = delete;
 	};
-
 }
 #endif // !_CGITEMSHAPE_H_

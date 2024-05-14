@@ -29,6 +29,7 @@ namespace CGRender
 
 		// Window attributes
 		inline void SetEventCallback(const EventCallbackFn& callback) override;
+		inline void SetRenderViewCallback(const RenderViewCallBackFn& callback)override;
 		void SetVSync(bool enabled) override;
 		bool IsVSync() const override;
 
@@ -39,7 +40,7 @@ namespace CGRender
 		inline virtual void* GetNativeWindow() const { return m_Window; }
 		virtual void* GetWindowHwnd()const;
 
-		void OnWindowClose();
+		bool OnWindowClose()override;
 	public:
 		/*
 		* 增加事件
@@ -47,6 +48,7 @@ namespace CGRender
 		virtual bool addCGRenderEvent(CGRenderEvent* renderEvent)override;
 		virtual bool addCGRenderEvent(CGRenderEventType EventType) override;
 		virtual bool removeCGRenderEvent(CGRenderEventType renderEventType)override;
+		void AfterEvent();
 	public:
 		int ContextID()override;
 	public:
@@ -67,13 +69,19 @@ namespace CGRender
 		const glm::mat4& getPerspectiveMatrix()noexcept;
 	public:
 		void addImage(const std::wstring& path);
+	public:
+		/*
+		* another window
+		*/
+		void syncWindowByParent(WindowsWindow*parent);
 
 	private:
 		void renderTest();
 
 	private:
-		virtual void Init(const WindowProps& props);
-		virtual void Shutdown();
+		void Init(const WindowProps& props);
+		void Shutdown();
+		virtual bool needClose()override;
 	private:
 		GLFWwindow* m_Window;
 

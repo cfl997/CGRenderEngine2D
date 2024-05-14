@@ -28,6 +28,7 @@
 #include <tchar.h>
 
 #include <tuple>
+#include <mutex>
 
 #define use_opengl_4_6
 
@@ -52,11 +53,13 @@ namespace CGRender
 		GLFWwindow* shareWindow;
 		WindowType type;
 		//event
-		EventCallbackFn EventCallback;
+		EventCallbackFn EventCallback = nullptr;
+		RenderViewCallBackFn RenderViewCallBack = nullptr;
+		bool needClose = false;
 		std::unique_ptr<CGRenderEventManager>eventManager;
 		//opengl
 		int glContextID = -1;
-
+		std::recursive_mutex renderMutex;
 		//camera
 		std::unique_ptr<CGCamera>camera = nullptr;
 		glm::mat4 perspectiveMatrix = glm::mat4(1);
@@ -71,7 +74,10 @@ namespace CGRender
 		//imageData
 		int imageWidth = -1;
 		int imageHeight = -1;
+#ifdef USE_ORTHO
+#else
 		int imageChange = false;
+#endif // USE_ORTHO
 
 		glm::mat4 getInverseScreenMatrix()
 		{
@@ -97,6 +103,7 @@ namespace CGRender
 		//assert(0);
 	}
 
+
 	Window* Window::Create(const WindowProps& props)
 	{
 		return new WindowsWindow(props);
@@ -119,6 +126,7 @@ namespace CGRender
 
 			}
 			m_priv->super = nullptr;
+
 			delete m_priv;
 			m_priv = nullptr;
 		}
@@ -144,6 +152,12 @@ namespace CGRender
 	{
 		auto& d = *m_priv;
 		return d.eventManager->removeCGRenderEvent(renderEventType);
+	}
+
+	void WindowsWindow::AfterEvent()
+	{
+		auto& d = *m_priv;
+		d.eventManager->setCurrentEvent(CGRenderEventType::RenderEvent_Default);
 	}
 
 	int WindowsWindow::ContextID()
@@ -233,11 +247,41 @@ namespace CGRender
 
 	}
 
+	void WindowsWindow::syncWindowByParent(WindowsWindow* parent)
+	{
+		auto& d = *m_priv;
+		std::lock_guard lock(d.renderMutex);
+		//test
+		CGRECT imageSelectRect{ 0,0,500,300 };
+
+		const auto pCamera = parent->getCamera();
+		const float pSclae = pCamera->ScaleCoefficient();
+		getCamera()->ScaleCoefficient(pSclae);
+		getCamera()->ImageMinSclae(pSclae);
+
+
+		const auto pLayer = parent->getCurLayer();
+		const auto rects = pLayer->getItem(CGData::CGItemType::CGItemRectangle);
+		if (rects.empty())
+			return;
+		const auto prect = rects.at(0);
+		CGData::CGBoundingShape shape(prect);
+		CGData::BoundingShape2D pShape2d;
+		shape.Bounding2D(&pShape2d);
+
+		auto Layer = getCurLayer();
+		auto Image = Layer->getItem(CGData::CGItemType::CGItemImage).at(0);
+		auto modelMatrix = Image->getModelMatrix();
+		auto tanslate = glm::translate(modelMatrix, glm::vec3(-pShape2d.center, 0));
+		Image->setModelMatrix(tanslate);
+
+		//getCamera()->Position = glm::vec3{ pShape2d.center,getCamera()->Position.z };
+	}
+
 	void WindowsWindow::renderTest()
 	{
-
-
 		auto& d = *m_priv;
+
 		int renderTarget = CGRender_GetRenderTarget(d.glContextID);
 		if (1)
 		{
@@ -313,10 +357,8 @@ namespace CGRender
 			//event
 			d.eventManager = std::make_unique<CGRenderEventManager>();
 			SetEventCallback(std::bind(&CGRenderEventManager::OnEvent, d.eventManager.get(), std::placeholders::_1));
-			//CGRenderEvent* defaultRenderEvent = new CGRenderEvent(CGRenderEventType::RenderEvent_Default);
 			auto defaultRenderEvent = CGRenderEvnetFactory::instance()->createRenderEvent(RenderEvent_Default, this);
 			addCGRenderEvent(defaultRenderEvent);
-			//defaultRenderEvent->setWindow(this);
 		}
 
 		std::string title = wstr2utf8(d.Title);
@@ -343,7 +385,6 @@ namespace CGRender
 			HGLRC hGLRC = glfwGetWGLContext(m_Window);
 			//d.glContext->setWindowData(hwnd, hGLRC);
 			d.glContextID = CGRender_CreateContext(d.hWnd, hGLRC, d.windowWidth, d.windowHeight);
-
 		}
 
 		CGRender_SetViewport(d.glContextID, 0, 0, d.windowWidth, d.windowHeight);
@@ -360,26 +401,8 @@ namespace CGRender
 		//cfl-test
 		if (1)
 		{
-
-			//const static std::wstring tex16file = L"E:/A/work/Render2D/src/gTestCGRenderView/testFiles/010_L01S.img";
-			//CGData::CGITtemTex16* tex16 = new CGData::CGITtemTex16(ContextID(), tex16file);
-			//d.layer->addItem(tex16);
-
-			//std::wstring filepath = L"D:/document/2024/picture/É«¿¨.jpg";
-			//std::wstring filepath = L"D:/document/2024/picture/4k-pexels-pixabay-33109.jpg";
-			std::wstring filepath = L"D:/document/2024/picture/800600.png";
-			//CGData::CGItemImage* image = new CGData::CGItemImage(ContextID(), filepath);
-			//d.layer->addItem(image);
-
-			//addImage(filepath);
-
-			auto defaultRenderEvent = CGRenderEvnetFactory::instance()->createRenderEvent(RenderEvent_Rectangle, this);
-			addCGRenderEvent(defaultRenderEvent);
-
-
-
-			//CGData::CGItemText* text = new CGData::CGItemText(ContextID());
-			//d.layer->addItem(text);
+			//auto defaultRenderEvent = CGRenderEvnetFactory::instance()->createRenderEvent(RenderEvent_Rectangle, this);
+			//addCGRenderEvent(defaultRenderEvent);
 		}
 		glfwSetWindowUserPointer(m_Window, m_priv);
 
@@ -517,9 +540,19 @@ namespace CGRender
 		m_Window = nullptr;
 	}
 
+	bool WindowsWindow::needClose()
+	{
+		return m_priv->needClose;
+	}
+
 	void WindowsWindow::Render()
 	{
 		auto& d = *m_priv;
+		if (m_Window == nullptr)
+			return;
+
+		std::lock_guard lock(d.renderMutex);
+
 #ifndef use_opengl_4_6
 		//d.glContext->renderTest(1);
 		double time = glfwGetTime();
@@ -555,6 +588,11 @@ namespace CGRender
 		m_priv->EventCallback = callback;
 	}
 
+	void WindowsWindow::SetRenderViewCallback(const RenderViewCallBackFn& callback)
+	{
+		m_priv->RenderViewCallBack = callback;
+	}
+
 	void WindowsWindow::SetVSync(bool enabled)
 	{
 		auto& d = *m_priv;
@@ -582,10 +620,12 @@ namespace CGRender
 		return m_priv->hWnd;
 	}
 
-	void WindowsWindow::OnWindowClose()
+	bool WindowsWindow::OnWindowClose()
 	{
-		GLRender_LOG("onWindowsClose", "");
+		auto& d = *m_priv;
+		//d.RenderViewCallBack(RenderViewCallBack::closeWindow, d.Title);
+		d.needClose = true;
+		return true;
 	}
-
 }
 

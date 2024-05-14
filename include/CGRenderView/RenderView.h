@@ -26,6 +26,8 @@ namespace CGRender
 
 		//std::shared_ptr<CGRender::Window>getWindowByType(CGRender::WindowType type);
 		std::shared_ptr<CGRender::Window>getWindowByTitle(const std::wstring& title);
+
+		bool closeWindow(const std::wstring& title);
 	public:
 		/*
 		* event
@@ -44,6 +46,8 @@ namespace CGRender
 	private:
 		struct PrivateRenderView;
 		PrivateRenderView* m_priv;
+	private:
+		void WindowCallBack(RenderViewCallBack Enum, std::wstring& title);
 	};
 
 }

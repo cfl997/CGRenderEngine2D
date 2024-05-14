@@ -82,11 +82,14 @@ Window* CGRender::CGRenderEvent::getCurWindow()
 
 bool CGRender::CGRenderEvent::OnWindowClose(WindowCloseEvent& e)
 {
-	return false;
-
 	auto& d = *m_priv;
 	if (!d.window)
 		return false;
+
+	d.window->OnWindowClose();
+	return true;
+
+	//d.window->Close();
 	//SAFE_DELETE(d.window);
 	return true;
 }

@@ -52,6 +52,8 @@ namespace CGData
 		glm::mat4 getModelMatrix();
 		void setModelMatrix(const glm::mat4& model);
 	public:
+		bool NeedRender();
+		void NeedRender(bool bneedRender);
 		virtual void build(int Device);
 		virtual void Render(int device, const glm::mat4& matrix);
 

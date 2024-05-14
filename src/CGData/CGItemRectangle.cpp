@@ -6,6 +6,8 @@ using namespace CGData;
 
 struct CGItemRectangle::PrivateData
 {
+	RectangleType type;
+
 	glm::vec3 ltpos;
 	glm::vec3 xDirection;
 	float width;
@@ -21,10 +23,11 @@ struct CGItemRectangle::PrivateData
 };
 
 
-CGItemRectangle::CGItemRectangle(int Device) :m_priv(new PrivateData)
+CGItemRectangle::CGItemRectangle(int Device, RectangleType type) :m_priv(new PrivateData)
 {
 	ContextID(Device);
 	auto& d = *m_priv;
+	d.type = type;
 
 	auto& itemData = *getItemData();
 	itemData.PrimitiveType = GLPrimitiveTypes::LINE_LIST_STRIP;
@@ -55,6 +58,12 @@ CGItemRectangle::~CGItemRectangle()
 		delete m_priv;
 		m_priv = nullptr;
 	}
+}
+
+RectangleType CGData::CGItemRectangle::type()
+{
+	auto& d = *m_priv;
+	return d.type;
 }
 
 void CGData::CGItemRectangle::setPos(glm::vec3 pos)
@@ -165,4 +174,3 @@ void CGData::CGItemRectangle::Render(int device, const glm::mat4& matrix)
 	* ceshi
 	*/
 }
-

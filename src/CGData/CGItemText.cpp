@@ -160,7 +160,11 @@ CGItemText::CGItemText(int deviceID) :m_priv(new PrivateData)
 
 CGItemText::~CGItemText()
 {
-
+	if (m_priv)
+	{
+		delete m_priv;
+		m_priv = nullptr;
+	}
 }
 
 using GLfloat = float;

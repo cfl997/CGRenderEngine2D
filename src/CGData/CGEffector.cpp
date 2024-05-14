@@ -56,6 +56,11 @@ CGEffector::~CGEffector()
 	if (d.indexBufferId > 0)
 		CGRender_DeleteBuffer(d.Device, d.indexBufferId);
 	d.indexBufferId = -1;
+	if (m_priv)
+	{
+		delete m_priv;
+		m_priv = nullptr;
+	}
 }
 
 void CGData::CGEffector::addEffector(ShaderCodeName name)

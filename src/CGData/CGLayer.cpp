@@ -28,7 +28,7 @@ struct CGLayer::PrivateData
 	void sortRenderItem();
 	std::vector<CGItem*>m_vSortRenderItem;
 
-	
+
 	CGEffector* imageEffector = nullptr;
 };
 
@@ -157,7 +157,7 @@ void CGData::CGLayer::removeImageShader(ShaderCodeName name)
 
 void CGData::CGLayer::removeAllImageShader()
 {
-	auto &d= *m_priv;
+	auto& d = *m_priv;
 	d.imageEffector->removeAllEffctor();
 }
 
@@ -183,12 +183,12 @@ void CGData::CGLayer::Render(int device, const glm::mat4& matrix)
 			CGItemImage* iamge = dynamic_cast<CGItemImage*>(data);
 			iamge->Effector(d.imageEffector);
 		}
-		data->Render(device, renderMat4);
+		auto modelMatrix = data->getModelMatrix();
+
+		if (!data->NeedRender())
+			continue;
+		data->Render(device, renderMat4 * modelMatrix);
 	}
-	//for (auto iter = d.m_items.cbegin(); iter != d.m_items.cend(); iter++)
-	//{
-	//	iter->second->Render(device, renderMat4);
-	//}
 
 }
 

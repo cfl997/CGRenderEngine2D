@@ -28,6 +28,7 @@
 //	return QColor::fromRgb(rgba & 0xFF, (rgba >> 8) & 0xFF,
 //		(rgba >> 16) & 0xFF, (rgba >> 24) & 0xFF);
 //}
+const std::wstring g_oneWindowTitle = L"oneTitleWindow";
 
 struct QTDisplayWidget::PrivateData
 {
@@ -35,6 +36,8 @@ struct QTDisplayWidget::PrivateData
 	std::unique_ptr<CGRender::CGRenderView>renderview = nullptr;
 	CGRender::WindowsWindow* glWindow = nullptr;
 
+
+	CGRender::WindowsWindow* oneTitleWindow = nullptr;
 
 	CGData::CGItemImage* image = nullptr;
 };
@@ -198,6 +201,51 @@ QTDisplayWidget::QTDisplayWidget(QWidget* parent)
 		insertcolor(pbcolor2);
 		});
 
+	{
+		CGRender::WindowProps windowProps;
+		windowProps.parentWindow = nullptr;
+		windowProps.Title = g_oneWindowTitle;
+		windowProps.type = CGRender::WindowType::Window_One;
+		windowProps.windowWidth = 500;
+		windowProps.windowHeight = 300;
+		windowProps.share_Window = d.glWindow->GetNativeWindow();
+		d.renderview->createWindow(windowProps);
+
+
+		auto renderWindow = d.renderview->getWindowByTitle(g_oneWindowTitle);
+		d.oneTitleWindow = dynamic_cast<CGRender::WindowsWindow*>(renderWindow.get());
+		assert(d.oneTitleWindow);
+
+		int contextId = d.oneTitleWindow->ContextID();
+		int renderTarget = CGRender_CreateTextureFromData(contextId, 0, 500, 300, GLTexture_Normal2DTex);
+		CGRender_SetRenderTarget(contextId, renderTarget);
+	}
+
+	connect(d.ui.pbInsertWindow, &QPushButton::clicked, this, [&]() {
+		if (!d.oneTitleWindow)
+			return;
+		auto items = d.glWindow->getCurLayer()->getItem(CGData::CGItemType::CGItemImage);
+		if (items.empty())
+			return;
+		CGData::CGItemImage* oldImage = dynamic_cast<CGData::CGItemImage*>(items.at(0));
+		std::wstring path = oldImage->path();
+
+
+		if (!d.oneTitleWindow)
+			return;
+		auto layer = d.oneTitleWindow->getCurLayer();
+		d.oneTitleWindow->addImage(path);
+		d.oneTitleWindow->syncWindowByParent(d.glWindow);
+
+		});
+
+	connect(d.ui.pbDrawRect, &QPushButton::clicked, this, [&]() {
+		d.glWindow->addCGRenderEvent(CGRenderEventType::RenderEvent_Rectangle);
+		});
+
+	connect(d.ui.pbDrawRectWindow, &QPushButton::clicked, this, [&]() {
+		d.glWindow->addCGRenderEvent(CGRenderEventType::RenderEvent_RectWindow);
+		});
 }
 
 QTDisplayWidget::~QTDisplayWidget()

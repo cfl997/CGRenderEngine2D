@@ -82,6 +82,12 @@ const int CGData::CGItemImage::worldHeight() const
 	return d.height / g_ImageWHProportion;
 }
 
+const std::wstring& CGData::CGItemImage::path() const
+{
+	auto& d = *m_priv;
+	return d.path;
+}
+
 const int CGData::CGItemImage::TextureID() const
 {
 	auto& d = *m_priv;

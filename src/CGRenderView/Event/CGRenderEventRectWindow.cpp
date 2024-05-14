@@ -1,9 +1,9 @@
-#include "CGRenderEventRectangle.h"
+#include "CGRenderEventRectWindow.h"
 #include "CGData.h"
 #include "CGWindowsWindos.h"
 
 using namespace CGRender;
-struct CGRenderEventRectangle::PrivateData
+struct CGRenderEventRectWindow::PrivateData
 {
 	bool isPressLeft = false;
 	glm::vec2 pressPos = glm::vec2{ 1 };
@@ -15,7 +15,7 @@ struct CGRenderEventRectangle::PrivateData
 	WindowsWindow* win = nullptr;
 };
 
-CGRender::CGRenderEventRectangle::CGRenderEventRectangle(Window* window) :super(CGRenderEventType::RenderEvent_Rectangle, window),
+CGRender::CGRenderEventRectWindow::CGRenderEventRectWindow(Window* window) :super(CGRenderEventType::RenderEvent_RectWindow, window),
 m_priv(new PrivateData)
 {
 	auto& d = *m_priv;
@@ -23,7 +23,8 @@ m_priv(new PrivateData)
 
 	Window* curwindow = getCurWindow();
 
-	d.itemRect = new CGData::CGItemRectangle(curwindow->ContextID());
+	d.itemRect = new CGData::CGItemRectangle(curwindow->ContextID(), CGData::RectangleType::Window);
+	d.itemRect->Color({ 0, 0, 1, 1 });
 	d.win = dynamic_cast<WindowsWindow*>(curwindow);
 	assert(d.win != nullptr);
 
@@ -31,17 +32,17 @@ m_priv(new PrivateData)
 	layer->addItem(d.itemRect);
 }
 
-CGRender::CGRenderEventRectangle::~CGRenderEventRectangle()
+CGRender::CGRenderEventRectWindow::~CGRenderEventRectWindow()
 {
 	SAFE_DELETE(m_priv);
 }
 
-bool CGRender::CGRenderEventRectangle::OnMouseScoll(MouseScrolledEvent& e)
+bool CGRender::CGRenderEventRectWindow::OnMouseScoll(MouseScrolledEvent& e)
 {
 	return false;
 }
 
-bool CGRender::CGRenderEventRectangle::OnMouseMove(MouseMovedEvent& e)
+bool CGRender::CGRenderEventRectWindow::OnMouseMove(MouseMovedEvent& e)
 {
 	auto& d = *m_priv;
 	if (!d.isPressLeft)
@@ -60,7 +61,7 @@ bool CGRender::CGRenderEventRectangle::OnMouseMove(MouseMovedEvent& e)
 	return false;
 }
 
-bool CGRender::CGRenderEventRectangle::OnMouseButtonPress(MouseButtonPressedEvent& e)
+bool CGRender::CGRenderEventRectWindow::OnMouseButtonPress(MouseButtonPressedEvent& e)
 {
 	auto& d = *m_priv;
 	if (e.GetMouseButton() == CG_MOUSE_BUTTON_LEFT)
@@ -73,7 +74,7 @@ bool CGRender::CGRenderEventRectangle::OnMouseButtonPress(MouseButtonPressedEven
 	return false;
 }
 
-bool CGRender::CGRenderEventRectangle::OnMouseButtonRelease(MouseButtonReleasedEvent& e)
+bool CGRender::CGRenderEventRectWindow::OnMouseButtonRelease(MouseButtonReleasedEvent& e)
 {
 	auto& d = *m_priv;
 	if (e.GetMouseButton() == CG_MOUSE_BUTTON_LEFT)
@@ -83,7 +84,7 @@ bool CGRender::CGRenderEventRectangle::OnMouseButtonRelease(MouseButtonReleasedE
 		float posx = e.GetX();
 		float posy = e.GetY();
 		d.releasePos = glm::vec2{ posx,posy };
-
+		d.itemRect->NeedRender(false);
 		d.win->AfterEvent();
 
 	}

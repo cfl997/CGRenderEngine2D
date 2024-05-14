@@ -28,7 +28,6 @@ set(COMMON_HEAD_PUBLIC
 	${CGRender_ROOT_DIR}/include/CGRenderView/CGRenderView.h
 	${CGRender_ROOT_DIR}/include/CGRenderView/CGRenderType.h
 	${CGRender_ROOT_DIR}/include/CGRenderView/RenderView.h
-	${CGRender_ROOT_DIR}/include/CGRenderView/RenderView.h
 )
 
 SET(COMMON_HEAD_FILES
@@ -60,6 +59,8 @@ SET(ITEM_EVENT
 	Event/CGRenderEventRectangle.cpp
 	Event/CGRenderEventMeasureDistance.cpp
     Event/CGRenderEventMeasureDistance.h
+	Event/CGRenderEventRectWindow.cpp
+    Event/CGRenderEventRectWindow.h
 )
 
 

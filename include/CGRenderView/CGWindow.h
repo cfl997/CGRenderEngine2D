@@ -37,10 +37,17 @@ namespace CGRender
 		}
 	};
 
+	enum RenderViewCallBack
+	{
+		closeWindow = 0,
+		RenderViewCallBack_unKnow = 0xf,
+	};
+
 	class CGRENDERVIEW_API Window
 	{
 	public:
 		using EventCallbackFn = std::function<void(Event&)>;
+		using RenderViewCallBackFn = std::function<void(RenderViewCallBack, std::wstring&)>;
 
 		virtual ~Window() = default;
 
@@ -50,6 +57,7 @@ namespace CGRender
 		virtual uint32_t GetHeight() const = 0;
 
 		virtual void SetEventCallback(const EventCallbackFn& callback) = 0;
+		virtual void SetRenderViewCallback(const RenderViewCallBackFn& callback) = 0;
 		virtual void SetVSync(bool enabled) = 0;
 		virtual bool IsVSync() const = 0;
 
@@ -61,6 +69,8 @@ namespace CGRender
 		virtual bool removeCGRenderEvent(CGRenderEventType renderEventType) = 0;
 
 		virtual int ContextID() = 0;
+		virtual bool needClose() = 0;
+		virtual bool OnWindowClose() = 0;
 
 		static Window* Create(const WindowProps& props = WindowProps());
 	};

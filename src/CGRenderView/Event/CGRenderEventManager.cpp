@@ -7,6 +7,7 @@ using namespace CGRender;
 
 CGRenderEventManager::CGRenderEventManager()
 {
+	m_currentType = RenderEvent_Default;
 }
 
 CGRenderEventManager::~CGRenderEventManager()
@@ -23,9 +24,11 @@ void CGRender::CGRenderEventManager::OnEvent(Event& e)
 	unsigned int size = m_CGrenderEvents.size();
 	//if (size == 1)
 	{
-		m_CGrenderEvents[CGRenderEventType::RenderEvent_Default]->OnEvent(e);
+		m_CGrenderEvents[m_currentType]->OnEvent(e);
+		//m_CGrenderEvents[CGRenderEventType::RenderEvent_Default]->OnEvent(e);
 		//return;
 	}
+	return;
 
 	for (auto& data : m_CGrenderEvents)
 	{
@@ -39,6 +42,7 @@ bool CGRender::CGRenderEventManager::addCGRenderEvent(CGRenderEvent* renderEvent
 {
 	removeCGRenderEvent(renderEvent->Type());
 	m_CGrenderEvents[renderEvent->Type()] = renderEvent;
+	m_currentType = renderEvent->Type();
 	return true;
 }
 
@@ -53,6 +57,11 @@ bool CGRender::CGRenderEventManager::removeCGRenderEvent(CGRenderEventType rende
 		return true;
 	}
 	return false;
+}
+
+void CGRender::CGRenderEventManager::setCurrentEvent(CGRenderEventType type)
+{
+	m_currentType = type;
 }
 
 

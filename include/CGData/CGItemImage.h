@@ -22,6 +22,7 @@ namespace CGData
 		const int height()const;
 		const int worldWidth()const;
 		const int worldHeight()const;
+		const std::wstring& path()const;
 
 		const int TextureID()const;
 	public:

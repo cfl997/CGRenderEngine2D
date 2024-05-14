@@ -1,6 +1,8 @@
 #pragma once
 
 #include "CGRenderEventRectangle.h"
+#include "CGRenderEventRectWindow.h"
+#include "CGRenderEventMeasureDistance.h"
 #include "CGRenderType.h"
 
 namespace CGRender
@@ -19,7 +21,7 @@ namespace CGRender
 			return m_instance;
 		}
 
-		CGRenderEvent* createRenderEvent(CGRenderEventType type,Window*window)
+		CGRenderEvent* createRenderEvent(CGRenderEventType type, Window* window)
 		{
 			switch (type)
 			{
@@ -29,6 +31,10 @@ namespace CGRender
 			case RenderEvent_Rectangle:
 			{
 				return new CGRenderEventRectangle(window);
+			}
+			case RenderEvent_RectWindow:
+			{
+				return new CGRenderEventRectWindow(window);
 			}
 			break;
 			case CGRenderEventType_unknow:
