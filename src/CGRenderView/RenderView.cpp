@@ -5,8 +5,9 @@
 #include <mutex>
 #include <memory>
 
-#include "CGRender.h"
+#include "CGWindow.h"
 #include "CGWindowsWindos.h"
+#include "CGRender.h"
 
 using namespace CGRender;
 
@@ -34,7 +35,8 @@ CGRender::CGRenderView::CGRenderView(uint32_t width, uint32_t height, void* pare
 	auto& d = *m_priv;
 	d.m_Running = true;
 	//手动创建主窗口，并作为主资源
-	std::shared_ptr<CGRender::Window>window = std::shared_ptr<CGRender::Window>(CGRender::Window::Create({ parent, g_windowMainStr, width, height,nullptr ,WindowType::Window_Main }));
+	WindowProps windowProps{ parent, g_windowMainStr, width, height,nullptr ,WindowType::Window_Main };
+	std::shared_ptr<CGRender::Window>window = std::shared_ptr<CGRender::Window>(CGRender::Window::Create(windowProps));
 	window->SetRenderViewCallback(std::bind(&CGRenderView::WindowCallBack, this, std::placeholders::_1, std::placeholders::_2));
 	d.cgWindows[g_windowMainStr] = window;
 }
@@ -54,7 +56,8 @@ bool CGRender::CGRenderView::createWindow(const CGRender::WindowProps& windowsPr
 	auto& d = *m_priv;
 	if (windowsProps.type == WindowType::Window_Main || windowsProps.type == WindowType::Window_unknow)
 		return false;
-	std::shared_ptr<CGRender::Window>window = std::shared_ptr<CGRender::Window>(CGRender::Window::Create({ windowsProps.parentWindow, windowsProps.Title, windowsProps.windowWidth,windowsProps.windowHeight,windowsProps.share_Window }));
+	WindowProps windowProps{ windowsProps.parentWindow, windowsProps.Title, windowsProps.windowWidth,windowsProps.windowHeight,windowsProps.share_Window };
+	std::shared_ptr<CGRender::Window>window = std::shared_ptr<CGRender::Window>(CGRender::Window::Create(windowProps));
 	window->SetRenderViewCallback(std::bind(&CGRenderView::WindowCallBack, this, std::placeholders::_1, std::placeholders::_2));
 	d.cgWindows[windowsProps.Title] = window;
 	return true;
@@ -63,7 +66,7 @@ bool CGRender::CGRenderView::createWindow(const CGRender::WindowProps& windowsPr
 bool CGRender::CGRenderView::deleteWindow(const std::wstring& title)
 {
 	auto& d = *m_priv;
-	std::lock_guard(d.windowMutex);
+	std::lock_guard Lock(d.windowMutex);
 	auto windowIterator = d.cgWindows.find(title);
 	if (windowIterator == d.cgWindows.end())
 		return false;
@@ -80,7 +83,7 @@ std::shared_ptr<CGRender::Window> CGRender::CGRenderView::getWindowByTitle(const
 bool CGRender::CGRenderView::closeWindow(const std::wstring& title)
 {
 	auto& d = *m_priv;
-	std::lock_guard(d.windowMutex);
+	std::lock_guard Lock(d.windowMutex);
 	deleteWindow(title);
 	return false;
 }
@@ -99,7 +102,7 @@ void CGRender::CGRenderView::Render()
 	//while (d.m_Running)//这个交给qt，不然事件冲突
 	d.needCloseWindow();
 
-	std::lock_guard(d.windowMutex);
+	std::lock_guard lock(d.windowMutex);
 
 	{
 		for (auto& win : d.cgWindows)
@@ -140,4 +143,9 @@ void CGRenderView::PrivateRenderView::needCloseWindow()
 		}
 	}
 	windowMutex.unlock();
+}
+
+int testswig_add(int a, int b)
+{
+	return a + b;
 }

@@ -18,12 +18,7 @@ struct CGLayer::PrivateData
 	bool isMove = false;
 	glm::vec2 pressPos;
 
-	//imageShader
-	int imagefsShader = -1;
-
 	std::recursive_mutex reMutex;
-
-
 
 	void sortRenderItem();
 	std::vector<CGItem*>m_vSortRenderItem;
@@ -39,10 +34,8 @@ CGLayer::CGLayer(int Device) :m_priv(new PrivateData)
 	auto& d = *m_priv;
 	d.position = glm::vec3{ 0 };
 	d.isMove = false;
-	setImageShader(ShaderCodeName::FS_Tex);
 
 	d.imageEffector = new CGEffector(ContextID());
-
 }
 
 CGLayer::~CGLayer()
@@ -137,12 +130,6 @@ std::vector<CGItem*> CGData::CGLayer::getItem(CGItemType itemType)
 	return result;
 }
 
-void CGData::CGLayer::setImageShader(ShaderCodeName name)
-{
-	auto& d = *m_priv;
-	d.imagefsShader = CGRender_CreateShader(ContextID(), name);
-}
-
 void CGData::CGLayer::addImageShader(ShaderCodeName name)
 {
 	auto& d = *m_priv;
@@ -177,11 +164,22 @@ void CGData::CGLayer::Render(int device, const glm::mat4& matrix)
 
 	for (auto& data : d.m_vSortRenderItem)
 	{
-		if (data->CGType() == CGItemType::CGITtemTex16 ||
-			data->CGType() == CGItemType::CGItemImage)
+		auto type = data->CGType();
+		switch (type)
+		{
+		case CGData::CGItemType::CGITtemTex16:
+		{
+
+		}
+		break;
+		case CGData::CGItemType::CGItemImage:
 		{
 			CGItemImage* iamge = dynamic_cast<CGItemImage*>(data);
 			iamge->Effector(d.imageEffector);
+		}
+		break;
+		default:
+			break;
 		}
 		auto modelMatrix = data->getModelMatrix();
 

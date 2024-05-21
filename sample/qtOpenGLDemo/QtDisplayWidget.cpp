@@ -105,24 +105,20 @@ QTDisplayWidget::QTDisplayWidget(QWidget* parent)
 
 	connect(d.ui.pbGrayColor, &QPushButton::clicked, this, [&]() {
 		auto layer = d.glWindow->getCurLayer();
-		layer->setImageShader(ShaderCodeName::FS_Tex_Gray);
 		layer->addImageShader(ShaderCodeName::FS_Tex_Gray);
 		});
 
 	connect(d.ui.pbInvertColor, &QPushButton::clicked, this, [&]() {
 		auto layer = d.glWindow->getCurLayer();
-		layer->setImageShader(ShaderCodeName::FS_Tex_Invert);
 		layer->addImageShader(ShaderCodeName::FS_Tex_Invert);
 		});
 
 	connect(d.ui.pbNormalColor, &QPushButton::clicked, this, [&]() {
 		auto layer = d.glWindow->getCurLayer();
-		layer->setImageShader(ShaderCodeName::FS_Tex);
 		layer->addImageShader(ShaderCodeName::FS_Tex);
 		});
 	connect(d.ui.pbRotate90, &QPushButton::clicked, this, [&]() {
 		auto layer = d.glWindow->getCurLayer();
-		layer->setImageShader(ShaderCodeName::FS_Tex_Rotate90);
 		layer->addImageShader(ShaderCodeName::FS_Tex_Rotate90);
 		});
 	connect(d.ui.pbClearAll, &QPushButton::clicked, this, [&]() {
@@ -201,6 +197,8 @@ QTDisplayWidget::QTDisplayWidget(QWidget* parent)
 		insertcolor(pbcolor2);
 		});
 
+	//new Window
+	if (0)
 	{
 		CGRender::WindowProps windowProps;
 		windowProps.parentWindow = nullptr;
@@ -246,6 +244,16 @@ QTDisplayWidget::QTDisplayWidget(QWidget* parent)
 	connect(d.ui.pbDrawRectWindow, &QPushButton::clicked, this, [&]() {
 		d.glWindow->addCGRenderEvent(CGRenderEventType::RenderEvent_RectWindow);
 		});
+
+	connect(d.ui.pbInsertText, &QPushButton::clicked, this, [&]() {
+		auto layer = d.glWindow->getCurLayer();
+		CGData::CGItemText* text = new CGData::CGItemText(d.glWindow->ContextID());
+		QString letext = d.ui.leText->text();
+		text->setText(letext.toStdWString());
+		layer->addItem(text);
+		});
+
+
 }
 
 QTDisplayWidget::~QTDisplayWidget()

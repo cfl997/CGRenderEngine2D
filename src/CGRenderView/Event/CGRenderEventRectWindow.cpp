@@ -2,6 +2,10 @@
 #include "CGData.h"
 #include "CGWindowsWindos.h"
 
+#include "MouseEvent.h"
+#include "KeyEvent.h"
+#include "WindowsEvent.h"
+
 using namespace CGRender;
 struct CGRenderEventRectWindow::PrivateData
 {
@@ -21,7 +25,7 @@ m_priv(new PrivateData)
 	auto& d = *m_priv;
 	d.isPressLeft = false;
 
-	Window* curwindow = getCurWindow();
+	Window* curwindow = CurWindow();
 
 	d.itemRect = new CGData::CGItemRectangle(curwindow->ContextID(), CGData::RectangleType::Window);
 	d.itemRect->Color({ 0, 0, 1, 1 });

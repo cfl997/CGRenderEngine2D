@@ -6,6 +6,13 @@
 #include "CGglm.h"
 
 //#include "CGData.h"
+
+#ifdef CGRENDERVIEW_EXPORTS
+#define CGRENDERVIEW_API __declspec(dllexport)
+#else
+#define CGRENDERVIEW_API __declspec(dllimport)
+#endif // CGRENDERVIEW_EXPORTS
+
 struct GLFWwindow;
 namespace CGData
 {
@@ -16,6 +23,8 @@ namespace CGRender
 	static const std::wstring g_windowMainStr = L"CGRenderViewMainWindow";
 	class CGRenderEvent;
 	class CGCamera;
+	struct WindowProps;
+
 	class CGRENDERVIEW_API WindowsWindow : public Window
 	{
 	public:
@@ -28,8 +37,8 @@ namespace CGRender
 		inline uint32_t GetHeight() const override;
 
 		// Window attributes
-		inline void SetEventCallback(const EventCallbackFn& callback) override;
-		inline void SetRenderViewCallback(const RenderViewCallBackFn& callback)override;
+		inline void SetEventCallback(const Window::EventCallbackFn& callback) override;
+		inline void SetRenderViewCallback(const Window::RenderViewCallBackFn& callback)override;
 		void SetVSync(bool enabled) override;
 		bool IsVSync() const override;
 

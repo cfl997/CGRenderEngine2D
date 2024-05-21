@@ -2,9 +2,6 @@
 #define _CGRENDEREVENT_H_
 
 #include "CGRenderView_Export.h"
-#include "MouseEvent.h"
-#include "KeyEvent.h"
-#include "WindowsEvent.h"
 #include "CGRenderType.h"
 
 
@@ -13,6 +10,7 @@ namespace CGRender
 
 	class Event;
 	class Window;
+	class WindowsWindow;
 	class WindowCloseEvent;
 	class MouseScrolledEvent;
 	class MouseMovedEvent;
@@ -23,13 +21,13 @@ namespace CGRender
 	{
 	public:
 		CGRenderEvent(CGRenderEventType type, Window* window);
-		~CGRenderEvent();
+		virtual ~CGRenderEvent();
 		virtual void OnEvent(Event& e);
 		const CGRenderEventType Type() { return m_type; }
 
 		//只有Default才需要在事件中处理窗口
-		//void setWindow(Window* window);
-		Window* getCurWindow();
+		Window* CurWindow();
+		WindowsWindow* CurWinWindow();
 	public:
 		/*
 		* 所有的事件

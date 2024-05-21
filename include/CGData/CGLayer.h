@@ -19,7 +19,6 @@ namespace CGData
 		bool removeItem(CGItemType itemType);
 		std::vector<CGItem*>getItem(CGItemType itemType);
 	public:
-		void setImageShader(ShaderCodeName shadercodeName);
 		void addImageShader(ShaderCodeName name);
 		void removeImageShader(ShaderCodeName name);
 		void removeAllImageShader();

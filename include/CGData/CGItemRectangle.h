@@ -31,6 +31,9 @@ namespace CGData
 		void Height(float height);
 		const float Height()const;
 	public:
+		//Text
+		void Text(const std::wstring& text);
+	public:
 		void build(int Device)override;
 
 		void Render(int device, const glm::mat4& matrix)override;

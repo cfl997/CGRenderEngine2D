@@ -1,7 +1,9 @@
 #include "CGRenderEvent.h"
+
 #include "Event.h"
-#include "WindowsEvent.h"
 #include "MouseEvent.h"
+#include "KeyEvent.h"
+#include "WindowsEvent.h"
 
 #include "CGWindow.h"
 #include "CGWindowsWindos.h"
@@ -18,15 +20,19 @@ using namespace CGRender;
 struct CGRenderEvent::PrivateData
 {
 	Window* window = nullptr;
+	WindowsWindow* winWindow = nullptr;
 };
 
 CGRender::CGRenderEvent::CGRenderEvent(CGRenderEventType type, Window* window) :m_priv(new PrivateData), m_type(type)
 {
-	m_priv->window = window;
+	auto& d = *m_priv;
+	d.window = window;
+	d.winWindow = dynamic_cast<WindowsWindow*>(d.window);
 }
 
 CGRenderEvent::~CGRenderEvent()
 {
+	SAFE_DELETE(m_priv);
 }
 
 void CGRender::CGRenderEvent::OnEvent(Event& e)
@@ -67,18 +73,17 @@ void CGRender::CGRenderEvent::OnEvent(Event& e)
 
 }
 
-Window* CGRender::CGRenderEvent::getCurWindow()
+Window* CGRender::CGRenderEvent::CurWindow()
 {
 	auto& d = *m_priv;
 	return d.window;
 }
 
-//void CGRender::CGRenderEvent::setWindow(Window* window)
-//{
-//	auto& d = *m_priv;
-//	assert(d.window == nullptr);
-//	d.window = window;
-//}
+WindowsWindow* CGRender::CGRenderEvent::CurWinWindow()
+{
+	auto& d = *m_priv;
+	return d.winWindow;
+}
 
 bool CGRender::CGRenderEvent::OnWindowClose(WindowCloseEvent& e)
 {

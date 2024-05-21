@@ -2,6 +2,7 @@
 #include "CGRenderEventManager.h"
 
 #include "CGRender.h"
+#include "../CGCore.h"
 
 using namespace CGRender;
 

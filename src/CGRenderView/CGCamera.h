@@ -11,7 +11,11 @@
 
 namespace CGRender
 {
-
+#define CAMERA_SCALE_NUMS 24
+	static const float g_Camera_SCALE[CAMERA_SCALE_NUMS] = {
+		0.10f,0.20f,0.30f,0.40f,0.50f,0.60f,0.70f,0.80f,0.90f,1.00f,
+		1.20f,1.40f,1.60f,2.00f,3.00f,4.00f,5.00f,6.00f,8.00f,10.0f,
+		12.0f,14.0f,16.0f,20.0f };
 	/*
 	* YAW 通常用于表示摄像机的左右旋转角度。这个值设为 -90 度通常代表摄像机的初始方向是朝向场景的负 X 轴方向。正数表示顺时针旋转，负数表示逆时针旋转。
 	* PITCH 通常用于表示摄像机的上下旋转角度。这个值设为 0 度通常代表摄像机的初始方向是水平的，不倾斜。正数表示向上旋转，负数表示向下旋转。
@@ -27,6 +31,7 @@ namespace CGRender
 	const float ZOOM = 35.0f;//cfl-20240419
 	class CGCamera
 	{
+
 	public:
 		// camera Attributes
 		glm::vec3 Position;

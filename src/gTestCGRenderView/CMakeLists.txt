@@ -22,6 +22,7 @@ set(common_src
 	gTestCGRenderView.cpp
 	gtestInclude.cpp
 	gTestCGData.cpp
+	gtestSwig.cpp
 )
 set(common_header
 	gtestInclude.h

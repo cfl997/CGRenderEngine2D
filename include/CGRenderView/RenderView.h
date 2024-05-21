@@ -2,12 +2,21 @@
 #define _RENDERVIEW_H_
 
 #include "CGRenderView_Export.h"
-#include "CGWindow.h"
 #include <memory>
+#include <string>
+
+#ifdef CGRENDERVIEW_EXPORTS
+#define CGRENDERVIEW_API __declspec(dllexport)
+#else
+#define CGRENDERVIEW_API __declspec(dllimport)
+#endif // CGRENDERVIEW_EXPORTS
 
 namespace CGRender
 {
 
+	class Window;
+	struct WindowProps;
+	enum RenderViewCallBack;
 
 	class CGRENDERVIEW_API CGRenderView
 	{
@@ -51,4 +60,6 @@ namespace CGRender
 	};
 
 }
+
+extern "C" int testswig_add(int a, int b);
 #endif // !_RENDERVIEW_H_

@@ -2,6 +2,10 @@
 #include "CGData.h"
 #include "CGWindowsWindos.h"
 
+#include "MouseEvent.h"
+#include "KeyEvent.h"
+#include "WindowsEvent.h"
+
 using namespace CGRender;
 struct CGRenderEventRectangle::PrivateData
 {
@@ -21,7 +25,7 @@ m_priv(new PrivateData)
 	auto& d = *m_priv;
 	d.isPressLeft = false;
 
-	Window* curwindow = getCurWindow();
+	Window* curwindow = CurWindow();
 
 	d.itemRect = new CGData::CGItemRectangle(curwindow->ContextID());
 	d.win = dynamic_cast<WindowsWindow*>(curwindow);
@@ -29,6 +33,9 @@ m_priv(new PrivateData)
 
 	auto layer = d.win->getCurLayer();
 	layer->addItem(d.itemRect);
+
+
+	d.itemRect->Text(L"hzfjksdj大佛啊设计费你打93240932!@##$%#$^^&()_+{}: > ? ;l ");
 }
 
 CGRender::CGRenderEventRectangle::~CGRenderEventRectangle()

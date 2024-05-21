@@ -13,10 +13,18 @@ namespace CGData
 		~CGItemText();
 		CGItemType(CGItemText);
 
+		void Pixel(uint32_t pixel);
+		uint32_t Pixel();
+
+		void setText(const std::wstring& text);
+		void OriginPos(glm::vec2 pos);
+
 	public:
 		virtual void build(int Device)override;
 		virtual void Render(int device, const glm::mat4& matrix)override;
+
 	private:
+
 		struct PrivateData;
 		PrivateData* m_priv = nullptr;
 	};

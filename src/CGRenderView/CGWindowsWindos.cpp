@@ -235,7 +235,11 @@ namespace CGRender
 		d.layer->addItem(image);
 
 #ifdef USE_ORTHO
-		float scale = static_cast<float> (d.windowWidth) / static_cast<float> (image->worldWidth());
+		float widthScale = static_cast<float> (d.windowWidth) / static_cast<float> (image->worldWidth());
+		float heightScale = static_cast<float> (d.windowHeight) / static_cast<float> (image->worldHeight());
+		float scale = widthScale < heightScale ? widthScale : heightScale;
+		if (scale > g_Camera_SCALE[CAMERA_SCALE_NUMS - 1])
+			scale = 1.0;
 		d.camera->ScaleCoefficient(scale);
 		d.camera->ImageMinSclae(scale);
 		d.camera->resetPosition(d.windowWidth, d.windowHeight);
@@ -335,6 +339,10 @@ namespace CGRender
 
 			TCHAR* szfile = CGPath_GetPath(CGPathType::CG_PATH_PLUGIN);
 			{
+#ifdef DEBUG
+				std::cout << "CGRender_Init: " << szfile << std::endl;
+#endif // DEBUG
+
 				bool isInit = CGRender_Init(szfile);//ÊÇ·ñ°üº¬glew32.dll
 				assert(isInit);
 			}

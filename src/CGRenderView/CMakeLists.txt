@@ -28,6 +28,8 @@ set(COMMON_HEAD_PUBLIC
 	${CGRender_ROOT_DIR}/include/CGRenderView/CGRenderView.h
 	${CGRender_ROOT_DIR}/include/CGRenderView/CGRenderType.h
 	${CGRender_ROOT_DIR}/include/CGRenderView/RenderView.h
+	#这个是.i文件生成的 需要包含进去
+	${CGRender_ROOT_DIR}/include/CGRenderView/CGRenderViewCSHARP_wrap.cxx
 )
 
 SET(COMMON_HEAD_FILES
@@ -61,7 +63,11 @@ SET(ITEM_EVENT
     Event/CGRenderEventMeasureDistance.h
 	Event/CGRenderEventRectWindow.cpp
     Event/CGRenderEventRectWindow.h
+	Event/CGRenderEventDefault.h
+	Event/CGRenderEventDefault.cpp
 )
+
+
 
 
 if(${CMAKE_BUILD_TYPE} MATCHES "Debug")
@@ -77,10 +83,8 @@ include_directories(
 link_directories(
 	${CGRender_ROOT_DIR}/lib/win64/
 	)
-link_directories(
-	${CGRender_ROOT_DIR}/lib/win64/
-)
 
+if(0)
 ADD_LIBRARY(${LIB_NAME} SHARED
 	${COMMON_SOURCE_FILES} 
 	${COMMON_HEAD_FILES} 
@@ -88,6 +92,63 @@ ADD_LIBRARY(${LIB_NAME} SHARED
 	${EVENT_FILES}
 	${ITEM_EVENT}
 )
+else()
+
+
+set(swig_file
+ CGRenderView.i
+)
+
+cmake_policy(SET CMP0122 NEW)
+
+if ( MSVC )
+  set(SWIG_DIR "${CGRender_ROOT_DIR}/third/swig/Lib")
+  set(SWIG_Source_DIR "${CGRender_ROOT_DIR}/third/swig/Source/Include")
+  include_directories(${SWIG_DIR})
+  include_directories(${SWIG_Source_DIR})
+  set(SWIG_EXECUTABLE "${CGRender_ROOT_DIR}/third/swig/swig.exe")  
+endif (MSVC)
+
+#包swig
+find_package(SWIG REQUIRED)
+
+include(${SWIG_USE_FILE})
+
+#设置.i文件
+set_property(SOURCE ${swig_file} PROPERTY CPLUSPLUS ON)
+
+
+set(swig_source_file
+	${COMMON_SOURCE_FILES} 
+	${COMMON_HEAD_FILES} 
+	${COMMON_HEAD_PUBLIC}
+	${EVENT_FILES}
+	${ITEM_EVENT}
+)
+
+#设置输出目录 需要重新编译一次
+set(CGRenderView_include_DIR "${CGRender_ROOT_DIR}/include/CGRenderView")
+#设置输出文件目录：给c#用单独的
+set(Cplusplus2CSharp_DIR "${CGRender_ROOT_DIR}/include/Cplusplus2CSharp")
+
+swig_add_library(${PROJECT_NAME} 
+  TYPE SHARED
+  LANGUAGE CSharp
+  SOURCES ${swig_file} ${swig_source_file}
+  OUTPUT_DIR ${Cplusplus2CSharp_DIR}
+  OUTFILE_DIR ${CGRenderView_include_DIR}
+  )
+
+set_target_properties( ${PROJECT_NAME}
+    PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CGRender_ROOT_DIR}/bin64/
+    RUNTIME_OUTPUT_DIRECTORY_DEBUG ${CGRender_ROOT_DIR}/bin64/
+    
+    # Set address of C++ headers
+    #INCLUDE_DIRECTORIES ${swig_include_file} #这个不用，采用全局的方式
+
+)
+endif()
 
 if(${CMAKE_BUILD_TYPE} MATCHES "Debug")
 	target_link_libraries(${PROJECT_NAME} ${CGRender_ROOT_DIR}/third/glfw-3.4/lib/Debug/glfw3.lib )

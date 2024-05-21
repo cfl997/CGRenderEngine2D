@@ -6,7 +6,6 @@
 namespace CGData
 {
 	class CGEffector;
-	static const float g_ImageWHProportion = 10.f;
 	class CGDATA_API CGItemImage : public CGItem
 	{
 		typedef CGItem Super;

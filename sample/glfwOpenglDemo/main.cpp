@@ -176,7 +176,8 @@ int main()
 
 	std::unique_ptr<CGRender::CGRenderView> renderView = std::make_unique<CGRender::CGRenderView>(WindowWidth, WindowHeight, nullptr);
 	//renderView->createWindow({ L"opengl", 1280,720,nullptr });
-	auto window = renderView->getWindowByType(CGRender::WindowType::Window_Main);
+	//auto window = renderView->getWindowByType(CGRender::WindowType::Window_Main);
+	auto window = renderView->getWindowByTitle(CGRender::g_windowMainStr);
 	//window->addCGRenderEvent(CGRenderEventType::BoxRenderEvent);
 	int contextID = window->ContextID();
 

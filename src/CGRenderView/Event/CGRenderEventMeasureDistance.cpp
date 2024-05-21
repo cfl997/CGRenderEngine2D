@@ -2,6 +2,10 @@
 #include "CGData.h"
 #include "CGWindowsWindos.h"
 
+#include "MouseEvent.h"
+#include "KeyEvent.h"
+#include "WindowsEvent.h"
+
 using namespace CGRender;
 
 struct CGRender::CGRenderEventMeasureDistance::PrivateData

@@ -152,11 +152,7 @@ void CGCamera::ProcessMouseMovement(float xoffset, float yoffset, bool constrain
 }
 
 
-#define SCALE_NUMS 24
-static const float SCALE[SCALE_NUMS] = {
-	0.10f,0.20f,0.30f,0.40f,0.50f,0.60f,0.70f,0.80f,0.90f,1.00f,
-	1.20f,1.40f,1.60f,2.00f,3.00f,4.00f,5.00f,6.00f,8.00f,10.0f,
-	12.0f,14.0f,16.0f,20.0f };
+
 
 void CGCamera::ProcessMouseScroll(float yoffset, float x, float y)
 {
@@ -168,9 +164,9 @@ void CGCamera::ProcessMouseScroll(float yoffset, float x, float y)
 	yoffset > 0 ? d.scaleFlag++ : d.scaleFlag--;
 	if (d.scaleFlag < 0)
 		d.scaleFlag = 0;
-	if (d.scaleFlag > SCALE_NUMS - 1)
-		d.scaleFlag = SCALE_NUMS - 1;
-	d.scaleCoefficient = SCALE[d.scaleFlag];
+	if (d.scaleFlag > CAMERA_SCALE_NUMS - 1)
+		d.scaleFlag = CAMERA_SCALE_NUMS - 1;
+	d.scaleCoefficient = g_Camera_SCALE[d.scaleFlag];
 	if (d.scaleCoefficient < d.imageMinScale)
 	{
 		d.scaleCoefficient = d.imageMinScale;

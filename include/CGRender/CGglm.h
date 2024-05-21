@@ -7,6 +7,7 @@
 #include <glm/gtc/type_ptr.hpp>
 
 #include <vector>
+#include <map>
 
 using vec3Array = std::vector<glm::vec3>;
 

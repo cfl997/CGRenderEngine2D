@@ -73,13 +73,13 @@ const int CGData::CGItemImage::height() const
 const int CGData::CGItemImage::worldWidth() const
 {
 	auto& d = *m_priv;
-	return d.width / g_ImageWHProportion;
+	return d.width / g_globalProportion;
 }
 
 const int CGData::CGItemImage::worldHeight() const
 {
 	auto& d = *m_priv;
-	return d.height / g_ImageWHProportion;
+	return d.height / g_globalProportion;
 }
 
 const std::wstring& CGData::CGItemImage::path() const
@@ -189,9 +189,8 @@ void CGData::CGItemImage::loadPathData()
 	auto& data = *getItemData();
 
 	float proportion = d.width / d.height;
-	float Texwidth = d.width / g_ImageWHProportion;
-	//float Texheight = Texwidth / proportion;
-	float Texheight = d.height / g_ImageWHProportion;
+	float Texwidth = d.width / g_globalProportion;
+	float Texheight = d.height / g_globalProportion;
 
 	data.vertexes.clear();
 	data.vertexes.push_back({ {-Texwidth / 2,	Texheight / 2,	0},Color(),{0,	1} });

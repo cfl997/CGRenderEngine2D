@@ -1,6 +1,7 @@
 #include "CGItemRectangle.h"
 #include "CGRender.h"
 
+#include "CGItemText.h"
 
 using namespace CGData;
 
@@ -20,6 +21,8 @@ struct CGItemRectangle::PrivateData
 
 	//test
 	int uniformBufferid = -1;
+
+	CGItemText* itemText = nullptr;
 };
 
 
@@ -53,6 +56,12 @@ CGItemRectangle::~CGItemRectangle()
 		CGRender_DeleteBuffer(ContextID(), d.indexBufferId);
 	if (d.uniformBufferid > 0)
 		CGRender_DeleteBuffer(ContextID(), d.uniformBufferid);
+	if (d.itemText)
+	{
+		delete d.itemText;
+		d.itemText = nullptr;
+	}
+
 	if (m_priv)
 	{
 		delete m_priv;
@@ -69,6 +78,11 @@ RectangleType CGData::CGItemRectangle::type()
 void CGData::CGItemRectangle::setPos(glm::vec3 pos)
 {
 	m_priv->ltpos = pos;
+	auto& d = *m_priv;
+	if (d.itemText)
+	{
+		d.itemText->OriginPos(pos);
+	}
 }
 
 void CGData::CGItemRectangle::setDirection(glm::vec3 direction)
@@ -94,6 +108,17 @@ void CGData::CGItemRectangle::Height(float height)
 const float CGData::CGItemRectangle::Height() const
 {
 	return m_priv->height;
+}
+
+void CGData::CGItemRectangle::Text(const std::wstring& text)
+{
+	auto& d = *m_priv;
+
+	if (d.itemText == nullptr)
+		d.itemText = new CGItemText(ContextID());
+
+	d.itemText->Color(Color());
+	d.itemText->setText(text);
 }
 
 void CGData::CGItemRectangle::build(int Device)
@@ -173,4 +198,8 @@ void CGData::CGItemRectangle::Render(int device, const glm::mat4& matrix)
 	/*
 	* ceshi
 	*/
+
+	if (d.itemText == nullptr)
+		return;
+	d.itemText->Render(device, matrix);
 }

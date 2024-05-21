@@ -8,7 +8,7 @@
 
 #include <string>
 #include <Windows.h>
-
+#include <CGglm.h>
 
 enum ShaderCodeName
 {
@@ -91,9 +91,9 @@ struct CreateTextureIn
 
 struct GetTextureInfoOut
 {
-	int *width;
-	int *height;
-	int *Type;
+	int* width;
+	int* height;
+	int* Type;
 };
 
 struct ClearTextureIn
@@ -169,10 +169,10 @@ struct SetShaderIn
 
 struct CGRECT
 {
-	int x;
-	int y;
-	int width;
-	int height;
+	uint32_t x;
+	uint32_t y;
+	uint32_t width;
+	uint32_t height;
 };
 
 /*
@@ -241,4 +241,17 @@ struct CGRGBA
 	float G;
 	float B;
 	float A;
+};
+
+//image text all item size
+static const float g_globalProportion = 10.f;
+
+
+//fonts
+static const uint32_t g_FontPixelSize = 30;//default font size -> scale is this 
+struct Character {
+	uint32_t    TextureID;  // 字形纹理的ID
+	glm::ivec2  Size;       // 字形大小
+	glm::ivec2  Bearing;    // 从基准线到字形左部/顶部的偏移值
+	uint32_t    Advance;    // 原点距下一个字形原点的距离
 };

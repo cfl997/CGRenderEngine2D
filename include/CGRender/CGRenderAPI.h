@@ -56,4 +56,9 @@ bool GLRENDER_API CGRender_SaveImageByVoid(const void* buffer, unsigned int widt
 void GLRENDER_API CGRender_DWORD2RGBA(const DWORD& color, CGRGBA& rgba);
 void GLRENDER_API CGRender_RGBA2DWORD(DWORD& color, const CGRGBA& rgba);
 
+bool GLRENDER_API CGRender_Font_Init(int Device);
+bool GLRENDER_API CGRender_Font_LoadFont(int Device, const std::wstring& face = L"/ARIALUNI.TTF");
+bool GLRENDER_API CGRender_Font_LoadFaces(int Device, const std::wstring& text);
+bool GLRENDER_API CGRender_Font_GetCharacters(int Device, const std::wstring& text, std::map<wchar_t, Character>& charactors);
+
 #endif // !_CGRENDERAPI_H_
