@@ -1,0 +1,91 @@
+
+swig转换的cmake配置很乱 没有一个详细的解释。
+
+当将.i文件单独拎出来生成一个单独的dll非常的麻烦。
+
+于是采用最简便的方法。
+
+并且生成的dll不影响c++本身项目的使用。
+
+比如这个既可以给c#用也可以给c++用。
+
+#### 不用重复修改、重复编译。
+
+
+###  核心：不要把.i文件单独拎出来，在生成一个项目。
+
+
+这样会导致需要生成的项目重新配置一遍，完全是重复的操作。并且要维护两个CMakeLists.txt
+
+假定我们需要有一个项目导出，原本的项目为动态库。
+
+只需要更改swig配置即可。
+
+
+在原本的项目CMakeLists.txt中。我们关闭
+
+```cpp
+if(0)
+ADD_LIBRARY(${LIB_NAME} SHARED
+	${COMMON_SOURCE_FILES} 
+	${COMMON_HEAD_FILES} 
+	${COMMON_HEAD_PUBLIC}
+	${EVENT_FILES}
+	${ITEM_EVENT}
+)
+else()
+#这里添加swig配置即可
+
+endif()
+```
+
+swig的添加
+```cpp
+find_package(SWIG REQUIRED)
+
+include(${SWIG_USE_FILE})
+
+set_property(SOURCE Cplusplus2CSharp.i PROPERTY CPLUSPLUS ON)
+```
+
+接下来是如何把所有的项目都包含进来：
+
+```cpp
+set(swig_source_file
+	${COMMON_SOURCE_FILES} 
+	${COMMON_HEAD_FILES} 
+	${COMMON_HEAD_PUBLIC}
+	${EVENT_FILES}
+	${ITEM_EVENT}
+)
+```
+设置输出目录和输出文件目录
+
+```cpp
+set(CGRenderView_include_DIR "${CGRender_ROOT_DIR}/include/CGRenderView")
+set(Cplusplus2CSharp_DIR "${CGRender_ROOT_DIR}/include/Cplusplus2CSharp")
+```
+用siwg的add_library
+
+```cpp
+swig_add_library(${PROJECT_NAME} 
+  TYPE SHARED
+  LANGUAGE CSharp
+  SOURCES Cplusplus2CSharp.i ${swig_source_file}
+  OUTPUT_DIR ${Cplusplus2CSharp_DIR}
+  OUTFILE_DIR ${CGRenderView_include_DIR}
+  )
+```
+最后链接我们的
+
+```cpp
+set_target_properties( ${PROJECT_NAME}
+    PROPERTIES
+    RUNTIME_OUTPUT_DIRECTORY_RELEASE ${CGRender_ROOT_DIR}/bin64/
+    RUNTIME_OUTPUT_DIRECTORY_DEBUG ${CGRender_ROOT_DIR}/bin64/
+    
+    # Set address of C++ headers
+    #INCLUDE_DIRECTORIES ${swig_include_file} #这个不用，采用全局的方式
+)
+endif()
+```
