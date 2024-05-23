@@ -41,6 +41,22 @@ endif()
 
 swig的添加
 ```cpp
+
+set(swig_file
+ CGRenderView.i
+)
+
+cmake_policy(SET CMP0122 NEW)
+
+if ( MSVC )
+  set(SWIG_DIR "${CGRender_ROOT_DIR}/third/swig/Lib")
+  set(SWIG_Source_DIR "${CGRender_ROOT_DIR}/third/swig/Source/Include")
+  include_directories(${SWIG_DIR})
+  include_directories(${SWIG_Source_DIR})
+  set(SWIG_EXECUTABLE "${CGRender_ROOT_DIR}/third/swig/swig.exe")  
+endif (MSVC)
+
+
 find_package(SWIG REQUIRED)
 
 include(${SWIG_USE_FILE})

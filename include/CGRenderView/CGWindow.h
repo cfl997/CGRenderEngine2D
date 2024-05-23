@@ -35,7 +35,7 @@ namespace CGRender
 		void* share_Window;
 		WindowType type;
 
-		WindowProps(void* parent = nullptr, const std::wstring& title = L"OpenGL",
+		WindowProps(void* parent = nullptr, std::wstring title = L"OpenGL",
 			uint32_t width = 1280,
 			uint32_t height = 720,
 			void* shareWindow = nullptr, WindowType windowType = WindowType::Window_Main)

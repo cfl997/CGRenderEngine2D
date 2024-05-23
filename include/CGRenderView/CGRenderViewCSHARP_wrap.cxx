@@ -301,6 +301,32 @@ SWIGEXPORT void SWIGSTDCALL SWIGRegisterStringCallback_CGRender2D(SWIG_CSharpStr
 #define SWIG_contract_assert(nullreturn, expr, msg) do { if (!(expr)) {SWIG_CSharpSetPendingExceptionArgument(SWIG_CSharpArgumentOutOfRangeException, msg, ""); return nullreturn; } } while (0)
 
 
+/* Callback for returning strings to C# without leaking memory */
+typedef void * (SWIGSTDCALL* SWIG_CSharpWStringHelperCallback)(const wchar_t *, int length);
+static SWIG_CSharpWStringHelperCallback SWIG_csharp_wstring_with_length_callback = NULL;
+
+
+#ifdef __cplusplus
+extern "C"
+#endif
+SWIGEXPORT void SWIGSTDCALL SWIGRegisterWStringCallback_CGRender2D(SWIG_CSharpWStringHelperCallback callback_utf16, SWIG_CSharpWStringHelperCallback callback_utf32) {
+  SWIG_csharp_wstring_with_length_callback = sizeof(wchar_t) == 2 ? callback_utf16 : callback_utf32;
+}
+
+
+/* Callback for returning strings to C# without leaking memory */
+typedef void (SWIGSTDCALL* SWIG_CSharpWStringExceptionHelperCallback)(const wchar_t *, int length);
+static SWIG_CSharpWStringExceptionHelperCallback SWIG_csharp_ApplicationException_callback = NULL;
+
+
+#ifdef __cplusplus
+extern "C"
+#endif
+SWIGEXPORT void SWIGSTDCALL SWIGRegisterWStringExceptionCallback_CGRender2D(SWIG_CSharpWStringExceptionHelperCallback callback_utf16, SWIG_CSharpWStringExceptionHelperCallback callback_utf32) {
+  SWIG_csharp_ApplicationException_callback = sizeof(wchar_t) == 2 ? callback_utf16 : callback_utf32;
+}
+
+
 #ifdef __cplusplus
 #include <utility>
 /* SwigValueWrapper is described in swig.swg */
@@ -349,27 +375,32 @@ template <typename T> T SwigValueInit() {
 #endif
 
 
+#include <wchar.h>
+#include <limits.h>
+#ifndef WCHAR_MIN
+#  define WCHAR_MIN 0
+#endif
+#ifndef WCHAR_MAX
+#  define WCHAR_MAX 65535
+#endif
 
-//#ifdef CGRENDERVIEW_EXPORTS
-//#define CGRENDERVIEW_API __declspec(dllexport)
-//#else
-//#define CGRENDERVIEW_API __declspec(dllimport)
-//#endif // CGRENDERVIEW_EXPORTS
-//#include "testswig.h"
+
+static void * SWIG_csharp_wstring_callback(const wchar_t *s) {
+  return SWIG_csharp_wstring_with_length_callback(s, (int)wcslen(s));
+}
+
+
+#include <stdint.h>		// Use the C99 official header
+
+
+#include <string>
+
 
 #include "RenderView.h"
 #include "CGWindow.h"
 #include "CGWindowsWindos.h"
 #include "CGRenderType.h"
-//namespace CGRender
-//{
-//	enum WindowType
-//	{
-//		Window_Main = 0,
-//		Window_One = 1,
-//		Window_unknow = 0xff
-//	};
-//}
+
 
 enum CGRenderEventType_swig
 {
@@ -382,33 +413,27 @@ enum CGRenderEventType_swig
 
 using namespace CGRender;
 
+#include <vector>
+#include <string>
+#include <memory>
+#include <stdint.h>
+
+
 
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-SWIGEXPORT void * SWIGSTDCALL CSharp_new_CGRenderView(void * jarg1, void * jarg2, void * jarg3) {
+SWIGEXPORT void * SWIGSTDCALL CSharp_new_CGRenderView(unsigned int jarg1, unsigned int jarg2, void * jarg3) {
   void * jresult ;
-  uint32_t arg1 ;
-  uint32_t arg2 ;
+  unsigned int arg1 ;
+  unsigned int arg2 ;
   void *arg3 = (void *) 0 ;
-  uint32_t *argp1 ;
-  uint32_t *argp2 ;
   CGRender::CGRenderView *result = 0 ;
   
-  argp1 = (uint32_t *)jarg1; 
-  if (!argp1) {
-    SWIG_CSharpSetPendingExceptionArgument(SWIG_CSharpArgumentNullException, "Attempt to dereference null uint32_t", 0);
-    return 0;
-  }
-  arg1 = *argp1; 
-  argp2 = (uint32_t *)jarg2; 
-  if (!argp2) {
-    SWIG_CSharpSetPendingExceptionArgument(SWIG_CSharpArgumentNullException, "Attempt to dereference null uint32_t", 0);
-    return 0;
-  }
-  arg2 = *argp2; 
+  arg1 = (unsigned int)jarg1; 
+  arg2 = (unsigned int)jarg2; 
   arg3 = (void *)jarg3; 
   result = (CGRender::CGRenderView *)new CGRender::CGRenderView(arg1,arg2,arg3);
   jresult = (void *)result; 
@@ -424,73 +449,49 @@ SWIGEXPORT void SWIGSTDCALL CSharp_delete_CGRenderView(void * jarg1) {
 }
 
 
-SWIGEXPORT unsigned int SWIGSTDCALL CSharp_CGRenderView_createWindow(void * jarg1, void * jarg2) {
+SWIGEXPORT unsigned int SWIGSTDCALL CSharp_CGRenderView_createWindow(void * jarg1, void * jarg2, const char * jarg3, unsigned int jarg4, unsigned int jarg5, void * jarg6, int jarg7) {
   unsigned int jresult ;
   CGRender::CGRenderView *arg1 = (CGRender::CGRenderView *) 0 ;
-  CGRender::WindowProps *arg2 = 0 ;
+  void *arg2 = (void *) 0 ;
+  std::string *arg3 = 0 ;
+  unsigned int arg4 ;
+  unsigned int arg5 ;
+  void *arg6 = (void *) 0 ;
+  CGRender::WindowType arg7 ;
   bool result;
   
   arg1 = (CGRender::CGRenderView *)jarg1; 
-  arg2 = (CGRender::WindowProps *)jarg2;
-  if (!arg2) {
-    SWIG_CSharpSetPendingExceptionArgument(SWIG_CSharpArgumentNullException, "CGRender::WindowProps const & is null", 0);
+  arg2 = (void *)jarg2; 
+  if (!jarg3) {
+    SWIG_CSharpSetPendingExceptionArgument(SWIG_CSharpArgumentNullException, "null string", 0);
     return 0;
-  } 
-  result = (bool)(arg1)->createWindow((CGRender::WindowProps const &)*arg2);
+  }
+  std::string arg3_str(jarg3);
+  arg3 = &arg3_str; 
+  arg4 = (unsigned int)jarg4; 
+  arg5 = (unsigned int)jarg5; 
+  arg6 = (void *)jarg6; 
+  arg7 = (CGRender::WindowType)jarg7; 
+  result = (bool)(arg1)->createWindow(arg2,(std::string const &)*arg3,arg4,arg5,arg6,arg7);
   jresult = result; 
   return jresult;
 }
 
 
-SWIGEXPORT unsigned int SWIGSTDCALL CSharp_CGRenderView_deleteWindow(void * jarg1, void * jarg2) {
+SWIGEXPORT unsigned int SWIGSTDCALL CSharp_CGRenderView_deleteWindow(void * jarg1, const char * jarg2) {
   unsigned int jresult ;
   CGRender::CGRenderView *arg1 = (CGRender::CGRenderView *) 0 ;
-  std::wstring *arg2 = 0 ;
+  std::string *arg2 = 0 ;
   bool result;
   
   arg1 = (CGRender::CGRenderView *)jarg1; 
-  arg2 = (std::wstring *)jarg2;
-  if (!arg2) {
-    SWIG_CSharpSetPendingExceptionArgument(SWIG_CSharpArgumentNullException, "std::wstring const & is null", 0);
+  if (!jarg2) {
+    SWIG_CSharpSetPendingExceptionArgument(SWIG_CSharpArgumentNullException, "null string", 0);
     return 0;
-  } 
-  result = (bool)(arg1)->deleteWindow((std::wstring const &)*arg2);
-  jresult = result; 
-  return jresult;
-}
-
-
-SWIGEXPORT void * SWIGSTDCALL CSharp_CGRenderView_getWindowByTitle(void * jarg1, void * jarg2) {
-  void * jresult ;
-  CGRender::CGRenderView *arg1 = (CGRender::CGRenderView *) 0 ;
-  std::wstring *arg2 = 0 ;
-  SwigValueWrapper< std::shared_ptr< CGRender::Window > > result;
-  
-  arg1 = (CGRender::CGRenderView *)jarg1; 
-  arg2 = (std::wstring *)jarg2;
-  if (!arg2) {
-    SWIG_CSharpSetPendingExceptionArgument(SWIG_CSharpArgumentNullException, "std::wstring const & is null", 0);
-    return 0;
-  } 
-  result = (arg1)->getWindowByTitle((std::wstring const &)*arg2);
-  jresult = new std::shared_ptr< CGRender::Window >(result); 
-  return jresult;
-}
-
-
-SWIGEXPORT unsigned int SWIGSTDCALL CSharp_CGRenderView_closeWindow(void * jarg1, void * jarg2) {
-  unsigned int jresult ;
-  CGRender::CGRenderView *arg1 = (CGRender::CGRenderView *) 0 ;
-  std::wstring *arg2 = 0 ;
-  bool result;
-  
-  arg1 = (CGRender::CGRenderView *)jarg1; 
-  arg2 = (std::wstring *)jarg2;
-  if (!arg2) {
-    SWIG_CSharpSetPendingExceptionArgument(SWIG_CSharpArgumentNullException, "std::wstring const & is null", 0);
-    return 0;
-  } 
-  result = (bool)(arg1)->closeWindow((std::wstring const &)*arg2);
+  }
+  std::string arg2_str(jarg2);
+  arg2 = &arg2_str; 
+  result = (bool)(arg1)->deleteWindow((std::string const &)*arg2);
   jresult = result; 
   return jresult;
 }
@@ -518,313 +519,33 @@ SWIGEXPORT int SWIGSTDCALL CSharp_testswig_add(int jarg1, int jarg2) {
 }
 
 
-SWIGEXPORT void * SWIGSTDCALL CSharp_g_windowMainStr_get() {
-  void * jresult ;
-  std::wstring result;
-  
-  result = (std::wstring)CGRender::g_windowMainStr;
-  jresult = new std::wstring(result); 
-  return jresult;
-}
-
-
-SWIGEXPORT void * SWIGSTDCALL CSharp_new_WindowsWindow(void * jarg1) {
-  void * jresult ;
-  CGRender::WindowProps *arg1 = 0 ;
-  CGRender::WindowsWindow *result = 0 ;
-  
-  arg1 = (CGRender::WindowProps *)jarg1;
-  if (!arg1) {
-    SWIG_CSharpSetPendingExceptionArgument(SWIG_CSharpArgumentNullException, "CGRender::WindowProps const & is null", 0);
-    return 0;
-  } 
-  result = (CGRender::WindowsWindow *)new CGRender::WindowsWindow((CGRender::WindowProps const &)*arg1);
-  jresult = (void *)result; 
-  return jresult;
-}
-
-
-SWIGEXPORT void SWIGSTDCALL CSharp_delete_WindowsWindow(void * jarg1) {
-  CGRender::WindowsWindow *arg1 = (CGRender::WindowsWindow *) 0 ;
-  
-  arg1 = (CGRender::WindowsWindow *)jarg1; 
-  delete arg1;
-}
-
-
-SWIGEXPORT void SWIGSTDCALL CSharp_WindowsWindow_Render(void * jarg1) {
-  CGRender::WindowsWindow *arg1 = (CGRender::WindowsWindow *) 0 ;
-  
-  arg1 = (CGRender::WindowsWindow *)jarg1; 
-  (arg1)->Render();
-}
-
-
-SWIGEXPORT void * SWIGSTDCALL CSharp_WindowsWindow_GetWidth(void * jarg1) {
-  void * jresult ;
-  CGRender::WindowsWindow *arg1 = (CGRender::WindowsWindow *) 0 ;
-  uint32_t result;
-  
-  arg1 = (CGRender::WindowsWindow *)jarg1; 
-  result = ((CGRender::WindowsWindow const *)arg1)->GetWidth();
-  jresult = new uint32_t(result); 
-  return jresult;
-}
-
-
-SWIGEXPORT void * SWIGSTDCALL CSharp_WindowsWindow_GetHeight(void * jarg1) {
-  void * jresult ;
-  CGRender::WindowsWindow *arg1 = (CGRender::WindowsWindow *) 0 ;
-  uint32_t result;
-  
-  arg1 = (CGRender::WindowsWindow *)jarg1; 
-  result = ((CGRender::WindowsWindow const *)arg1)->GetHeight();
-  jresult = new uint32_t(result); 
-  return jresult;
-}
-
-
-SWIGEXPORT void SWIGSTDCALL CSharp_WindowsWindow_SetEventCallback(void * jarg1, void * jarg2) {
-  CGRender::WindowsWindow *arg1 = (CGRender::WindowsWindow *) 0 ;
-  CGRender::Window::EventCallbackFn *arg2 = 0 ;
-  
-  arg1 = (CGRender::WindowsWindow *)jarg1; 
-  arg2 = (CGRender::Window::EventCallbackFn *)jarg2;
-  if (!arg2) {
-    SWIG_CSharpSetPendingExceptionArgument(SWIG_CSharpArgumentNullException, "CGRender::Window::EventCallbackFn const & is null", 0);
-    return ;
-  } 
-  (arg1)->SetEventCallback((CGRender::Window::EventCallbackFn const &)*arg2);
-}
-
-
-SWIGEXPORT void SWIGSTDCALL CSharp_WindowsWindow_SetRenderViewCallback(void * jarg1, void * jarg2) {
-  CGRender::WindowsWindow *arg1 = (CGRender::WindowsWindow *) 0 ;
-  CGRender::Window::RenderViewCallBackFn *arg2 = 0 ;
-  
-  arg1 = (CGRender::WindowsWindow *)jarg1; 
-  arg2 = (CGRender::Window::RenderViewCallBackFn *)jarg2;
-  if (!arg2) {
-    SWIG_CSharpSetPendingExceptionArgument(SWIG_CSharpArgumentNullException, "CGRender::Window::RenderViewCallBackFn const & is null", 0);
-    return ;
-  } 
-  (arg1)->SetRenderViewCallback((CGRender::Window::RenderViewCallBackFn const &)*arg2);
-}
-
-
-SWIGEXPORT void SWIGSTDCALL CSharp_WindowsWindow_SetVSync(void * jarg1, unsigned int jarg2) {
-  CGRender::WindowsWindow *arg1 = (CGRender::WindowsWindow *) 0 ;
-  bool arg2 ;
-  
-  arg1 = (CGRender::WindowsWindow *)jarg1; 
-  arg2 = jarg2 ? true : false; 
-  (arg1)->SetVSync(arg2);
-}
-
-
-SWIGEXPORT unsigned int SWIGSTDCALL CSharp_WindowsWindow_IsVSync(void * jarg1) {
-  unsigned int jresult ;
-  CGRender::WindowsWindow *arg1 = (CGRender::WindowsWindow *) 0 ;
-  bool result;
-  
-  arg1 = (CGRender::WindowsWindow *)jarg1; 
-  result = (bool)((CGRender::WindowsWindow const *)arg1)->IsVSync();
-  jresult = result; 
-  return jresult;
-}
-
-
-SWIGEXPORT void * SWIGSTDCALL CSharp_WindowsWindow_getType(void * jarg1) {
-  void * jresult ;
-  CGRender::WindowsWindow *arg1 = (CGRender::WindowsWindow *) 0 ;
-  WindowType result;
-  
-  arg1 = (CGRender::WindowsWindow *)jarg1; 
-  result = (arg1)->getType();
-  jresult = new WindowType(result); 
-  return jresult;
-}
-
-
-SWIGEXPORT void * SWIGSTDCALL CSharp_WindowsWindow_GetNativeWindow(void * jarg1) {
-  void * jresult ;
-  CGRender::WindowsWindow *arg1 = (CGRender::WindowsWindow *) 0 ;
-  void *result = 0 ;
-  
-  arg1 = (CGRender::WindowsWindow *)jarg1; 
-  result = (void *)((CGRender::WindowsWindow const *)arg1)->GetNativeWindow();
-  jresult = (void *)result; 
-  return jresult;
-}
-
-
-SWIGEXPORT void * SWIGSTDCALL CSharp_WindowsWindow_GetWindowHwnd(void * jarg1) {
-  void * jresult ;
-  CGRender::WindowsWindow *arg1 = (CGRender::WindowsWindow *) 0 ;
-  void *result = 0 ;
-  
-  arg1 = (CGRender::WindowsWindow *)jarg1; 
-  result = (void *)((CGRender::WindowsWindow const *)arg1)->GetWindowHwnd();
-  jresult = (void *)result; 
-  return jresult;
-}
-
-
-SWIGEXPORT unsigned int SWIGSTDCALL CSharp_WindowsWindow_OnWindowClose(void * jarg1) {
-  unsigned int jresult ;
-  CGRender::WindowsWindow *arg1 = (CGRender::WindowsWindow *) 0 ;
-  bool result;
-  
-  arg1 = (CGRender::WindowsWindow *)jarg1; 
-  result = (bool)(arg1)->OnWindowClose();
-  jresult = result; 
-  return jresult;
-}
-
-
-SWIGEXPORT unsigned int SWIGSTDCALL CSharp_WindowsWindow_addCGRenderEvent__SWIG_0(void * jarg1, void * jarg2) {
-  unsigned int jresult ;
-  CGRender::WindowsWindow *arg1 = (CGRender::WindowsWindow *) 0 ;
-  CGRender::CGRenderEvent *arg2 = (CGRender::CGRenderEvent *) 0 ;
-  bool result;
-  
-  arg1 = (CGRender::WindowsWindow *)jarg1; 
-  arg2 = (CGRender::CGRenderEvent *)jarg2; 
-  result = (bool)(arg1)->addCGRenderEvent(arg2);
-  jresult = result; 
-  return jresult;
-}
-
-
-SWIGEXPORT unsigned int SWIGSTDCALL CSharp_WindowsWindow_addCGRenderEvent__SWIG_1(void * jarg1, void * jarg2) {
-  unsigned int jresult ;
-  CGRender::WindowsWindow *arg1 = (CGRender::WindowsWindow *) 0 ;
-  CGRenderEventType arg2 ;
-  CGRenderEventType *argp2 ;
-  bool result;
-  
-  arg1 = (CGRender::WindowsWindow *)jarg1; 
-  argp2 = (CGRenderEventType *)jarg2; 
-  if (!argp2) {
-    SWIG_CSharpSetPendingExceptionArgument(SWIG_CSharpArgumentNullException, "Attempt to dereference null CGRenderEventType", 0);
-    return 0;
-  }
-  arg2 = *argp2; 
-  result = (bool)(arg1)->addCGRenderEvent(arg2);
-  jresult = result; 
-  return jresult;
-}
-
-
-SWIGEXPORT unsigned int SWIGSTDCALL CSharp_WindowsWindow_removeCGRenderEvent(void * jarg1, void * jarg2) {
-  unsigned int jresult ;
-  CGRender::WindowsWindow *arg1 = (CGRender::WindowsWindow *) 0 ;
-  CGRenderEventType arg2 ;
-  CGRenderEventType *argp2 ;
-  bool result;
-  
-  arg1 = (CGRender::WindowsWindow *)jarg1; 
-  argp2 = (CGRenderEventType *)jarg2; 
-  if (!argp2) {
-    SWIG_CSharpSetPendingExceptionArgument(SWIG_CSharpArgumentNullException, "Attempt to dereference null CGRenderEventType", 0);
-    return 0;
-  }
-  arg2 = *argp2; 
-  result = (bool)(arg1)->removeCGRenderEvent(arg2);
-  jresult = result; 
-  return jresult;
-}
-
-
-SWIGEXPORT void SWIGSTDCALL CSharp_WindowsWindow_AfterEvent(void * jarg1) {
-  CGRender::WindowsWindow *arg1 = (CGRender::WindowsWindow *) 0 ;
-  
-  arg1 = (CGRender::WindowsWindow *)jarg1; 
-  (arg1)->AfterEvent();
-}
-
-
-SWIGEXPORT int SWIGSTDCALL CSharp_WindowsWindow_ContextID(void * jarg1) {
+SWIGEXPORT int SWIGSTDCALL CSharp_testswig_char(char * jarg1, int jarg2) {
   int jresult ;
-  CGRender::WindowsWindow *arg1 = (CGRender::WindowsWindow *) 0 ;
+  char *arg1 = (char *) (char *)0 ;
+  int arg2 ;
   int result;
   
-  arg1 = (CGRender::WindowsWindow *)jarg1; 
-  result = (int)(arg1)->ContextID();
+  arg1 = (char *)jarg1; 
+  arg2 = (int)jarg2; 
+  result = (int)testswig_char(arg1,arg2);
   jresult = result; 
   return jresult;
 }
 
 
-SWIGEXPORT void * SWIGSTDCALL CSharp_WindowsWindow_getCamera(void * jarg1) {
-  void * jresult ;
-  CGRender::WindowsWindow *arg1 = (CGRender::WindowsWindow *) 0 ;
-  CGRender::CGCamera *result = 0 ;
+SWIGEXPORT int SWIGSTDCALL CSharp_testswig_string(const char * jarg1) {
+  int jresult ;
+  std::string arg1 ;
+  int result;
   
-  arg1 = (CGRender::WindowsWindow *)jarg1; 
-  result = (CGRender::CGCamera *)(arg1)->getCamera();
-  jresult = (void *)result; 
+  if (!jarg1) {
+    SWIG_CSharpSetPendingExceptionArgument(SWIG_CSharpArgumentNullException, "null string", 0);
+    return 0;
+  }
+  (&arg1)->assign(jarg1); 
+  result = (int)testswig_string(SWIG_STD_MOVE(arg1));
+  jresult = result; 
   return jresult;
-}
-
-
-SWIGEXPORT void * SWIGSTDCALL CSharp_WindowsWindow_getCurLayer(void * jarg1) {
-  void * jresult ;
-  CGRender::WindowsWindow *arg1 = (CGRender::WindowsWindow *) 0 ;
-  CGData::CGLayer *result = 0 ;
-  
-  arg1 = (CGRender::WindowsWindow *)jarg1; 
-  result = (CGData::CGLayer *)(arg1)->getCurLayer();
-  jresult = (void *)result; 
-  return jresult;
-}
-
-
-SWIGEXPORT void * SWIGSTDCALL CSharp_WindowsWindow_getViewMatrix(void * jarg1) {
-  void * jresult ;
-  CGRender::WindowsWindow *arg1 = (CGRender::WindowsWindow *) 0 ;
-  glm::mat4 result;
-  
-  arg1 = (CGRender::WindowsWindow *)jarg1; 
-  result = ((CGRender::WindowsWindow const *)arg1)->getViewMatrix();
-  jresult = new glm::mat4(result); 
-  return jresult;
-}
-
-
-SWIGEXPORT void * SWIGSTDCALL CSharp_WindowsWindow_getPerspectiveMatrix(void * jarg1) {
-  void * jresult ;
-  CGRender::WindowsWindow *arg1 = (CGRender::WindowsWindow *) 0 ;
-  glm::mat4 *result = 0 ;
-  
-  arg1 = (CGRender::WindowsWindow *)jarg1; 
-  result = (glm::mat4 *) &(arg1)->getPerspectiveMatrix();
-  jresult = (void *)result; 
-  return jresult;
-}
-
-
-SWIGEXPORT void SWIGSTDCALL CSharp_WindowsWindow_addImage(void * jarg1, void * jarg2) {
-  CGRender::WindowsWindow *arg1 = (CGRender::WindowsWindow *) 0 ;
-  std::wstring *arg2 = 0 ;
-  
-  arg1 = (CGRender::WindowsWindow *)jarg1; 
-  arg2 = (std::wstring *)jarg2;
-  if (!arg2) {
-    SWIG_CSharpSetPendingExceptionArgument(SWIG_CSharpArgumentNullException, "std::wstring const & is null", 0);
-    return ;
-  } 
-  (arg1)->addImage((std::wstring const &)*arg2);
-}
-
-
-SWIGEXPORT void SWIGSTDCALL CSharp_WindowsWindow_syncWindowByParent(void * jarg1, void * jarg2) {
-  CGRender::WindowsWindow *arg1 = (CGRender::WindowsWindow *) 0 ;
-  CGRender::WindowsWindow *arg2 = (CGRender::WindowsWindow *) 0 ;
-  
-  arg1 = (CGRender::WindowsWindow *)jarg1; 
-  arg2 = (CGRender::WindowsWindow *)jarg2; 
-  (arg1)->syncWindowByParent(arg2);
 }
 
 

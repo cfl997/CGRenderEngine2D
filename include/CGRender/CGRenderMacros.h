@@ -13,7 +13,8 @@
 enum ShaderCodeName
 {
 	VS_POS_COLOR_TEX = 0,
-	VS_POS_COLOR_TEX_viewMatrix = 1,
+	VS_POS_TEX,
+	VS_POS_COLOR_TEX_viewMatrix,
 	VS_POS_TEX_MVP3Matrix,
 	VS_POS_TEX_MVPMatrix,
 	VS_Count,
@@ -128,6 +129,20 @@ struct MoveTextureIn
 	bool down;
 };
 
+struct CopyTextureIn
+{
+	int hSrcTex;
+	int srcOffsetX;
+	int srcOffsetY;
+	int srcWidth;
+	int srcHeight;
+	int hDesTex;
+	int desOffsetX;
+	int desOffsetY;
+	int desWidth;
+	int desHeight;
+};
+
 struct SetShaderTextureIn
 {
 	int hTexture;
@@ -232,6 +247,11 @@ struct EasyRenderIn
 	int nVertexBase;
 };
 
+struct RenderTextureIn
+{
+	int hTexture;
+	const CGRECT* pDstRt;
+};
 
 //common
 

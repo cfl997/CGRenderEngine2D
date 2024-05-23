@@ -184,6 +184,7 @@ void CGData::CGItemImage::loadPathData()
 {
 	auto& d = *m_priv;
 	d.hTexture = CGRender_CreateTextureFromFile(ContextID(), d.path.c_str(), GLTexture_Normal2DTex);
+	assert(d.hTexture > 0);
 	CGRender_GetTextureInfo(ContextID(), d.hTexture, &d.width, &d.height, &d.type);
 
 	auto& data = *getItemData();

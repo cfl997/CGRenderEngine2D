@@ -1,0 +1,16 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <Platforms>AnyCPU;x64</Platforms>
+    <BaseOutputPath>../../../../bin64</BaseOutputPath>
+    <ProduceReferenceAssembly>True</ProduceReferenceAssembly>
+    <PackageOutputPath>../../../../bin64</PackageOutputPath>
+  </PropertyGroup>
+  <ItemGroup>
+    <!-- 自动包含 Src 目录及其子目录下的所有 .cs 文件 -->
+    <Compile Include="../../*.cs" />
+  </ItemGroup>
+</Project>

@@ -282,6 +282,13 @@ namespace CGRender
 		//getCamera()->Position = glm::vec3{ pShape2d.center,getCamera()->Position.z };
 	}
 
+	int width = 800;
+	int height = 600;
+	int bufferSize = width * height * 4;
+	char* buffer = new char[bufferSize];
+
+	bool firstbuffer = true;
+
 	void WindowsWindow::renderTest()
 	{
 		auto& d = *m_priv;
@@ -306,7 +313,7 @@ namespace CGRender
 			glm::mat4 aa = Perspective * view * transform;//test
 
 			d.layer->Render(d.glContextID, aa);
-
+			return;
 #ifdef DEBUG
 			if (0)
 			{
@@ -314,7 +321,47 @@ namespace CGRender
 			}
 #endif // DEBUG
 
+			if (d.layer->getItem(CGData::CGItemType::CGItemImage).empty())
+				return;
+
+
+			int contextid = d.glContextID;
+
+			int hTexture = -1;
+			if (hTexture == -1)
+				hTexture = CGRender_CreateTextureFromData(contextid, 0, width, height, GLTextureType::GLTexture_Normal2DTex);
+
+			if (firstbuffer)
+			{
+				for (int i = 0; i < bufferSize; i += 4) {
+					buffer[i] = 0x00; // Red
+					buffer[i + 1] = 0x00; // Green
+					buffer[i + 2] = 0xff; // Blue
+					buffer[i + 3] = 0xFF; // Alpha
+				}
+				firstbuffer = false;
+			}
+
+			CGRender_UploadTexture(contextid, hTexture, 0, 0, width, height, buffer);
+
+
+			CGRECT rect{ width - 200,0,200,100 };
+			CGRender_RenderTexture(contextid, hTexture, &rect);
+			//delete[]buffer;
+
+			//int target = -1;
+			//if (target == -1)
+			//	target = CGRender_CreateTextureFromData(contextid, 0, width, height, GLTextureType::GLTexture_Normal2DTex);
+			//CGRender_SetRenderTarget(contextid, target);
+
 			return;
+		}
+		else
+		{
+
+
+			//CGRender_SaveTextue(contextid, hTexture, L"D:/render2D.png");
+
 		}
 	}
 
@@ -359,7 +406,7 @@ namespace CGRender
 			glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 #endif // use_opengl_4_6
 
-		}//s_GLFWInitialized
+			}//s_GLFWInitialized
 
 		{
 			//event
@@ -394,7 +441,11 @@ namespace CGRender
 			//d.glContext->setWindowData(hwnd, hGLRC);
 			d.glContextID = CGRender_CreateContext(d.hWnd, hGLRC, d.windowWidth, d.windowHeight);
 		}
-
+		{
+			//cfl-20240523  一个目标
+			int renderTarget = CGRender_CreateTextureFromData(d.glContextID, 0, width, height, GLTexture_Normal2DTex);
+			CGRender_SetRenderTarget(d.glContextID, renderTarget);
+		}
 		CGRender_SetViewport(d.glContextID, 0, 0, d.windowWidth, d.windowHeight);
 		CGRender_SetScissor(d.glContextID, 0, 0, d.windowWidth, d.windowHeight);
 		{
@@ -407,10 +458,17 @@ namespace CGRender
 			d.layer = std::make_unique<CGData::CGLayer>(ContextID());
 		}
 		//cfl-test
-		if (1)
+		if (0)
 		{
-			//auto defaultRenderEvent = CGRenderEvnetFactory::instance()->createRenderEvent(RenderEvent_Rectangle, this);
-			//addCGRenderEvent(defaultRenderEvent);
+			auto defaultRenderEvent = CGRenderEvnetFactory::instance()->createRenderEvent(RenderEvent_Rectangle, this);
+			addCGRenderEvent(defaultRenderEvent);
+		}
+		if(0)
+		{
+			//cfl-test
+			std::wstring bin{ CGPath_GetPath(CGPathType::CG_PATH_BIN) };
+			bin += L"//img.png";
+			addImage(bin);
 		}
 		glfwSetWindowUserPointer(m_Window, m_priv);
 
@@ -540,7 +598,7 @@ namespace CGRender
 				MouseMovedEvent event((float)worldx, (float)worldy);
 				data.EventCallback(event);
 			});
-	}
+		}
 
 	void WindowsWindow::Shutdown()
 	{
@@ -635,5 +693,5 @@ namespace CGRender
 		d.needClose = true;
 		return true;
 	}
-}
+	}
 

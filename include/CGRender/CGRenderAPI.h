@@ -19,7 +19,8 @@ bool GLRENDER_API CGRender_DeleteTexture(int Device, int hTexture);
 bool GLRENDER_API CGRender_ResizeTexture(int Device, int hTexture, unsigned int width, unsigned int height);
 bool GLRENDER_API CGRender_UploadTexture(int Device, int hTexture, int xoffset, int yoffset, int width, int height, void* buffer);
 bool GLRENDER_API CGRender_MoveTexturePixel(int Device, int hTexture, int xoffset, int yoffset, bool down = true);
-
+bool GLRENDER_API CGRender_CopyTexture(int Device, int hDesTexture, int xdesoffset, int ydesoffset, int destWidth, int destHeight, 
+	int hSrcTexture, int xsrcoffset, int ysrcoffset, int srcWidth, int srcHeight);
 
 bool GLRENDER_API CGRender_SetShaderTexture(int Device, int hTexture, int nRegisterIndex, ShaderType nShaderType = ShaderType::FRAGMENT);
 bool GLRENDER_API CGRender_SaveTextue(int Device, int hTexture, const std::wstring& filePath);
@@ -46,7 +47,7 @@ int  GLRENDER_API CGRender_GetRenderTarget(int Device);
 bool GLRENDER_API CGRender_RenderTest(int Device, float time);
 bool GLRENDER_API CGRender_Render(int hDevice, int hVertexBuffer, int hIndexBuffer, int nVertexType, int nStrart, int PrimitiveCount, int nVertexCount);
 bool GLRENDER_API CGRender_Render(int hDevice, int hVertexBuffer, int hIndexBuffer, int hVertexShader, int hGeometryShader, int hPixShader, int nStart, int nVertexCount, int nVertexBase);
-
+bool GLRENDER_API CGRender_RenderTexture(int hDevice, int hTex, const CGRECT* pDesRt);
 
 glm::vec3 GLRENDER_API CGRender_GetWorldPos(glm::vec2 screenPos, const glm::mat4& view, const  glm::mat4& perspective, glm::vec4 viewPort);
 

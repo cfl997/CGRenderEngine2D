@@ -24,7 +24,7 @@ struct CGRenderView::PrivateRenderView
 };
 
 
-CGRender::CGRenderView::CGRenderView(uint32_t width, uint32_t height, void* parent) :m_priv(new PrivateRenderView)
+CGRender::CGRenderView::CGRenderView(unsigned int width, unsigned int height, void* parent) :m_priv(new PrivateRenderView)
 {
 	// 设置C语言的字符集环境  
 
@@ -35,10 +35,14 @@ CGRender::CGRenderView::CGRenderView(uint32_t width, uint32_t height, void* pare
 	auto& d = *m_priv;
 	d.m_Running = true;
 	//手动创建主窗口，并作为主资源
-	WindowProps windowProps{ parent, g_windowMainStr, width, height,nullptr ,WindowType::Window_Main };
+	WindowProps windowProps{ parent,const_cast<wchar_t*>(g_windowMainStr.c_str()), width, height,nullptr ,WindowType::Window_Main };
 	std::shared_ptr<CGRender::Window>window = std::shared_ptr<CGRender::Window>(CGRender::Window::Create(windowProps));
 	window->SetRenderViewCallback(std::bind(&CGRenderView::WindowCallBack, this, std::placeholders::_1, std::placeholders::_2));
 	d.cgWindows[g_windowMainStr] = window;
+
+#ifdef DEBUG
+	std::cout << "cfl :CGRenderView init successful!" << std::endl;
+#endif // DEBUG
 }
 CGRenderView::~CGRenderView()
 {
@@ -63,6 +67,12 @@ bool CGRender::CGRenderView::createWindow(const CGRender::WindowProps& windowsPr
 	return true;
 }
 
+bool CGRender::CGRenderView::createWindow(void* parentWindow, const std::string& Title, unsigned int windowWidth, unsigned int windowHeight, void* share_Window, WindowType type)
+{
+	return createWindow({ parentWindow,utf82wstr(Title),windowWidth,windowHeight,share_Window,type });
+}
+
+
 bool CGRender::CGRenderView::deleteWindow(const std::wstring& title)
 {
 	auto& d = *m_priv;
@@ -74,10 +84,26 @@ bool CGRender::CGRenderView::deleteWindow(const std::wstring& title)
 	return true;
 }
 
+bool CGRender::CGRenderView::deleteWindow(const std::string& title)
+{
+	return deleteWindow(utf82wstr(title));
+}
+
+bool CGRender::CGRenderView::deleteWindow(const wchar_t* title)
+{
+	std::wstring wtitle{ title };
+	return deleteWindow(wtitle);
+}
+
 std::shared_ptr<CGRender::Window> CGRender::CGRenderView::getWindowByTitle(const std::wstring& title)
 {
 	auto& d = *m_priv;
 	return d.cgWindows[title];
+}
+
+std::shared_ptr<CGRender::Window> CGRender::CGRenderView::getWindowByTitle(const std::string& title)
+{
+	return getWindowByTitle(utf82wstr(title));
 }
 
 bool CGRender::CGRenderView::closeWindow(const std::wstring& title)
@@ -88,16 +114,20 @@ bool CGRender::CGRenderView::closeWindow(const std::wstring& title)
 	return false;
 }
 
-//std::shared_ptr<CGRender::Window> CGRender::CGRenderView::getWindowByType(const std::wstring& title)
-//{
-//	auto& d = *m_priv;
-//	return d.cgWindows[title];
-//}
+// 创建时钟
+std::chrono::steady_clock::time_point start, end;
 
 
 void CGRender::CGRenderView::Render()
 {
 	auto& d = *m_priv;
+
+
+	// 开始计时
+	start = std::chrono::steady_clock::now();
+
+
+
 
 	//while (d.m_Running)//这个交给qt，不然事件冲突
 	d.needCloseWindow();
@@ -110,6 +140,15 @@ void CGRender::CGRenderView::Render()
 			win.second->Render();
 		}
 	}
+
+	// 停止计时
+	end = std::chrono::steady_clock::now();
+
+	// 计算时间差并转换为毫秒
+	auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+
+	// 输出结果
+	GLRender_LOG("CGRenderVeiw - Render tiem :", duration.count());
 }
 
 void CGRender::CGRenderView::WindowCallBack(RenderViewCallBack Enum, std::wstring& title)
@@ -148,4 +187,14 @@ void CGRenderView::PrivateRenderView::needCloseWindow()
 int testswig_add(int a, int b)
 {
 	return a + b;
+}
+
+int testswig_char(char a[], int b)
+{
+	return 0;
+}
+
+int testswig_string(std::string a)
+{
+	return 0;
 }

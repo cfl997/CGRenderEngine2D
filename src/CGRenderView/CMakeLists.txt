@@ -117,7 +117,6 @@ include(${SWIG_USE_FILE})
 #设置.i文件
 set_property(SOURCE ${swig_file} PROPERTY CPLUSPLUS ON)
 
-
 set(swig_source_file
 	${COMMON_SOURCE_FILES} 
 	${COMMON_HEAD_FILES} 
@@ -129,7 +128,7 @@ set(swig_source_file
 #设置输出目录 需要重新编译一次
 set(CGRenderView_include_DIR "${CGRender_ROOT_DIR}/include/CGRenderView")
 #设置输出文件目录：给c#用单独的
-set(Cplusplus2CSharp_DIR "${CGRender_ROOT_DIR}/include/Cplusplus2CSharp")
+set(Cplusplus2CSharp_DIR "${CGRender_ROOT_DIR}/include/Render2DCSharp")
 
 swig_add_library(${PROJECT_NAME} 
   TYPE SHARED
@@ -138,6 +137,7 @@ swig_add_library(${PROJECT_NAME}
   OUTPUT_DIR ${Cplusplus2CSharp_DIR}
   OUTFILE_DIR ${CGRenderView_include_DIR}
   )
+set_property(SOURCE ${swig_file} PROPERTY SWIG_FLAGS "-csclassmodifiers" "public")
 
 set_target_properties( ${PROJECT_NAME}
     PROPERTIES
