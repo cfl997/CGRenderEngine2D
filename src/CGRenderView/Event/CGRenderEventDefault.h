@@ -13,8 +13,14 @@ namespace CGRender
 		CGRenderEventDefault(Window* window);
 		~CGRenderEventDefault();
 
+		virtual bool OnMouseScoll(MouseScrolledEvent& e)override;
+		virtual bool OnMouseMove(MouseMovedEvent& e)override;
+		virtual bool OnMouseButtonPress(MouseButtonPressedEvent& e)override;
+		virtual bool OnMouseButtonRelease(MouseButtonReleasedEvent& e)override;
+		void RenderTexture();
 	private:
-
+		struct PrivateData;
+		PrivateData* m_priv;
 	};
 
 }

@@ -2,17 +2,6 @@
 
 #include "CGWindow.h"
 
-//#include <GLFW/glfw3.h>
-#include "CGglm.h"
-
-//#include "CGData.h"
-
-#ifdef CGRENDERVIEW_EXPORTS
-#define CGRENDERVIEW_API __declspec(dllexport)
-#else
-#define CGRENDERVIEW_API __declspec(dllimport)
-#endif // CGRENDERVIEW_EXPORTS
-
 struct GLFWwindow;
 namespace CGData
 {
@@ -24,6 +13,7 @@ namespace CGRender
 	class CGRenderEvent;
 	class CGCamera;
 	struct WindowProps;
+	class Window;
 
 	class CGRENDERVIEW_API WindowsWindow : public Window
 	{
@@ -31,11 +21,13 @@ namespace CGRender
 		WindowsWindow(const WindowProps& props);
 		virtual ~WindowsWindow();
 
-		void Render() override;
-
+	public:
 		inline uint32_t GetWidth() const override;
 		inline uint32_t GetHeight() const override;
 
+		void ResizeWindow(unsigned int width, unsigned int height);
+	public:
+		void Render() override;
 		// Window attributes
 		inline void SetEventCallback(const Window::EventCallbackFn& callback) override;
 		inline void SetRenderViewCallback(const Window::RenderViewCallBackFn& callback)override;
@@ -71,18 +63,15 @@ namespace CGRender
 		*/
 		CGData::CGLayer* getCurLayer()noexcept;
 	public:
-		/*
-		* matrix view and perspective
-		*/
-		const glm::mat4 getViewMatrix()const;
-		const glm::mat4& getPerspectiveMatrix()noexcept;
+
 	public:
 		void addImage(const std::wstring& path);
+		virtual void addImage(const std::string& path)override;
 	public:
 		/*
 		* another window
 		*/
-		void syncWindowByParent(WindowsWindow*parent);
+		void syncWindowByParent(WindowsWindow* parent);
 
 	private:
 		void renderTest();

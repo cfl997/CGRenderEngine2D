@@ -7,23 +7,12 @@
 #include "CGRenderView_Export.h"
 
 
-#ifdef CGRENDERVIEW_EXPORTS
-#define CGRENDERVIEW_API __declspec(dllexport)
-#else
-#define CGRENDERVIEW_API __declspec(dllimport)
-#endif // CGRENDERVIEW_EXPORTS
-
 namespace CGRender
 {
 	class Event;
 	class CGRenderEvent;
 
-	enum WindowType
-	{
-		Window_Main = 0,
-		Window_One = 1,
-		Window_unknow = 0xff
-	};
+
 	//WindowsWindow
 	struct CGRENDERVIEW_API WindowProps
 	{
@@ -44,13 +33,9 @@ namespace CGRender
 		}
 	};
 
-	enum RenderViewCallBack
-	{
-		closeWindow = 0,
-		RenderViewCallBack_unKnow = 0xf,
-	};
 
-	class CGRENDERVIEW_API Window
+
+	class Window
 	{
 	public:
 		using EventCallbackFn = std::function<void(Event&)>;
@@ -74,6 +59,8 @@ namespace CGRender
 		virtual bool addCGRenderEvent(CGRenderEvent* renderEvent) = 0;
 		virtual bool addCGRenderEvent(CGRenderEventType EventType) = 0;
 		virtual bool removeCGRenderEvent(CGRenderEventType renderEventType) = 0;
+
+		virtual void addImage(const std::string& imagePath) = 0;
 
 		virtual int ContextID() = 0;
 		virtual bool needClose() = 0;

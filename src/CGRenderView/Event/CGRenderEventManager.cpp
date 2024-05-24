@@ -60,6 +60,11 @@ bool CGRender::CGRenderEventManager::removeCGRenderEvent(CGRenderEventType rende
 	return false;
 }
 
+CGRenderEvent* CGRender::CGRenderEventManager::getCGRenderEvent(CGRenderEventType type)
+{
+	return m_CGrenderEvents[type];
+}
+
 void CGRender::CGRenderEventManager::setCurrentEvent(CGRenderEventType type)
 {
 	m_currentType = type;

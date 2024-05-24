@@ -15,3 +15,15 @@ enum CGRenderEventType
 	RenderEvent_MeasureDistance,
 	CGRenderEventType_unknow = 0xff,
 };
+enum WindowType
+{
+	Window_Main = 0,
+	Window_One = 1,
+	Window_unknow = 0xff
+};
+
+enum RenderViewCallBack
+{
+	closeWindow = 0,
+	RenderViewCallBack_unKnow = 0xf,
+};

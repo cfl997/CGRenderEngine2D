@@ -3,6 +3,7 @@
 #include "CGRenderEventRectangle.h"
 #include "CGRenderEventRectWindow.h"
 #include "CGRenderEventMeasureDistance.h"
+#include "CGRenderEventDefault.h"
 #include "CGRenderType.h"
 
 namespace CGRender
@@ -26,7 +27,7 @@ namespace CGRender
 			switch (type)
 			{
 			case RenderEvent_Default:
-				return new CGRenderEvent(type, window);
+				return new CGRenderEventDefault(window);
 				break;
 			case RenderEvent_Rectangle:
 			{

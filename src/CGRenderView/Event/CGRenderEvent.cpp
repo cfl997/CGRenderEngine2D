@@ -13,6 +13,7 @@
 #include <functional>
 #include <assert.h>
 
+#include "CGRender.h"
 
 using namespace CGRender;
 
@@ -21,6 +22,7 @@ struct CGRenderEvent::PrivateData
 {
 	Window* window = nullptr;
 	WindowsWindow* winWindow = nullptr;
+
 };
 
 CGRender::CGRenderEvent::CGRenderEvent(CGRenderEventType type, Window* window) :m_priv(new PrivateData), m_type(type)
@@ -101,76 +103,19 @@ bool CGRender::CGRenderEvent::OnWindowClose(WindowCloseEvent& e)
 
 bool CGRender::CGRenderEvent::OnMouseScoll(MouseScrolledEvent& e)
 {
-	auto& d = *m_priv;
-	if (!d.window)
-		return false;
-
-	WindowsWindow* winWindow = dynamic_cast<WindowsWindow*>(d.window);
-	if (!winWindow)
-		return false;
-
-	winWindow->getCamera()->ProcessMouseScroll(e.GetYOffset(), e.GetX(), e.GetY());
 	return true;
 }
 bool CGRender::CGRenderEvent::OnMouseMove(MouseMovedEvent& e)
 {
-	auto& d = *m_priv;
-	if (!d.window)
-		return false;
-
-	WindowsWindow* winWindow = dynamic_cast<WindowsWindow*>(d.window);
-	if (!winWindow)
-		return false;
-	float x = e.GetX();
-	float y = e.GetY();
-
-	winWindow->getCamera()->ProcessMouseMoveXY(x, y);
-
-	winWindow->getCurLayer()->ProcessMouseMoveXY(x, y);
-
-	return false;
+	return true;
 }
 
 bool CGRender::CGRenderEvent::OnMouseButtonPress(MouseButtonPressedEvent& e)
 {
-	auto& d = *m_priv;
-	if (!d.window)
-		return false;
-
-	WindowsWindow* winWindow = dynamic_cast<WindowsWindow*>(d.window);
-	if (!winWindow)
-		return false;
-
-	float x = e.GetX();
-	float y = e.GetY();
-
-	if (e.GetMouseButton() == CG_MOUSE_BUTTON_RIGHT)
-		winWindow->getCamera()->ProcessMousePress(x, y);
-	if (e.GetMouseButton() == CG_MOUSE_BUTTON_RIGHT)
-		winWindow->getCurLayer()->ProcessMousePress(x, y);
-
-	return false;
+	return true;
 }
 
 bool CGRender::CGRenderEvent::OnMouseButtonRelease(MouseButtonReleasedEvent& e)
 {
-
-	auto& d = *m_priv;
-	if (!d.window)
-		return false;
-
-	WindowsWindow* winWindow = dynamic_cast<WindowsWindow*>(d.window);
-	if (!winWindow)
-		return false;
-
-	float x = e.GetX();
-	float y = e.GetY();
-
-	if (e.GetMouseButton() == CG_MOUSE_BUTTON_RIGHT)
-		winWindow->getCamera()->ProcessMouseRelease(x, y);
-	if (e.GetMouseButton() == CG_MOUSE_BUTTON_RIGHT)
-		winWindow->getCurLayer()->ProcessMouseRelease(x, y);
-
-	return false;
+	return true;
 }
-

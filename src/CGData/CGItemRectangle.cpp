@@ -119,6 +119,7 @@ void CGData::CGItemRectangle::Text(const std::wstring& text)
 
 	d.itemText->Color(Color());
 	d.itemText->setText(text);
+	d.itemText->Pixel(30);
 }
 
 void CGData::CGItemRectangle::build(int Device)

@@ -6,7 +6,7 @@
 
 namespace CGData
 {
-	struct BoundingBox2D
+	struct CGDATA_API BoundingBox2D
 	{
 		glm::vec2 min;
 		glm::vec2 max;
@@ -25,7 +25,7 @@ namespace CGData
 	};
 
 
-	struct BoundingShape2D
+	struct CGDATA_API BoundingShape2D
 	{
 		float radius;
 		glm::vec2 center;

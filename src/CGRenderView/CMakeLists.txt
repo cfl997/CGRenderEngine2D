@@ -30,6 +30,7 @@ set(COMMON_HEAD_PUBLIC
 	${CGRender_ROOT_DIR}/include/CGRenderView/RenderView.h
 	#这个是.i文件生成的 需要包含进去
 	${CGRender_ROOT_DIR}/include/CGRenderView/CGRenderViewCSHARP_wrap.cxx
+	${CGRender_ROOT_DIR}/include/CGRenderView/CGRender2D.h
 )
 
 SET(COMMON_HEAD_FILES

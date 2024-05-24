@@ -6,6 +6,9 @@
 #include "CGRender.h"
 #include "CGData.h"
 
+#include "CGWindow.h"
+#include "CGWindowsWindos.h"
+
 #include <memory>
 #include <thread>
 #include <qtimer.h>
@@ -59,13 +62,14 @@ QTDisplayWidget::QTDisplayWidget(QWidget* parent)
 	d.renderview = std::make_unique<CGRender::CGRenderView>(width, height, parentHwnd);
 	{
 
-		auto renderWindow = d.renderview->getWindowByTitle(CGRender::g_windowMainStr);
-		d.glWindow = dynamic_cast<CGRender::WindowsWindow*>(renderWindow.get());
-		assert(d.glWindow);
+		auto renderWindow = d.renderview->getWindowByTitle(CGRender::g_windowMainStr.c_str());
 
-		int contextId = renderWindow->ContextID();
-		int renderTarget = CGRender_CreateTextureFromData(contextId, 0, width, height, GLTexture_Normal2DTex);
-		CGRender_SetRenderTarget(contextId, renderTarget);
+		d.glWindow = dynamic_cast<CGRender::WindowsWindow*>((CGRender::Window*)renderWindow);
+
+
+		//int contextId = renderWindow->ContextID();
+		//int renderTarget = CGRender_CreateTextureFromData(contextId, 0, width, height, GLTexture_Normal2DTex);
+		//CGRender_SetRenderTarget(contextId, renderTarget);
 
 		//Ö÷Ñ­»·
 		QTimer* timer = new QTimer(this);
@@ -203,20 +207,22 @@ QTDisplayWidget::QTDisplayWidget(QWidget* parent)
 		CGRender::WindowProps windowProps;
 		windowProps.parentWindow = nullptr;
 		windowProps.Title = g_oneWindowTitle;
-		windowProps.type = CGRender::WindowType::Window_One;
+		windowProps.type = WindowType::Window_One;
 		windowProps.windowWidth = 500;
 		windowProps.windowHeight = 300;
 		windowProps.share_Window = d.glWindow->GetNativeWindow();
-		d.renderview->createWindow(windowProps);
+		//d.renderview->createWindow(windowProps);
+		d.renderview->createWindow(nullptr, wstr2utf8(g_oneWindowTitle).c_str(), 500, 300, d.glWindow->GetNativeWindow(), WindowType::Window_One);
 
 
-		auto renderWindow = d.renderview->getWindowByTitle(g_oneWindowTitle);
-		d.oneTitleWindow = dynamic_cast<CGRender::WindowsWindow*>(renderWindow.get());
+		auto renderWindow = d.renderview->getWindowByTitle(g_oneWindowTitle.c_str());
+		assert(renderWindow);
+		d.oneTitleWindow = dynamic_cast<CGRender::WindowsWindow*>((CGRender::Window*)renderWindow);
 		assert(d.oneTitleWindow);
 
-		int contextId = d.oneTitleWindow->ContextID();
-		int renderTarget = CGRender_CreateTextureFromData(contextId, 0, 500, 300, GLTexture_Normal2DTex);
-		CGRender_SetRenderTarget(contextId, renderTarget);
+		//int contextId = d.oneTitleWindow->ContextID();
+		//int renderTarget = CGRender_CreateTextureFromData(contextId, 0, 500, 300, GLTexture_Normal2DTex);
+		//CGRender_SetRenderTarget(contextId, renderTarget);
 	}
 
 	connect(d.ui.pbInsertWindow, &QPushButton::clicked, this, [&]() {

@@ -21,6 +21,10 @@ struct CGRenderView::PrivateRenderView
 	std::shared_ptr<CGRender::Window>getMainWindos() { return cgWindows[g_windowMainStr]; }
 
 	void needCloseWindow();
+	void WindowCallBack(RenderViewCallBack Enum, std::wstring& title);
+	bool closeWindow(const std::wstring& title);
+	bool deleteWindow(const std::wstring& title);
+
 };
 
 
@@ -37,7 +41,7 @@ CGRender::CGRenderView::CGRenderView(unsigned int width, unsigned int height, vo
 	//手动创建主窗口，并作为主资源
 	WindowProps windowProps{ parent,const_cast<wchar_t*>(g_windowMainStr.c_str()), width, height,nullptr ,WindowType::Window_Main };
 	std::shared_ptr<CGRender::Window>window = std::shared_ptr<CGRender::Window>(CGRender::Window::Create(windowProps));
-	window->SetRenderViewCallback(std::bind(&CGRenderView::WindowCallBack, this, std::placeholders::_1, std::placeholders::_2));
+	window->SetRenderViewCallback(std::bind(&CGRenderView::PrivateRenderView::WindowCallBack, m_priv, std::placeholders::_1, std::placeholders::_2));
 	d.cgWindows[g_windowMainStr] = window;
 
 #ifdef DEBUG
@@ -55,62 +59,120 @@ CGRenderView::~CGRenderView()
 	SAFE_DELETE(m_priv);
 }
 
-bool CGRender::CGRenderView::createWindow(const CGRender::WindowProps& windowsProps)
+bool CGRender::CGRenderView::createWindow(void* parentWindow, const char* Title, unsigned int windowWidth, unsigned int windowHeight, void* share_Window, WindowType type)
 {
+	CGRender::WindowProps windowsProps{ parentWindow,utf82wstr(Title),windowWidth,windowHeight,share_Window,type };
+
 	auto& d = *m_priv;
 	if (windowsProps.type == WindowType::Window_Main || windowsProps.type == WindowType::Window_unknow)
 		return false;
 	WindowProps windowProps{ windowsProps.parentWindow, windowsProps.Title, windowsProps.windowWidth,windowsProps.windowHeight,windowsProps.share_Window };
 	std::shared_ptr<CGRender::Window>window = std::shared_ptr<CGRender::Window>(CGRender::Window::Create(windowProps));
-	window->SetRenderViewCallback(std::bind(&CGRenderView::WindowCallBack, this, std::placeholders::_1, std::placeholders::_2));
+	window->SetRenderViewCallback(std::bind(&CGRenderView::PrivateRenderView::WindowCallBack, m_priv, std::placeholders::_1, std::placeholders::_2));
 	d.cgWindows[windowsProps.Title] = window;
 	return true;
 }
 
-bool CGRender::CGRenderView::createWindow(void* parentWindow, const std::string& Title, unsigned int windowWidth, unsigned int windowHeight, void* share_Window, WindowType type)
+bool CGRender::CGRenderView::deleteWindow(const char* title)
 {
-	return createWindow({ parentWindow,utf82wstr(Title),windowWidth,windowHeight,share_Window,type });
-}
-
-
-bool CGRender::CGRenderView::deleteWindow(const std::wstring& title)
-{
+	std::wstring wtitle = utf82wstr(title);
 	auto& d = *m_priv;
-	std::lock_guard Lock(d.windowMutex);
-	auto windowIterator = d.cgWindows.find(title);
-	if (windowIterator == d.cgWindows.end())
-		return false;
-	d.cgWindows.erase(windowIterator);
+	d.deleteWindow(wtitle);
 	return true;
 }
 
-bool CGRender::CGRenderView::deleteWindow(const std::string& title)
+void* CGRender::CGRenderView::getWindowByTitle(const char* title)
 {
-	return deleteWindow(utf82wstr(title));
+	std::wstring wtitle=utf82wstr(title);
+	return getWindowByTitle(wtitle.c_str());
 }
 
-bool CGRender::CGRenderView::deleteWindow(const wchar_t* title)
-{
-	std::wstring wtitle{ title };
-	return deleteWindow(wtitle);
-}
-
-std::shared_ptr<CGRender::Window> CGRender::CGRenderView::getWindowByTitle(const std::wstring& title)
+void* CGRender::CGRenderView::getWindowByTitle(const wchar_t* title)
 {
 	auto& d = *m_priv;
-	return d.cgWindows[title];
+	auto window = d.cgWindows[title];
+	if (window)
+	{
+		return window.get();
+	}
+	return nullptr;
 }
 
-std::shared_ptr<CGRender::Window> CGRender::CGRenderView::getWindowByTitle(const std::string& title)
-{
-	return getWindowByTitle(utf82wstr(title));
-}
+//bool CGRender::CGRenderView::deleteWindow(const std::wstring& title)
+//{
+//	auto& d = *m_priv;
+//	std::lock_guard Lock(d.windowMutex);
+//	auto windowIterator = d.cgWindows.find(title);
+//	if (windowIterator == d.cgWindows.end())
+//		return false;
+//	d.cgWindows.erase(windowIterator);
+//	return true;
+//}
+//
+//bool CGRender::CGRenderView::deleteWindow(const std::string& title)
+//{
+//	return deleteWindow(utf82wstr(title));
+//}
+//
+//bool CGRender::CGRenderView::deleteWindow(const wchar_t* title)
+//{
+//	std::wstring wtitle{ title };
+//	return deleteWindow(wtitle);
+//}
 
-bool CGRender::CGRenderView::closeWindow(const std::wstring& title)
+//CGRender::Window* CGRender::CGRenderView::getWindowByTitle(const std::wstring& title)
+//{
+//	auto& d = *m_priv;
+//	return d.cgWindows[title].get();
+//}
+//
+//CGRender::Window* CGRender::CGRenderView::getWindowByTitle(const std::string& title)
+//{
+//	return getWindowByTitle(utf82wstr(title));
+//}
+
+bool CGRender::CGRenderView::PrivateRenderView::closeWindow(const std::wstring& title)
 {
-	auto& d = *m_priv;
-	std::lock_guard Lock(d.windowMutex);
+	std::lock_guard Lock(windowMutex);
 	deleteWindow(title);
+	return false;
+}
+
+bool CGRender::CGRenderView::addCGRenderEvent(CGRenderEventType EventType)
+{
+	auto& d = *m_priv;
+	auto window = d.cgWindows[g_windowMainStr];
+	if (window)
+	{
+		return window->addCGRenderEvent(EventType);
+	}
+	return false;
+}
+
+bool CGRender::CGRenderView::addImage(const char* windowTitle, const char* imagePath)
+{
+	auto& d = *m_priv;
+	std::wstring wtitle = utf82wstr(windowTitle);
+	auto window = d.cgWindows[wtitle];
+	if (window)
+	{
+		window->addImage(imagePath);
+		return true;
+	}
+	return false;
+}
+
+bool CGRender::CGRenderView::resizeWindow(const char* windowTitle, unsigned int width, unsigned int height)
+{
+	auto& d = *m_priv;
+	std::wstring wtitle = utf82wstr(windowTitle);
+	auto window = d.cgWindows[wtitle];
+	WindowsWindow* windowsWindow = dynamic_cast<WindowsWindow*>(window.get());
+	if (window)
+	{
+		windowsWindow->ResizeWindow(width, height);
+		return true;
+	}
 	return false;
 }
 
@@ -122,12 +184,10 @@ void CGRender::CGRenderView::Render()
 {
 	auto& d = *m_priv;
 
-
+#ifdef DEBUG
 	// 开始计时
 	start = std::chrono::steady_clock::now();
-
-
-
+#endif // DEBUG
 
 	//while (d.m_Running)//这个交给qt，不然事件冲突
 	d.needCloseWindow();
@@ -140,32 +200,43 @@ void CGRender::CGRenderView::Render()
 			win.second->Render();
 		}
 	}
-
+#ifdef DEBUG
 	// 停止计时
 	end = std::chrono::steady_clock::now();
-
 	// 计算时间差并转换为毫秒
 	auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
-
 	// 输出结果
 	GLRender_LOG("CGRenderVeiw - Render tiem :", duration.count());
+#endif // DEBUG
+
 }
 
-void CGRender::CGRenderView::WindowCallBack(RenderViewCallBack Enum, std::wstring& title)
+void CGRender::CGRenderView::PrivateRenderView::WindowCallBack(RenderViewCallBack Enum, std::wstring& title)
 {
 	GLRender_LOG("CGRender::CGRenderView::WindowCallBack", Enum);
 	switch (Enum)
 	{
-	case CGRender::closeWindow:
+	case RenderViewCallBack::closeWindow:
 		closeWindow(title);
 
 		break;
-	case CGRender::RenderViewCallBack_unKnow:
+	case RenderViewCallBack::RenderViewCallBack_unKnow:
 		break;
 	default:
 		break;
 	}
 }
+
+bool CGRenderView::PrivateRenderView::deleteWindow(const std::wstring& title)
+{
+	std::lock_guard Lock(windowMutex);
+	auto windowIterator = cgWindows.find(title);
+	if (windowIterator == cgWindows.end())
+		return false;
+	cgWindows.erase(windowIterator);
+}
+
+
 
 void CGRenderView::PrivateRenderView::needCloseWindow()
 {
@@ -194,7 +265,3 @@ int testswig_char(char a[], int b)
 	return 0;
 }
 
-int testswig_string(std::string a)
-{
-	return 0;
-}

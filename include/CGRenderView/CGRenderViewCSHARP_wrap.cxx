@@ -301,32 +301,6 @@ SWIGEXPORT void SWIGSTDCALL SWIGRegisterStringCallback_CGRender2D(SWIG_CSharpStr
 #define SWIG_contract_assert(nullreturn, expr, msg) do { if (!(expr)) {SWIG_CSharpSetPendingExceptionArgument(SWIG_CSharpArgumentOutOfRangeException, msg, ""); return nullreturn; } } while (0)
 
 
-/* Callback for returning strings to C# without leaking memory */
-typedef void * (SWIGSTDCALL* SWIG_CSharpWStringHelperCallback)(const wchar_t *, int length);
-static SWIG_CSharpWStringHelperCallback SWIG_csharp_wstring_with_length_callback = NULL;
-
-
-#ifdef __cplusplus
-extern "C"
-#endif
-SWIGEXPORT void SWIGSTDCALL SWIGRegisterWStringCallback_CGRender2D(SWIG_CSharpWStringHelperCallback callback_utf16, SWIG_CSharpWStringHelperCallback callback_utf32) {
-  SWIG_csharp_wstring_with_length_callback = sizeof(wchar_t) == 2 ? callback_utf16 : callback_utf32;
-}
-
-
-/* Callback for returning strings to C# without leaking memory */
-typedef void (SWIGSTDCALL* SWIG_CSharpWStringExceptionHelperCallback)(const wchar_t *, int length);
-static SWIG_CSharpWStringExceptionHelperCallback SWIG_csharp_ApplicationException_callback = NULL;
-
-
-#ifdef __cplusplus
-extern "C"
-#endif
-SWIGEXPORT void SWIGSTDCALL SWIGRegisterWStringExceptionCallback_CGRender2D(SWIG_CSharpWStringExceptionHelperCallback callback_utf16, SWIG_CSharpWStringExceptionHelperCallback callback_utf32) {
-  SWIG_csharp_ApplicationException_callback = sizeof(wchar_t) == 2 ? callback_utf16 : callback_utf32;
-}
-
-
 #ifdef __cplusplus
 #include <utility>
 /* SwigValueWrapper is described in swig.swg */
@@ -375,21 +349,6 @@ template <typename T> T SwigValueInit() {
 #endif
 
 
-#include <wchar.h>
-#include <limits.h>
-#ifndef WCHAR_MIN
-#  define WCHAR_MIN 0
-#endif
-#ifndef WCHAR_MAX
-#  define WCHAR_MAX 65535
-#endif
-
-
-static void * SWIG_csharp_wstring_callback(const wchar_t *s) {
-  return SWIG_csharp_wstring_with_length_callback(s, (int)wcslen(s));
-}
-
-
 #include <stdint.h>		// Use the C99 official header
 
 
@@ -397,19 +356,8 @@ static void * SWIG_csharp_wstring_callback(const wchar_t *s) {
 
 
 #include "RenderView.h"
-#include "CGWindow.h"
-#include "CGWindowsWindos.h"
 #include "CGRenderType.h"
 
-
-enum CGRenderEventType_swig
-{
-	Event_Default = 0,
-	Event_Rectangle = 1,
-	Event_RectWindow,
-	Event_MeasureDistance,
-	EventType_unknow = 0xff,
-};
 
 using namespace CGRender;
 
@@ -449,49 +397,87 @@ SWIGEXPORT void SWIGSTDCALL CSharp_delete_CGRenderView(void * jarg1) {
 }
 
 
-SWIGEXPORT unsigned int SWIGSTDCALL CSharp_CGRenderView_createWindow(void * jarg1, void * jarg2, const char * jarg3, unsigned int jarg4, unsigned int jarg5, void * jarg6, int jarg7) {
+SWIGEXPORT unsigned int SWIGSTDCALL CSharp_CGRenderView_createWindow(void * jarg1, void * jarg2, char * jarg3, unsigned int jarg4, unsigned int jarg5, void * jarg6, int jarg7) {
   unsigned int jresult ;
   CGRender::CGRenderView *arg1 = (CGRender::CGRenderView *) 0 ;
   void *arg2 = (void *) 0 ;
-  std::string *arg3 = 0 ;
+  char *arg3 = (char *) 0 ;
   unsigned int arg4 ;
   unsigned int arg5 ;
   void *arg6 = (void *) 0 ;
-  CGRender::WindowType arg7 ;
+  WindowType arg7 ;
   bool result;
   
   arg1 = (CGRender::CGRenderView *)jarg1; 
   arg2 = (void *)jarg2; 
-  if (!jarg3) {
-    SWIG_CSharpSetPendingExceptionArgument(SWIG_CSharpArgumentNullException, "null string", 0);
-    return 0;
-  }
-  std::string arg3_str(jarg3);
-  arg3 = &arg3_str; 
+  arg3 = (char *)jarg3; 
   arg4 = (unsigned int)jarg4; 
   arg5 = (unsigned int)jarg5; 
   arg6 = (void *)jarg6; 
-  arg7 = (CGRender::WindowType)jarg7; 
-  result = (bool)(arg1)->createWindow(arg2,(std::string const &)*arg3,arg4,arg5,arg6,arg7);
+  arg7 = (WindowType)jarg7; 
+  result = (bool)(arg1)->createWindow(arg2,(char const *)arg3,arg4,arg5,arg6,arg7);
   jresult = result; 
   return jresult;
 }
 
 
-SWIGEXPORT unsigned int SWIGSTDCALL CSharp_CGRenderView_deleteWindow(void * jarg1, const char * jarg2) {
+SWIGEXPORT unsigned int SWIGSTDCALL CSharp_CGRenderView_deleteWindow(void * jarg1, char * jarg2) {
   unsigned int jresult ;
   CGRender::CGRenderView *arg1 = (CGRender::CGRenderView *) 0 ;
-  std::string *arg2 = 0 ;
+  char *arg2 = (char *) 0 ;
   bool result;
   
   arg1 = (CGRender::CGRenderView *)jarg1; 
-  if (!jarg2) {
-    SWIG_CSharpSetPendingExceptionArgument(SWIG_CSharpArgumentNullException, "null string", 0);
-    return 0;
-  }
-  std::string arg2_str(jarg2);
-  arg2 = &arg2_str; 
-  result = (bool)(arg1)->deleteWindow((std::string const &)*arg2);
+  arg2 = (char *)jarg2; 
+  result = (bool)(arg1)->deleteWindow((char const *)arg2);
+  jresult = result; 
+  return jresult;
+}
+
+
+SWIGEXPORT unsigned int SWIGSTDCALL CSharp_CGRenderView_addCGRenderEvent(void * jarg1, int jarg2) {
+  unsigned int jresult ;
+  CGRender::CGRenderView *arg1 = (CGRender::CGRenderView *) 0 ;
+  CGRenderEventType arg2 ;
+  bool result;
+  
+  arg1 = (CGRender::CGRenderView *)jarg1; 
+  arg2 = (CGRenderEventType)jarg2; 
+  result = (bool)(arg1)->addCGRenderEvent(arg2);
+  jresult = result; 
+  return jresult;
+}
+
+
+SWIGEXPORT unsigned int SWIGSTDCALL CSharp_CGRenderView_addImage(void * jarg1, char * jarg2, char * jarg3) {
+  unsigned int jresult ;
+  CGRender::CGRenderView *arg1 = (CGRender::CGRenderView *) 0 ;
+  char *arg2 = (char *) 0 ;
+  char *arg3 = (char *) 0 ;
+  bool result;
+  
+  arg1 = (CGRender::CGRenderView *)jarg1; 
+  arg2 = (char *)jarg2; 
+  arg3 = (char *)jarg3; 
+  result = (bool)(arg1)->addImage((char const *)arg2,(char const *)arg3);
+  jresult = result; 
+  return jresult;
+}
+
+
+SWIGEXPORT unsigned int SWIGSTDCALL CSharp_CGRenderView_resizeWindow(void * jarg1, char * jarg2, unsigned int jarg3, unsigned int jarg4) {
+  unsigned int jresult ;
+  CGRender::CGRenderView *arg1 = (CGRender::CGRenderView *) 0 ;
+  char *arg2 = (char *) 0 ;
+  unsigned int arg3 ;
+  unsigned int arg4 ;
+  bool result;
+  
+  arg1 = (CGRender::CGRenderView *)jarg1; 
+  arg2 = (char *)jarg2; 
+  arg3 = (unsigned int)jarg3; 
+  arg4 = (unsigned int)jarg4; 
+  result = (bool)(arg1)->resizeWindow((char const *)arg2,arg3,arg4);
   jresult = result; 
   return jresult;
 }
@@ -528,22 +514,6 @@ SWIGEXPORT int SWIGSTDCALL CSharp_testswig_char(char * jarg1, int jarg2) {
   arg1 = (char *)jarg1; 
   arg2 = (int)jarg2; 
   result = (int)testswig_char(arg1,arg2);
-  jresult = result; 
-  return jresult;
-}
-
-
-SWIGEXPORT int SWIGSTDCALL CSharp_testswig_string(const char * jarg1) {
-  int jresult ;
-  std::string arg1 ;
-  int result;
-  
-  if (!jarg1) {
-    SWIG_CSharpSetPendingExceptionArgument(SWIG_CSharpArgumentNullException, "null string", 0);
-    return 0;
-  }
-  (&arg1)->assign(jarg1); 
-  result = (int)testswig_string(SWIG_STD_MOVE(arg1));
   jresult = result; 
   return jresult;
 }

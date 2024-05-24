@@ -17,6 +17,7 @@ namespace CGRender
 		void OnEvent(Event& e);
 		bool addCGRenderEvent(CGRenderEvent* renderEvent);
 		bool removeCGRenderEvent(CGRenderEventType renderEventType);
+		CGRenderEvent* getCGRenderEvent(CGRenderEventType type);
 
 		void setCurrentEvent(CGRenderEventType type);
 	private:
