@@ -17,6 +17,8 @@ namespace CGData
 		uint32_t Pixel();
 
 		void setText(const std::wstring& text);
+		void lableCode(long labelCode);
+		long lableCode();
 		void OriginPos(glm::vec2 pos);
 
 	public:

@@ -35,7 +35,10 @@ namespace CGRender
 		bool IsVSync() const override;
 
 
-		const WindowType getType();
+		const WindowType getWindowType();
+		void setWindowType(WindowType type);
+	public:
+		const glm::mat4& getVPMatrix();
 
 	public:
 		inline virtual void* GetNativeWindow() const { return m_Window; }
@@ -46,7 +49,6 @@ namespace CGRender
 		/*
 		* 增加事件
 		*/
-		virtual bool addCGRenderEvent(CGRenderEvent* renderEvent)override;
 		virtual bool addCGRenderEvent(CGRenderEventType EventType) override;
 		virtual bool removeCGRenderEvent(CGRenderEventType renderEventType)override;
 		void AfterEvent();
@@ -67,6 +69,9 @@ namespace CGRender
 	public:
 		void addImage(const std::wstring& path);
 		virtual void addImage(const std::string& path)override;
+		void addImage(void* data, int width, int height, bool dual, GLTextureType textureType = GLTextureType::GLTexture_Normal2DTex);
+		void setRollingHeight(float height);
+		void setRollingDirection(int direction);
 	public:
 		/*
 		* another window

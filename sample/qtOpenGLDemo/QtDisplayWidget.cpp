@@ -16,26 +16,103 @@
 #include <qfiledialog.h>
 #include <iostream>
 
-//static inline long long color_to_int(const QColor& color)
-//{
-//	auto shift = [&](unsigned val, int shift) {
-//		return ((val & 0xff) << shift);
-//		};
-//
-//	return shift(color.red(), 0) | shift(color.green(), 8) |
-//		shift(color.blue(), 16) | shift(color.alpha(), 24);
-//}
-//
-//static inline QColor rgba_to_color(uint32_t rgba)
-//{
-//	return QColor::fromRgb(rgba & 0xFF, (rgba >> 8) & 0xFF,
-//		(rgba >> 16) & 0xFF, (rgba >> 24) & 0xFF);
-//}
+
+struct ImageData
+{
+	unsigned short width;
+	unsigned short height;
+	char* data;
+	bool isLoad;
+	int bytes;
+	ImageData() :isLoad(false),
+		width(0),
+		height(0),
+		data(0),
+		bytes(0)
+	{
+
+	}
+	~ImageData()
+	{
+		if (data)
+		{
+			delete data;
+			data = nullptr;
+		}
+	}
+
+	ImageData(
+		unsigned short w,
+		unsigned short h,
+		char* da,
+		bool is,
+		int by)
+	{
+		width = w;
+		height = h;
+		{
+			data = new char[by * w * h];
+			std::copy(da, da + by * w * h, data);
+		}
+		isLoad = is;
+		bytes = bytes;
+	}
+
+	ImageData& operator=(const ImageData& other)
+	{
+		width = other.width;
+		height = other.height;
+		{
+			data = new char[other.bytes * other.width * other.height];
+			std::copy(other.data, other.data + other.bytes * other.width * other.height, data);
+		}
+		isLoad = other.isLoad;
+		bytes = other.bytes;
+	}
+};
+
+static bool getImageData(const std::wstring& path, int width, int height, ImageData& imageData)
+{
+	FILE* fp = 0;
+
+	_wfopen_s(&fp, path.c_str(), L"rb");
+	if (!fp)
+	{
+		return false;
+	}
+	int bytes = 2;
+	long bufsize = width * height * bytes;
+	char* szbuf = new char[bufsize];
+	if (1 == fread(szbuf, bufsize, 1, fp))
+	{
+		fclose(fp);
+		imageData.width = width;
+		imageData.height = height;
+		imageData.isLoad = true;
+		imageData.data = new char[bytes * width * height];
+		std::copy(szbuf, szbuf + bytes * width * height, imageData.data);
+		delete szbuf;
+		szbuf = nullptr;
+		return true;
+	}
+
+	fclose(fp);
+
+	return false;
+}
+
+
 const std::wstring g_oneWindowTitle = L"oneTitleWindow";
+
+#include "Render2D.h"
+#define use_Render2D
 
 struct QTDisplayWidget::PrivateData
 {
 	Ui_MainWidget ui;
+#ifndef use_Render2D
+
+
 	std::unique_ptr<CGRender::CGRenderView>renderview = nullptr;
 	CGRender::WindowsWindow* glWindow = nullptr;
 
@@ -43,8 +120,13 @@ struct QTDisplayWidget::PrivateData
 	CGRender::WindowsWindow* oneTitleWindow = nullptr;
 
 	CGData::CGItemImage* image = nullptr;
-};
+#endif // !use_Render2D
+#ifdef use_Render2D
+	Render2D* render2D = nullptr;
+#endif // use_Render2D
 
+};
+#ifdef use_Render2D
 QTDisplayWidget::QTDisplayWidget(QWidget* parent)
 	: QWidget(parent), m_priv(new PrivateData)
 {
@@ -58,6 +140,247 @@ QTDisplayWidget::QTDisplayWidget(QWidget* parent)
 	HWND parentHwnd = reinterpret_cast<HWND>(d.ui.w_glwindow->winId()); // 获取窗口句柄
 	RECT rect;
 	GetWindowRect(parentHwnd, &rect);
+
+	d.render2D = new Render2D();
+	d.render2D->Create(parentHwnd, width, height);
+
+
+
+
+	QTimer* timer = new QTimer(this);
+	connect(timer, &QTimer::timeout, this, &QTDisplayWidget::runLoop);
+	timer->start(10);
+
+
+
+	{
+
+
+
+		//int contextId = renderWindow->ContextID();
+		//int renderTarget = CGRender_CreateTextureFromData(contextId, 0, width, height, GLTexture_Normal2DTex);
+		//CGRender_SetRenderTarget(contextId, renderTarget);
+
+		//主循环
+		QTimer* timer = new QTimer(this);
+		connect(timer, &QTimer::timeout, this, &QTDisplayWidget::runLoop);
+		timer->start(10);
+	}
+
+
+
+	connect(d.ui.pbOpenImage, &QPushButton::clicked, this, [&]() {
+		// 设置文件过滤器，仅显示 PNG 和 JPEG 格式的文件
+		QStringList filters;
+		filters << "All File(*.*)" << "PNG Files (*.png)" << "JPEG Files (*.jpeg *.jpg)";
+
+		// 弹出文件选择对话框，设置过滤器
+		QString selectedFile = QFileDialog::getOpenFileName(this, "Select Image", QDir::homePath(), filters.join(";;"));
+
+		// 如果用户选择了文件，则输出文件路径
+		if (selectedFile.isEmpty())
+			return;
+		{
+			qDebug() << "Selected file:" << selectedFile;
+		}
+
+		// 创建 QFileInfo 对象
+		QFileInfo fileInfo(selectedFile);
+
+		// 获取文件后缀
+		QString fileSuffix = fileInfo.suffix();
+		if (fileSuffix == QString("raw"))
+		{
+			int width = d.ui.leW->text().toInt();
+			int height = d.ui.leH->text().toInt();
+			ImageData imageData;
+			getImageData(selectedFile.toStdWString(), width, height, imageData);
+			//getImageData(selectedFile.toStdWString(), 496, 448, imageData);
+
+			d.render2D->SetImage(imageData.data, imageData.width, imageData.height, false);
+		}
+		else
+		{
+			assert(0);
+		}
+
+		d.ui.leImagePath->setText(selectedFile);
+
+		});
+
+	connect(d.ui.pbGrayColor, &QPushButton::clicked, this, [&]() {
+		//auto layer = d.glWindow->getCurLayer();
+		//layer->addImageShader(ShaderCodeName::FS_Tex_Gray);
+		});
+
+	connect(d.ui.pbInvertColor, &QPushButton::clicked, this, [&]() {
+		//auto layer = d.glWindow->getCurLayer();
+		//layer->addImageShader(ShaderCodeName::FS_Tex_Invert);
+		});
+
+	connect(d.ui.pbNormalColor, &QPushButton::clicked, this, [&]() {
+		//auto layer = d.glWindow->getCurLayer();
+		//layer->addImageShader(ShaderCodeName::FS_Tex);
+		});
+	connect(d.ui.pbRotate90, &QPushButton::clicked, this, [&]() {
+		//auto layer = d.glWindow->getCurLayer();
+		//layer->addImageShader(ShaderCodeName::FS_Tex_Rotate90);
+		});
+	connect(d.ui.pbClearAll, &QPushButton::clicked, this, [&]() {
+		//auto layer = d.glWindow->getCurLayer();
+		//layer->removeAllImageShader();
+		});
+
+
+	//connect(d.ui.pbmove, &QPushButton::clicked, this, [&, layoutInsert]() {
+		//if (d.image)
+		//{
+		//	d.image = nullptr;
+		//	layoutInsert(false);
+		//	return;
+		//}
+		//auto layer = d.glWindow->getCurLayer();
+		//auto item = layer->getItem(CGData::CGItemType::CGItemImage);
+		//if (item.size() <= 0)
+		//	return;
+
+		//d.image = dynamic_cast<CGData::CGItemImage*>(item.at(0));
+		//if (!d.image)
+		//	return;
+
+		//layoutInsert(true);
+
+		//});
+
+	static int insertHeight = 100;
+	DWORD pbcolor1 = 0xffCDFAFF;
+	DWORD pbcolor2 = 0xffFFFF97;
+
+
+	{
+		QColor color1(0xffFFFACD);
+
+
+		QPalette pbColorPalette = d.ui.pbInsert1->palette();
+		d.ui.pbInsert1->setAutoFillBackground(true);
+		d.ui.pbInsert1->setFlat(true);
+		pbColorPalette.setBrush(QPalette::Button, color1);
+		d.ui.pbInsert1->setPalette(pbColorPalette);
+	}
+
+	{
+		QColor color2(0xff97FFFF);
+
+		QPalette pbColorPalette = d.ui.pbInsert2->palette();
+		d.ui.pbInsert2->setAutoFillBackground(true);
+		d.ui.pbInsert2->setFlat(true);
+		pbColorPalette.setBrush(QPalette::Button, color2);
+		d.ui.pbInsert2->setPalette(pbColorPalette);
+	}
+
+
+	auto insertcolor = [&](DWORD color) {
+		//if (!d.image)
+		//	return;
+		//int width = d.image->width();
+		//DWORD* colorbuffer = new DWORD[width * insertHeight];
+		//for (int i = 0; i < width * insertHeight; i++)
+		//{
+		//	colorbuffer[i] = color;
+		//}
+
+		//d.image->updateData(colorbuffer, width, insertHeight);
+
+		//delete[]colorbuffer;
+		};
+
+	connect(d.ui.pbInsert1, &QPushButton::clicked, this, [&, insertcolor, pbcolor1]() {
+		insertcolor(pbcolor1);
+		});
+
+	connect(d.ui.pbInsert2, &QPushButton::clicked, this, [&, insertcolor, pbcolor2]() {
+		insertcolor(pbcolor2);
+		});
+
+	//new Window
+
+
+	connect(d.ui.pbInsertWindow, &QPushButton::clicked, this, [&]() {
+		//if (!d.oneTitleWindow)
+		//	return;
+		//auto items = d.glWindow->getCurLayer()->getItem(CGData::CGItemType::CGItemImage);
+		//if (items.empty())
+		//	return;
+		//CGData::CGItemImage* oldImage = dynamic_cast<CGData::CGItemImage*>(items.at(0));
+		//std::wstring path = oldImage->path();
+
+
+		//if (!d.oneTitleWindow)
+		//	return;
+		//auto layer = d.oneTitleWindow->getCurLayer();
+		//d.oneTitleWindow->addImage(path);
+		//d.oneTitleWindow->syncWindowByParent(d.glWindow);
+
+		});
+
+	connect(d.ui.pbDrawRect, &QPushButton::clicked, this, [&]() {
+		Parameter parameter;
+		parameter.rbutton_mode = 1;
+		parameter.windowType = 0;
+		d.render2D->SetParameter(parameter);
+
+		});
+
+	connect(d.ui.pbDrawRectWindow, &QPushButton::clicked, this, [&]() {
+		Parameter parameter;
+		parameter.rbutton_mode = 2;
+		parameter.windowType = 0;
+		d.render2D->SetParameter(parameter);
+		});
+
+	connect(d.ui.pbInsertText, &QPushButton::clicked, this, [&]() {
+		//auto layer = d.glWindow->getCurLayer();
+		//CGData::CGItemText* text = new CGData::CGItemText(d.glWindow->ContextID());
+		//QString letext = d.ui.leText->text();
+		//text->setText(letext.toStdWString());
+		//layer->addItem(text);
+		});
+
+
+}
+#else
+QTDisplayWidget::QTDisplayWidget(QWidget* parent)
+	: QWidget(parent), m_priv(new PrivateData)
+{
+	auto& d = *m_priv;
+	d.ui.setupUi(this);
+	d.ui.leImagePath->setReadOnly(true);
+
+	int width = d.ui.w_glwindow->geometry().width();
+	int height = d.ui.w_glwindow->geometry().height();
+
+	HWND parentHwnd = reinterpret_cast<HWND>(d.ui.w_glwindow->winId()); // 获取窗口句柄
+	RECT rect;
+	GetWindowRect(parentHwnd, &rect);
+#ifdef use_Render2D
+	d.render2D = new Render2D();
+	d.render2D->Create(parentHwnd, width, height);
+
+
+	connect(d.ui.pbDrawRect, &QPushButton::clicked, this, [&]() {
+		Parameter parameter;
+		parameter.rbutton_mode = 1;
+		parameter.windowType = 0;
+		d.render2D->SetParameter(parameter);
+
+		});
+
+	QTimer* timer = new QTimer(this);
+	connect(timer, &QTimer::timeout, this, &QTDisplayWidget::runLoop);
+	timer->start(10);
+	return;
+#endif // use_Render2D
+
 
 	d.renderview = std::make_unique<CGRender::CGRenderView>(width, height, parentHwnd);
 	{
@@ -90,7 +413,7 @@ QTDisplayWidget::QTDisplayWidget(QWidget* parent)
 	connect(d.ui.pbOpenImage, &QPushButton::clicked, this, [&]() {
 		// 设置文件过滤器，仅显示 PNG 和 JPEG 格式的文件
 		QStringList filters;
-		filters << "PNG Files (*.png)" << "JPEG Files (*.jpeg *.jpg)" << "All File(*.*)";
+		filters << "All File(*.*)" << "PNG Files (*.png)" << "JPEG Files (*.jpeg *.jpg)";
 
 		// 弹出文件选择对话框，设置过滤器
 		QString selectedFile = QFileDialog::getOpenFileName(this, "Select Image", QDir::homePath(), filters.join(";;"));
@@ -101,7 +424,28 @@ QTDisplayWidget::QTDisplayWidget(QWidget* parent)
 		{
 			qDebug() << "Selected file:" << selectedFile;
 		}
-		d.glWindow->addImage(selectedFile.toStdWString());
+
+		// 创建 QFileInfo 对象
+		QFileInfo fileInfo(selectedFile);
+
+		// 获取文件后缀
+		QString fileSuffix = fileInfo.suffix();
+		if (fileSuffix == QString("raw"))
+		{
+			int width = d.ui.leW->text().toInt();
+			int height = d.ui.leH->text().toInt();
+			ImageData imageData;
+			getImageData(selectedFile.toStdWString(), width, height, imageData);
+			//getImageData(selectedFile.toStdWString(), 496, 448, imageData);
+
+			d.glWindow->addImage(imageData.data, imageData.width, imageData.height, false, GLTextureType::GLTexture_Raw16);
+		}
+		else
+		{
+			d.glWindow->addImage(selectedFile.toStdWString());
+
+		}
+
 		d.ui.leImagePath->setText(selectedFile);
 
 		d.image = nullptr;
@@ -261,12 +605,15 @@ QTDisplayWidget::QTDisplayWidget(QWidget* parent)
 
 
 }
-
+#endif
 QTDisplayWidget::~QTDisplayWidget()
 {
 	auto& d = *m_priv;
-
+#ifdef use_Render2D
+	d.render2D->Release();
+#else
 	d.renderview.release();
+#endif // use_Render2D
 	if (m_priv)
 	{
 		delete m_priv;
@@ -277,14 +624,24 @@ QTDisplayWidget::~QTDisplayWidget()
 void QTDisplayWidget::closeEvent(QCloseEvent* event)
 {
 	auto& d = *m_priv;
+#ifndef use_Render2D
 	d.renderview.release();
+#endif // use_Render2D
+
 }
 
 
 void QTDisplayWidget::runLoop()
 {
 	auto& d = *m_priv;
-
+#ifdef use_Render2D
+	if (d.render2D)
+	{
+		d.render2D->Update();
+	}
+#else
 	if (d.renderview.get())
 		d.renderview->Render();
+#endif // use_Render2D
+
 }

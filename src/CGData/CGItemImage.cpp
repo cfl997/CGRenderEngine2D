@@ -21,6 +21,8 @@ struct CGItemImage::PrivateData
 	int uniformBufferid = -1;
 
 	CGEffector* effector = nullptr;
+
+	ImageRollingDrt rollingDirection = ImageRollingDrt::ImageRollingDrt_unknow;
 };
 
 CGData::CGItemImage::CGItemImage(int Device, const std::wstring& path) :m_priv(new PrivateData)
@@ -31,11 +33,14 @@ CGData::CGItemImage::CGItemImage(int Device, const std::wstring& path) :m_priv(n
 	setPrimitiveType(GLPrimitiveTypes::TRIANGLELIST);
 	d.path = path;
 
+
 	loadPathData();
+
+	createResource();
 
 }
 
-CGData::CGItemImage::CGItemImage(int Device, int width, int height) :m_priv(new PrivateData)
+CGData::CGItemImage::CGItemImage(int Device, void* data, int width, int height, GLTextureType texturetype) :m_priv(new PrivateData)
 {
 	auto& d = *m_priv;
 	Super::ContextID(Device);
@@ -43,7 +48,15 @@ CGData::CGItemImage::CGItemImage(int Device, int width, int height) :m_priv(new 
 	setPrimitiveType(GLPrimitiveTypes::TRIANGLELIST);
 
 	//创建屏幕大小的一个纹理
-	d.hTexture = CGRender_CreateTextureFromData(ContextID(), 0, width, height, GLTexture_Normal2DTex);
+	d.hTexture = CGRender_CreateTextureFromData(ContextID(), data, width, height, texturetype);
+	d.width = width;
+	d.height = height;
+	d.type = texturetype;
+
+	createResource();
+
+	d.vsShader = CGRender_CreateShader(ContextID(), ShaderCodeName::VS_POS_COLOR_TEX_viewMatrix);
+	d.fsShader = CGRender_CreateShader(ContextID(), ShaderCodeName::FS_Tex_Raw);
 }
 
 CGItemImage::~CGItemImage()
@@ -110,11 +123,21 @@ void CGData::CGItemImage::updateData(const std::wstring& path)
 
 void CGData::CGItemImage::updateData(void* data, int width, int height)
 {
+
+
 	bool moveResult = CGRender_MoveTexturePixel(ContextID(), TextureID(), 0, height);
 	assert(moveResult);
 
 	bool uploadresult = CGRender_UploadTexture(ContextID(), TextureID(), 0, 0, width, height, data);
 	assert(uploadresult);
+}
+
+void CGData::CGItemImage::Resize(int width, int height)
+{
+	auto& d = *m_priv;
+	CGRender_DeleteTexture(ContextID(), TextureID());
+	d.hTexture = CGRender_CreateTextureFromData(ContextID(), 0, width, height, GLTexture_Normal2DTex);
+	return;
 }
 
 
@@ -144,11 +167,28 @@ void CGData::CGItemImage::Render(int device, const glm::mat4& matrix)
 		d.effector->Render(device, d.hTexture, &renderTexture);
 	}
 
-	glm::mat4 aa = matrix;
+	glm::mat4 mvp = matrix;
+	{
+		switch (d.rollingDirection)
+		{
+		case ImageRollingDrt::ImageRollingDrt_left2right:
+		{
+			mvp = glm::rotate(mvp, glm::radians(90.0f), g_ZNormal);
+			break;
+		}
+		case ImageRollingDrt::ImageRollingDrt_right2left:
+		{
+			mvp = glm::rotate(mvp, glm::radians(-90.0f), g_ZNormal);
+			break;
+		}
+		default:
+			break;
+		}
+	}
 	if (d.uniformBufferid < 0)
-		d.uniformBufferid = CGRender_CreateBuffer(device, sizeof(glm::mat4), 1, &aa, GLBufferType::uniformBuffer);
+		d.uniformBufferid = CGRender_CreateBuffer(device, sizeof(glm::mat4), 1, &mvp, GLBufferType::uniformBuffer);
 	else
-		CGRender_ModifyBuffer(device, d.uniformBufferid, sizeof(glm::mat4) * 1, &aa);
+		CGRender_ModifyBuffer(device, d.uniformBufferid, sizeof(glm::mat4) * 1, &mvp);
 
 
 
@@ -163,6 +203,12 @@ void CGData::CGItemImage::Render(int device, const glm::mat4& matrix)
 
 	if (renderTexture != d.hTexture)
 		CGRender_DeleteTexture(device, renderTexture);
+}
+
+void CGData::CGItemImage::setRollingDirection(ImageRollingDrt direction)
+{
+	auto& d = *m_priv;
+	d.rollingDirection = direction;
 }
 
 void CGData::CGItemImage::clearResourse()
@@ -180,15 +226,10 @@ void CGData::CGItemImage::clearResourse()
 	d.uniformBufferid = -1;
 }
 
-void CGData::CGItemImage::loadPathData()
+void CGData::CGItemImage::createResource()
 {
 	auto& d = *m_priv;
-	d.hTexture = CGRender_CreateTextureFromFile(ContextID(), d.path.c_str(), GLTexture_Normal2DTex);
-	assert(d.hTexture > 0);
-	CGRender_GetTextureInfo(ContextID(), d.hTexture, &d.width, &d.height, &d.type);
-
 	auto& data = *getItemData();
-
 	float proportion = d.width / d.height;
 	float Texwidth = d.width / g_globalProportion;
 	float Texheight = d.height / g_globalProportion;
@@ -211,6 +252,15 @@ void CGData::CGItemImage::loadPathData()
 		d.vertexBufferId = CGRender_CreateBuffer(ContextID(), sizeof(CGData::Vertex), data.vertexes.size(), &data.vertexes[0], GLBufferType::VertexBuffer, GetPrimitiveType());
 	if (d.indexBufferId == -1)
 		d.indexBufferId = CGRender_CreateBuffer(ContextID(), sizeof(uint32_t), data.indexes.size(), data.indexes.data(), GLBufferType::IndexBuffer, GetPrimitiveType());
+}
+
+void CGData::CGItemImage::loadPathData()
+{
+	auto& d = *m_priv;
+	d.hTexture = CGRender_CreateTextureFromFile(ContextID(), d.path.c_str(), GLTexture_Normal2DTex);
+	assert(d.hTexture > 0);
+	CGRender_GetTextureInfo(ContextID(), d.hTexture, &d.width, &d.height, &d.type);
+
 
 	d.vsShader = CGRender_CreateShader(ContextID(), ShaderCodeName::VS_POS_COLOR_TEX_viewMatrix);
 	d.fsShader = CGRender_CreateShader(ContextID(), ShaderCodeName::FS_Tex);

@@ -30,6 +30,9 @@ enum ShaderCodeName
 	FSTwoTex,
 	FS_Text,
 	FS_Count,
+
+	//raw16
+	FS_Tex_Raw,
 	ShaderCodeCount,
 	//test
 	FSTestUniform,

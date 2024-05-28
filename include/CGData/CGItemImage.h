@@ -5,16 +5,24 @@
 
 namespace CGData
 {
+	enum class ImageRollingDrt
+	{
+		ImageRollingDrt_left2right = 0,
+		ImageRollingDrt_right2left,
+		ImageRollingDrt_unknow = 0xff,
+	};
+
 	class CGEffector;
 	class CGDATA_API CGItemImage : public CGItem
 	{
 		typedef CGItem Super;
 	public:
 		CGItemImage(int Device, const std::wstring& path);
-		CGItemImage(int Device, int width, int height);
+		CGItemImage(int Device, void* data, int width, int height, GLTextureType texturetype = GLTextureType::GLTexture_Raw16);
 		~CGItemImage();
 
 		CGItemType(CGItemImage);
+
 
 	public:
 		const int width()const;
@@ -27,13 +35,16 @@ namespace CGData
 	public:
 		void updateData(const std::wstring& path);
 		void updateData(void* data, int width, int height);
+		void Resize(int width, int height);
 	public:
 		void Effector(CGEffector* effector = nullptr);
 		void build(int Device)override;
 
 		void Render(int device, const glm::mat4& matrix)override;
+		void setRollingDirection(ImageRollingDrt direction);
 	private:
 		void clearResourse();
+		void createResource();
 		void loadPathData();
 	private:
 		struct PrivateData;

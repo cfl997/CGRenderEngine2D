@@ -31,6 +31,8 @@ set(COMMON_HEAD_PUBLIC
 	#这个是.i文件生成的 需要包含进去
 	${CGRender_ROOT_DIR}/include/CGRenderView/CGRenderViewCSHARP_wrap.cxx
 	${CGRender_ROOT_DIR}/include/CGRenderView/CGRender2D.h
+	${CGRender_ROOT_DIR}/include/CGRenderView/Render2D.h
+	${CGRender_ROOT_DIR}/include/CGRenderView/Render2DExport.h
 )
 
 SET(COMMON_HEAD_FILES
@@ -55,6 +57,7 @@ SET(COMMON_SOURCE_FILES
 	CGWindowsWindos.cpp
 	CGCamera.cpp
 	RenderView.cpp
+	Render2D.cpp
 )
 
 SET(ITEM_EVENT

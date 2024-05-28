@@ -43,6 +43,7 @@ CGRender::CGRenderView::CGRenderView(unsigned int width, unsigned int height, vo
 	std::shared_ptr<CGRender::Window>window = std::shared_ptr<CGRender::Window>(CGRender::Window::Create(windowProps));
 	window->SetRenderViewCallback(std::bind(&CGRenderView::PrivateRenderView::WindowCallBack, m_priv, std::placeholders::_1, std::placeholders::_2));
 	d.cgWindows[g_windowMainStr] = window;
+	window->addCGRenderEvent(CGRenderEventType::RenderEvent_Default);//先构建对象再创建事件
 
 #ifdef DEBUG
 	std::cout << "cfl :CGRenderView init successful!" << std::endl;
@@ -70,6 +71,7 @@ bool CGRender::CGRenderView::createWindow(void* parentWindow, const char* Title,
 	std::shared_ptr<CGRender::Window>window = std::shared_ptr<CGRender::Window>(CGRender::Window::Create(windowProps));
 	window->SetRenderViewCallback(std::bind(&CGRenderView::PrivateRenderView::WindowCallBack, m_priv, std::placeholders::_1, std::placeholders::_2));
 	d.cgWindows[windowsProps.Title] = window;
+	window->addCGRenderEvent(CGRenderEventType::RenderEvent_Default);//先构建对象再创建事件
 	return true;
 }
 
@@ -206,7 +208,7 @@ void CGRender::CGRenderView::Render()
 	// 计算时间差并转换为毫秒
 	auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
 	// 输出结果
-	GLRender_LOG("CGRenderVeiw - Render tiem :", duration.count());
+	//GLRender_LOG("CGRenderVeiw - Render tiem :", duration.count());
 #endif // DEBUG
 
 }
@@ -234,6 +236,7 @@ bool CGRenderView::PrivateRenderView::deleteWindow(const std::wstring& title)
 	if (windowIterator == cgWindows.end())
 		return false;
 	cgWindows.erase(windowIterator);
+	return true;
 }
 
 

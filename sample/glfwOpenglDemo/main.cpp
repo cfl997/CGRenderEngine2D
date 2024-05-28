@@ -16,6 +16,7 @@
 
 #include "CGRender.h"
 #include "CGRenderView.h"
+#include "CGWindowsWindos.h"
 #include "CGglm.h"
 
 #include "CGData.h"
@@ -177,8 +178,9 @@ int main()
 	std::unique_ptr<CGRender::CGRenderView> renderView = std::make_unique<CGRender::CGRenderView>(WindowWidth, WindowHeight, nullptr);
 	//renderView->createWindow({ L"opengl", 1280,720,nullptr });
 	//auto window = renderView->getWindowByType(CGRender::WindowType::Window_Main);
-	auto window = renderView->getWindowByTitle(CGRender::g_windowMainStr);
+	auto window1 = renderView->getWindowByTitle(CGRender::g_windowMainStr.c_str());
 	//window->addCGRenderEvent(CGRenderEventType::BoxRenderEvent);
+	auto window = (CGRender::Window*)window1;
 	int contextID = window->ContextID();
 
 	ImageData imageData;

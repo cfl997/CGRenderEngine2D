@@ -45,6 +45,26 @@ CGItemRectangle::CGItemRectangle(int Device, RectangleType type) :m_priv(new Pri
 
 	d.width = 40.;
 	d.height = 30.;
+
+
+
+	itemData.indexes.clear();
+	itemData.indexes.push_back(0);
+	itemData.indexes.push_back(1);
+	itemData.indexes.push_back(1);
+	itemData.indexes.push_back(2);
+	itemData.indexes.push_back(2);
+	itemData.indexes.push_back(3);
+	itemData.indexes.push_back(3);
+	itemData.indexes.push_back(0);
+	d.indexBufferId = CGRender_CreateBuffer(Device, sizeof(uint32_t), itemData.indexes.size(), itemData.indexes.data(), GLBufferType::IndexBuffer, GetPrimitiveType());
+
+	glm::mat4 a = glm::mat4{ 1 };
+	d.uniformBufferid = CGRender_CreateBuffer(Device, sizeof(glm::mat4), 1, &a, GLBufferType::uniformBuffer);
+
+
+	d.vsShader = CGRender_CreateShader(Device, ShaderCodeName::VS_POS_COLOR_TEX_viewMatrix);
+	d.fsShader = CGRender_CreateShader(Device, ShaderCodeName::FS_COLOR);
 }
 
 CGItemRectangle::~CGItemRectangle()
@@ -69,7 +89,7 @@ CGItemRectangle::~CGItemRectangle()
 	}
 }
 
-RectangleType CGData::CGItemRectangle::type()
+RectangleType CGData::CGItemRectangle::rectType()
 {
 	auto& d = *m_priv;
 	return d.type;
@@ -85,6 +105,16 @@ void CGData::CGItemRectangle::setPos(glm::vec3 pos)
 	}
 }
 
+void CGData::CGItemRectangle::setPos(glm::vec2 pos)
+{
+	setPos({ pos.x,pos.y,g_itemZDistance });
+}
+
+glm::vec3 CGData::CGItemRectangle::getPos()
+{
+	auto& d = *m_priv;
+	return d.ltpos;
+}
 void CGData::CGItemRectangle::setDirection(glm::vec3 direction)
 {
 	m_priv->xDirection = glm::normalize(direction);
@@ -120,6 +150,25 @@ void CGData::CGItemRectangle::Text(const std::wstring& text)
 	d.itemText->Color(Color());
 	d.itemText->setText(text);
 	d.itemText->Pixel(30);
+	d.itemText->OriginPos(d.ltpos);
+}
+void CGData::CGItemRectangle::Label(long labelCode)
+{
+	auto& d = *m_priv;
+	if (d.itemText == nullptr)
+		d.itemText = new CGItemText(ContextID());
+
+	d.itemText->lableCode(labelCode);
+	d.itemText->OriginPos(d.ltpos);
+}
+
+long CGData::CGItemRectangle::Label()
+{
+	auto& d = *m_priv;
+	if (d.itemText == nullptr)
+		return -1;
+
+	return d.itemText->lableCode();
 }
 
 void CGData::CGItemRectangle::build(int Device)
@@ -151,30 +200,6 @@ void CGData::CGItemRectangle::build(int Device)
 		d.vertexBufferId = CGRender_CreateBuffer(Device, sizeof(CGData::Vertex), data.vertexes.size(), &data.vertexes[0], GLBufferType::VertexBuffer, GetPrimitiveType());
 	else
 		CGRender_ModifyBuffer(Device, d.vertexBufferId, data.vertexes.size() * sizeof(CGData::Vertex), &data.vertexes[0]);
-	{
-		auto& itemData = *getItemData();
-		itemData.indexes.clear();
-		itemData.indexes.push_back(0);
-		itemData.indexes.push_back(1);
-		itemData.indexes.push_back(1);
-		itemData.indexes.push_back(2);
-		itemData.indexes.push_back(2);
-		itemData.indexes.push_back(3);
-		itemData.indexes.push_back(3);
-		itemData.indexes.push_back(0);
-
-		if (d.indexBufferId < 1)
-			d.indexBufferId = CGRender_CreateBuffer(Device, sizeof(uint32_t), itemData.indexes.size(), itemData.indexes.data(), GLBufferType::IndexBuffer, GetPrimitiveType());
-		else
-			CGRender_ModifyBuffer(Device, d.indexBufferId, itemData.indexes.size() * sizeof(uint32_t), itemData.indexes.data());
-
-		d.vsShader = CGRender_CreateShader(Device, ShaderCodeName::VS_POS_COLOR_TEX_viewMatrix);
-		//d.vsShader = CGRender_CreateShader(Device, ShaderCodeName::VS_POS_COLOR_TEX);
-		d.fsShader = CGRender_CreateShader(Device, ShaderCodeName::FS_COLOR);
-	}
-
-
-
 }
 
 void CGData::CGItemRectangle::Render(int device, const glm::mat4& matrix)
@@ -184,10 +209,8 @@ void CGData::CGItemRectangle::Render(int device, const glm::mat4& matrix)
 
 	glm::mat4 a = matrix;
 
-	if (d.uniformBufferid < 0)
-		d.uniformBufferid = CGRender_CreateBuffer(device, sizeof(glm::mat4), 1, &a, GLBufferType::uniformBuffer);
-	else
-		CGRender_ModifyBuffer(device, d.uniformBufferid, sizeof(glm::mat4) * 1, &a);
+
+	CGRender_ModifyBuffer(device, d.uniformBufferid, sizeof(glm::mat4) * 1, &a);
 
 	CGRender_SetShader(device, d.vsShader, ShaderType::VERTEX);
 	CGRender_SetShader(device, d.fsShader, ShaderType::FRAGMENT);
@@ -202,5 +225,6 @@ void CGData::CGItemRectangle::Render(int device, const glm::mat4& matrix)
 
 	if (d.itemText == nullptr)
 		return;
+	return;//todo ¹Ø±ÕÎÄ×Ö
 	d.itemText->Render(device, matrix);
 }

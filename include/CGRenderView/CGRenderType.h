@@ -22,6 +22,13 @@ enum WindowType
 	Window_unknow = 0xff
 };
 
+enum CGRenderMode
+{
+	RenderMode_static = 0,
+	RenderMode_rolling,
+	RenderMode_unknow = 0xff,
+};
+
 enum RenderViewCallBack
 {
 	closeWindow = 0,

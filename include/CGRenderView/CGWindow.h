@@ -56,7 +56,6 @@ namespace CGRender
 		virtual void* GetNativeWindow() const = 0;
 		virtual void* GetWindowHwnd()const = 0;
 
-		virtual bool addCGRenderEvent(CGRenderEvent* renderEvent) = 0;
 		virtual bool addCGRenderEvent(CGRenderEventType EventType) = 0;
 		virtual bool removeCGRenderEvent(CGRenderEventType renderEventType) = 0;
 

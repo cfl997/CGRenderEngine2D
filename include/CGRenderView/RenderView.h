@@ -18,9 +18,7 @@ namespace CGRender
 		* window
 		*/
 		bool createWindow(void* parentWindow, const char* Title, unsigned int  windowWidth, unsigned int  windowHeight, void* share_Window, WindowType type);
-
 		bool deleteWindow(const char* title);
-
 	public:
 		void* getWindowByTitle(const char* title);
 		void* getWindowByTitle(const wchar_t* title);
@@ -37,18 +35,11 @@ namespace CGRender
 		* render
 		*/
 		void Render();
-	public:
-		/*
-		* Texture
-		*/
 	private:
 		struct PrivateRenderView;
 		PrivateRenderView* m_priv;
-
 	};
-
 }
-
 extern "C" int testswig_add(int a, int b);
 extern "C" int testswig_char(char a[], int b);
 #endif // !_RENDERVIEW_H_

@@ -18,6 +18,7 @@ namespace CGRender
 		virtual bool OnMouseButtonPress(MouseButtonPressedEvent& e)override;
 		virtual bool OnMouseButtonRelease(MouseButtonReleasedEvent& e)override;
 		void RenderTexture();
+		void setDefultTexture(bool needUpdate = true);
 	private:
 		struct PrivateData;
 		PrivateData* m_priv;

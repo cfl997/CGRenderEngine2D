@@ -70,7 +70,7 @@ bool CGRender::CGRenderEventRectangle::OnMouseMove(MouseMovedEvent& e)
 bool CGRender::CGRenderEventRectangle::OnMouseButtonPress(MouseButtonPressedEvent& e)
 {
 	auto& d = *m_priv;
-	if (e.GetMouseButton() == CG_MOUSE_BUTTON_LEFT)
+	if (e.GetMouseButton() == CG_MOUSE_BUTTON_RIGHT)
 	{
 
 		d.isPressLeft = true;
@@ -83,7 +83,7 @@ bool CGRender::CGRenderEventRectangle::OnMouseButtonPress(MouseButtonPressedEven
 bool CGRender::CGRenderEventRectangle::OnMouseButtonRelease(MouseButtonReleasedEvent& e)
 {
 	auto& d = *m_priv;
-	if (e.GetMouseButton() == CG_MOUSE_BUTTON_LEFT)
+	if (e.GetMouseButton() == CG_MOUSE_BUTTON_RIGHT)
 	{
 		d.isPressLeft = false;
 

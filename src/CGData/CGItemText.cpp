@@ -25,6 +25,7 @@ struct CGItemText::PrivateData
 
 
 	std::wstring text = L"";
+	long labelCode = -1;
 
 	glm::vec2 originPos = { 0.,0. };
 };
@@ -69,6 +70,17 @@ void CGData::CGItemText::setText(const std::wstring& text)
 	auto& d = *m_priv;
 	d.text = text;
 	CGRender_Font_LoadFaces(ContextID(), text);
+}
+
+void CGData::CGItemText::lableCode(long labelCode)
+{
+	auto& d = *m_priv;
+	d.labelCode = labelCode;
+}
+
+long CGData::CGItemText::lableCode()
+{
+	return m_priv->labelCode;
 }
 
 void CGData::CGItemText::OriginPos(glm::vec2 pos)
@@ -144,7 +156,4 @@ void CGData::CGItemText::Render(int device, const glm::mat4& matrix)
 
 	CGRender_SetUniformBuffer(device, d.uniformBufferid, 0, ShaderType::VERTEX);
 	build(device);
-
-
-
 }
