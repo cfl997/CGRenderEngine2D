@@ -56,7 +56,7 @@ CGData::CGItemImage::CGItemImage(int Device, void* data, int width, int height, 
 	createResource();
 
 	d.vsShader = CGRender_CreateShader(ContextID(), ShaderCodeName::VS_POS_COLOR_TEX_viewMatrix);
-	d.fsShader = CGRender_CreateShader(ContextID(), ShaderCodeName::FS_Tex_Raw);
+	d.fsShader = CGRender_CreateShader(ContextID(), ShaderCodeName::FS_Tex_Red);
 }
 
 CGItemImage::~CGItemImage()
@@ -173,12 +173,14 @@ void CGData::CGItemImage::Render(int device, const glm::mat4& matrix)
 		{
 		case ImageRollingDrt::ImageRollingDrt_left2right:
 		{
-			mvp = glm::rotate(mvp, glm::radians(90.0f), g_ZNormal);
+			mvp = glm::rotate(mvp, glm::radians(-90.0f), g_ZNormal);
 			break;
 		}
 		case ImageRollingDrt::ImageRollingDrt_right2left:
 		{
-			mvp = glm::rotate(mvp, glm::radians(-90.0f), g_ZNormal);
+			//数据都是从上到下的。逆时针旋转则需要反转x采样
+			d.fsShader = CGRender_CreateShader(ContextID(), ShaderCodeName::FS_Tex_Red_xRevert);
+			mvp = glm::rotate(mvp, glm::radians(90.0f), g_ZNormal);
 			break;
 		}
 		default:
@@ -200,6 +202,14 @@ void CGData::CGItemImage::Render(int device, const glm::mat4& matrix)
 	CGRender_SetUniformBuffer(device, d.uniformBufferid, 0, ShaderType::VERTEX);
 
 	CGRender_Render(device, d.vertexBufferId, d.indexBufferId, GetPrimitiveType(), 0, 0, 0);
+
+#ifdef DEBUG
+	if (0)
+	{
+		CGRender_SaveTextue(device, renderTexture, L"D:/raw16.png");
+	}
+#endif // DEBUG
+
 
 	if (renderTexture != d.hTexture)
 		CGRender_DeleteTexture(device, renderTexture);

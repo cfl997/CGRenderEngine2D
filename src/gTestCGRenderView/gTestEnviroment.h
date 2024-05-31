@@ -11,7 +11,8 @@ public:
 	{
 		m_renderView = new CGRender::CGRenderView(WindowWidth, WindowHeight, nullptr);
 		//window = m_renderView->getWindowByType(CGRender::WindowType::Window_Main).get();
-		window = m_renderView->getWindowByTitle(CGRender::g_windowMainStr).get();
+		void* window1 = m_renderView->getWindowByTitle(CGRender::g_windowMainStr.c_str());
+		CGRender::Window* window = static_cast<CGRender::Window*>(window1);
 		contextID = window->ContextID();
 		m_windowswin = dynamic_cast<CGRender::WindowsWindow*>(window);
 		EXPECT_NE(m_windowswin, nullptr);

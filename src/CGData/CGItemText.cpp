@@ -72,17 +72,6 @@ void CGData::CGItemText::setText(const std::wstring& text)
 	CGRender_Font_LoadFaces(ContextID(), text);
 }
 
-void CGData::CGItemText::lableCode(long labelCode)
-{
-	auto& d = *m_priv;
-	d.labelCode = labelCode;
-}
-
-long CGData::CGItemText::lableCode()
-{
-	return m_priv->labelCode;
-}
-
 void CGData::CGItemText::OriginPos(glm::vec2 pos)
 {
 	auto& d = *m_priv;

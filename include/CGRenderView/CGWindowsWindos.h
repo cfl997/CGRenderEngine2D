@@ -72,6 +72,8 @@ namespace CGRender
 		void addImage(void* data, int width, int height, bool dual, GLTextureType textureType = GLTextureType::GLTexture_Normal2DTex);
 		void setRollingHeight(float height);
 		void setRollingDirection(int direction);
+		void RenderMode(CGRenderMode renderMode);
+		CGRenderMode RenderMode();
 	public:
 		/*
 		* another window

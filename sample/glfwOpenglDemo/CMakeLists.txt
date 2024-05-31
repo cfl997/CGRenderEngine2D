@@ -39,5 +39,4 @@ ${includes}
 SET_PROPERTY(TARGET ${PROJECT_NAME} PROPERTY FOLDER "sample")
 
 
-#add_dependencies(${PROJECT_NAME} CGRender CGData CGRenderView)
 add_dependencies(${PROJECT_NAME} CGData CGRenderView)

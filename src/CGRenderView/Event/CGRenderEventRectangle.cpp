@@ -35,7 +35,7 @@ m_priv(new PrivateData)
 	layer->addItem(d.itemRect);
 
 
-	d.itemRect->Text(L"hzfjksdj大佛啊设计费你打93240932!@##$%#$^^&()_+{}: > ? ;l ");
+	//d.itemRect->Text(L"hzfjksdj大佛啊设计费你打93240932!@##$%#$^^&()_+{}: > ? ;l ");
 }
 
 CGRender::CGRenderEventRectangle::~CGRenderEventRectangle()

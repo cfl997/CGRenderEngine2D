@@ -207,8 +207,12 @@ void CGRender::CGRenderView::Render()
 	end = std::chrono::steady_clock::now();
 	// 计算时间差并转换为毫秒
 	auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+	auto durationnano = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start);
 	// 输出结果
-	//GLRender_LOG("CGRenderVeiw - Render tiem :", duration.count());
+	//GLRender_LOG("CGRenderVeiw - Render time :", duration.count());
+	std::cout << "CGRenderView - Render time ; " << duration.count() << "ms" << std::endl;
+	std::cout << "CGRenderView - Render time ; " << durationnano.count() << "nanos" << std::endl;
+	std::cout << "CGRenderView - Render time ; " << 1000000000 / durationnano.count() << "fps" << std::endl;
 #endif // DEBUG
 
 }

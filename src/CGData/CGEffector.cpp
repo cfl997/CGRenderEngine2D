@@ -68,7 +68,12 @@ void CGData::CGEffector::addEffector(ShaderCodeName name)
 	auto& d = *m_priv;
 	if (!(name<ShaderCodeName::FS_Count && name>ShaderCodeName::VS_Count))
 		return;
-	int shader = CGRender_CreateShader(d.Device, name);
+	int shader = -1;
+	if (name != ShaderCodeName::FS_Tex_RGBA_equalizeHistogramSource)
+	{
+		//todo
+		shader = CGRender_CreateShader(d.Device, name);
+	}
 	d.m_fs[name] = shader;
 }
 
@@ -90,12 +95,44 @@ void CGData::CGEffector::Render(int device, int hTexture, int* desTexture)
 {
 	auto& d = *m_priv;
 
-	if (d.m_fs.empty())
+
+	std::map<ShaderCodeName, int>tempfs{ d.m_fs };
+
+
+	std::vector<ShaderCodeName>cudafsname;
+
+
+	for (auto iter = tempfs.begin(); iter != tempfs.end();)
 	{
-		*desTexture = hTexture;
-		return;
+		if (
+			iter->first == ShaderCodeName::FS_Tex_Red_equalizeHistogramSource ||
+			iter->first == ShaderCodeName::FS_Tex_RGBA_equalizeHistogramSource
+			)
+		{
+			cudafsname.push_back(iter->first);
+			iter = tempfs.erase(iter);
+		}
+		else
+		{
+			iter++;
+		}
 	}
 
+	int cudaTexture = hTexture;
+	if (!cudafsname.empty())
+	{
+		int nwidth, nheight, type;
+		CGRender_GetTextureInfo(device, hTexture, &nwidth, &nheight, &type);
+		cudaTexture = CGRender_CreateTextureFromData(device, 0, nwidth, nheight, GLTextureType(type));
+		CGRender_CopyTexture(device, cudaTexture, 0, 0, nwidth, nheight, hTexture, 0, 0, nwidth, nheight);
+		CGRender_CudaTexture(device, cudaTexture, cudafsname);
+	}
+
+	if (tempfs.empty())
+	{
+		*desTexture = cudaTexture;
+		return;
+	}
 
 	int oldTarget = CGRender_GetRenderTarget(device);
 	CGRECT oldviewport;
@@ -103,12 +140,11 @@ void CGData::CGEffector::Render(int device, int hTexture, int* desTexture)
 	CGRender_GetViewport(device, &oldviewport);
 	CGRender_GetScissor(device, &oldscissor);
 
-
 	{
 
 		int nwidth, nheight, type;
-		CGRender_GetTextureInfo(device, hTexture, &nwidth, &nheight, &type);
-		int newTarget = CGRender_CreateTextureFromData(device, 0, nwidth, nheight, GLTexture_Normal2DTex);
+		CGRender_GetTextureInfo(device, cudaTexture, &nwidth, &nheight, &type);
+		int newTarget = CGRender_CreateTextureFromData(device, 0, nwidth, nheight, GLTextureType(type));
 
 
 		CGRender_SetViewport(device, 0, 0, nwidth, nheight);
@@ -118,18 +154,18 @@ void CGData::CGEffector::Render(int device, int hTexture, int* desTexture)
 		CGRender_SetShader(device, d.vsShader, ShaderType::VERTEX);
 
 		int tempTarget = -1;
-		if (d.m_fs.size() > 1)
-			tempTarget = CGRender_CreateTextureFromData(device, 0, nwidth, nheight, GLTexture_Normal2DTex);
+		if (tempfs.size() > 1)
+			tempTarget = CGRender_CreateTextureFromData(device, 0, nwidth, nheight, GLTextureType(type));
 
-		for (auto iter = d.m_fs.begin(); iter != d.m_fs.end(); iter++)
+		for (auto iter = tempfs.begin(); iter != tempfs.end(); iter++)
 		{
 			int fs = iter->second;
 			CGRender_SetShader(device, fs, ShaderType::FRAGMENT);
 
-			if (iter == d.m_fs.begin())
+			if (iter == tempfs.begin())
 			{
 				CGRender_SetRenderTarget(device, newTarget);
-				CGRender_SetShaderTexture(device, hTexture, 0, ShaderType::FRAGMENT);
+				CGRender_SetShaderTexture(device, cudaTexture, 0, ShaderType::FRAGMENT);
 				CGRender_Render(device, d.vertexBufferId, d.indexBufferId, d.primitiveType, 0, 0, 0);
 				if (0)
 				{

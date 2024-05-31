@@ -52,6 +52,7 @@ namespace CGRender
 		bool VSync;
 		GLFWwindow* shareWindow;
 		WindowType type;
+		CGRenderMode renderMode;
 		//event
 		EventCallbackFn EventCallback = nullptr;
 		RenderViewCallBackFn RenderViewCallBack = nullptr;
@@ -252,7 +253,7 @@ namespace CGRender
 		auto& d = *m_priv;
 
 		float imageHeight = height;
-		float scale = static_cast<float> (d.windowHeight) / static_cast<float> (imageHeight);
+		float scale = static_cast<float> (d.windowHeight) / static_cast<float> (imageHeight / g_globalProportion);
 
 		if (scale > g_Camera_SCALE[CAMERA_SCALE_NUMS - 1])
 			scale = 1.0;
@@ -260,7 +261,7 @@ namespace CGRender
 		d.camera->ImageMinSclae(scale);
 		d.camera->resetPosition(d.windowWidth, d.windowHeight);
 
-		float imageWidth = d.windowWidth / scale;
+		float imageWidth = d.windowWidth / scale * g_globalProportion;
 
 		std::swap(imageWidth, imageHeight);//动图模式宽高应该反过来
 
@@ -269,6 +270,7 @@ namespace CGRender
 		if (items.empty())
 		{
 			image = new CGData::CGItemImage(ContextID(), 0, imageWidth, imageHeight, GLTextureType::GLTexture_Raw16);
+			d.layer->addItem(image);
 			return;
 		}
 		image = dynamic_cast<CGData::CGItemImage*>(items.at(0));
@@ -286,6 +288,18 @@ namespace CGRender
 		}
 		CGData::CGItemImage* image = dynamic_cast<CGData::CGItemImage*>(items.at(0));
 		image->setRollingDirection(CGData::ImageRollingDrt(direction));
+	}
+
+	void WindowsWindow::RenderMode(CGRenderMode renderMode)
+	{
+		auto& d = *m_priv;
+		d.renderMode = renderMode;
+	}
+
+	CGRenderMode WindowsWindow::RenderMode()
+	{
+		auto& d = *m_priv;
+		return d.renderMode;
 	}
 
 	void WindowsWindow::syncWindowByParent(WindowsWindow* parent)
@@ -395,7 +409,7 @@ namespace CGRender
 
 				bool isInit = CGRender_Init(szfile);//是否包含glew32.dll
 				assert(isInit);
-		}
+			}
 			//glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
 #ifndef use_Window_Title
 			// 设置窗口属性，隐藏标题栏
@@ -409,7 +423,7 @@ namespace CGRender
 			glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 #endif // use_opengl_4_6
 
-	}//s_GLFWInitialized
+			}//s_GLFWInitialized
 
 		{
 			//event
@@ -581,7 +595,7 @@ namespace CGRender
 				MouseMovedEvent event((float)worldx, (float)worldy);
 				data.EventCallback(event);
 			});
-}
+		}
 
 	void WindowsWindow::Shutdown()
 	{

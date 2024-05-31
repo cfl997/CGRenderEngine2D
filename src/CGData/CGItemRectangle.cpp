@@ -23,6 +23,7 @@ struct CGItemRectangle::PrivateData
 	int uniformBufferid = -1;
 
 	CGItemText* itemText = nullptr;
+	long labelCode = -1;
 };
 
 
@@ -157,8 +158,9 @@ void CGData::CGItemRectangle::Label(long labelCode)
 	auto& d = *m_priv;
 	if (d.itemText == nullptr)
 		d.itemText = new CGItemText(ContextID());
-
-	d.itemText->lableCode(labelCode);
+	d.labelCode = labelCode;
+	std::wstring text = CGText_TextByCode(labelCode);
+	d.itemText->setText(text);
 	d.itemText->OriginPos(d.ltpos);
 }
 
@@ -168,7 +170,7 @@ long CGData::CGItemRectangle::Label()
 	if (d.itemText == nullptr)
 		return -1;
 
-	return d.itemText->lableCode();
+	return d.labelCode;
 }
 
 void CGData::CGItemRectangle::build(int Device)
@@ -225,6 +227,7 @@ void CGData::CGItemRectangle::Render(int device, const glm::mat4& matrix)
 
 	if (d.itemText == nullptr)
 		return;
-	return;//todo 关闭文字
+	//return;//todo 关闭文字
+
 	d.itemText->Render(device, matrix);
 }

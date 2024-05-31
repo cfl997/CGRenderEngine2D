@@ -24,4 +24,7 @@ GLRENDER_API wchar_t* CGPath_GetPath(CGPathType dwType);
 GLRENDER_API std::string wstr2utf8(const std::wstring& wstr);
 GLRENDER_API std::wstring utf82wstr(const std::string& wstr);
 
+GLRENDER_API bool CGText_Init();//CGPath_Init()包含 更新数据后再次调用
+GLRENDER_API const std::wstring CGText_TextByCode(long code);
+
 #endif // !_CGPATH_H_

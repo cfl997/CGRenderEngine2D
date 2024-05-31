@@ -16,6 +16,12 @@
 #include <qfiledialog.h>
 #include <iostream>
 
+#include "Render2D.h"
+#ifdef _DEBUG
+#pragma comment (lib,"Render2DD.lib")
+#else
+#pragma comment (lib,"Render2D.lib")
+#endif // _DEBUG
 
 struct ImageData
 {
@@ -102,14 +108,33 @@ static bool getImageData(const std::wstring& path, int width, int height, ImageD
 }
 
 
+uint16_t ConvertColorToRGB565(uint32_t color) {
+	// 提取RGB分量
+	uint8_t r = (color >> 16) & 0xFF;
+	uint8_t g = (color >> 8) & 0xFF;
+	uint8_t b = color & 0xFF;
+
+	// 转换为RGB565格式
+	uint16_t r5 = (r * 31) / 255;
+	uint16_t g6 = (g * 63) / 255;
+	uint16_t b5 = (b * 31) / 255;
+
+	// 打包成一个16位整数
+	uint16_t rgb565 = (r5 << 11) | (g6 << 5) | b5;
+	return rgb565;
+}
+
 const std::wstring g_oneWindowTitle = L"oneTitleWindow";
 
 #include "Render2D.h"
-#define use_Render2D
+//#define use_Render2D
+#include <mutex>
 
 struct QTDisplayWidget::PrivateData
 {
 	Ui_MainWidget ui;
+	bool use16unsignedint = false;
+	std::recursive_mutex mutex;
 #ifndef use_Render2D
 
 
@@ -118,8 +143,8 @@ struct QTDisplayWidget::PrivateData
 
 
 	CGRender::WindowsWindow* oneTitleWindow = nullptr;
-
 	CGData::CGItemImage* image = nullptr;
+
 #endif // !use_Render2D
 #ifdef use_Render2D
 	Render2D* render2D = nullptr;
@@ -144,6 +169,14 @@ QTDisplayWidget::QTDisplayWidget(QWidget* parent)
 	d.render2D = new Render2D();
 	d.render2D->Create(parentHwnd, width, height);
 
+	int RollingHeight = 1000;
+	{
+		d.render2D->SetMode(1);
+		d.render2D->SetHeight(RollingHeight);
+		d.render2D->SetDirection(0);
+		d.use16unsignedint = true;
+	}
+
 
 
 
@@ -151,12 +184,7 @@ QTDisplayWidget::QTDisplayWidget(QWidget* parent)
 	connect(timer, &QTimer::timeout, this, &QTDisplayWidget::runLoop);
 	timer->start(10);
 
-
-
 	{
-
-
-
 		//int contextId = renderWindow->ContextID();
 		//int renderTarget = CGRender_CreateTextureFromData(contextId, 0, width, height, GLTexture_Normal2DTex);
 		//CGRender_SetRenderTarget(contextId, renderTarget);
@@ -230,29 +258,37 @@ QTDisplayWidget::QTDisplayWidget(QWidget* parent)
 		//auto layer = d.glWindow->getCurLayer();
 		//layer->removeAllImageShader();
 		});
+	//auto layoutInsert = [&](bool visible) {
+	//	for (int i = 0; i < d.ui.vlayoutInsert->count(); ++i) {
+	//		QWidget* w = d.ui.vlayoutInsert->itemAt(i)->widget();
+	//		if (w != NULL)
+	//			w->setVisible(visible);
+	//	}
+	//	};
 
+	//layoutInsert(false);
 
 	//connect(d.ui.pbmove, &QPushButton::clicked, this, [&, layoutInsert]() {
-		//if (d.image)
-		//{
-		//	d.image = nullptr;
-		//	layoutInsert(false);
-		//	return;
-		//}
-		//auto layer = d.glWindow->getCurLayer();
-		//auto item = layer->getItem(CGData::CGItemType::CGItemImage);
-		//if (item.size() <= 0)
-		//	return;
+	//	//if (d.image)
+	//	//{
+	//	//	d.image = nullptr;
+	//	//	layoutInsert(false);
+	//	//	return;
+	//	//}
+	//	//auto layer = d.glWindow->getCurLayer();
+	//	//auto item = layer->getItem(CGData::CGItemType::CGItemImage);
+	//	//if (item.size() <= 0)
+	//	//	return;
 
-		//d.image = dynamic_cast<CGData::CGItemImage*>(item.at(0));
-		//if (!d.image)
-		//	return;
+	//	//d.image = dynamic_cast<CGData::CGItemImage*>(item.at(0));
+	//	//if (!d.image)
+	//	//	return;
 
-		//layoutInsert(true);
+	//	//layoutInsert(true);
 
-		//});
+	//	});
 
-	static int insertHeight = 100;
+	static int insertWidth = 100;
 	DWORD pbcolor1 = 0xffCDFAFF;
 	DWORD pbcolor2 = 0xffFFFF97;
 
@@ -278,20 +314,38 @@ QTDisplayWidget::QTDisplayWidget(QWidget* parent)
 		d.ui.pbInsert2->setPalette(pbColorPalette);
 	}
 
-
-	auto insertcolor = [&](DWORD color) {
+	uint16_t white = ConvertColorToRGB565(0xffffffff);
+	auto insertcolor = [&, RollingHeight](DWORD color) {
 		//if (!d.image)
 		//	return;
 		//int width = d.image->width();
-		//DWORD* colorbuffer = new DWORD[width * insertHeight];
-		//for (int i = 0; i < width * insertHeight; i++)
-		//{
-		//	colorbuffer[i] = color;
-		//}
+		int height = RollingHeight;
+		int width = insertWidth;
+		if (d.use16unsignedint)
+		{
 
-		//d.image->updateData(colorbuffer, width, insertHeight);
+			uint16_t color16 = ConvertColorToRGB565(color);
+			char* colorbuffer = new char[width * height * 2];
 
-		//delete[]colorbuffer;
+			for (int i = 0; i < width * height * 2; i += 2) {
+				int white = i % height;
+				if (white >= 0 && white <= 10)
+				{
+					colorbuffer[i] = white & 0xff;
+					colorbuffer[i + 1] = (white >> 8) & 0xff;
+					continue;
+				}
+
+				colorbuffer[i] = color16 & 0xFF;
+				colorbuffer[i + 1] = (color16 >> 8) & 0xFF;
+			}
+
+			//d.image->updateData(colorbuffer, width, insertHeight);
+			d.render2D->SetImage(colorbuffer, width, height, false);
+			delete[]colorbuffer;
+			return;
+		}
+		assert(0);
 		};
 
 	connect(d.ui.pbInsert1, &QPushButton::clicked, this, [&, insertcolor, pbcolor1]() {
@@ -331,6 +385,8 @@ QTDisplayWidget::QTDisplayWidget(QWidget* parent)
 
 		});
 
+
+
 	connect(d.ui.pbDrawRectWindow, &QPushButton::clicked, this, [&]() {
 		Parameter parameter;
 		parameter.rbutton_mode = 2;
@@ -339,11 +395,30 @@ QTDisplayWidget::QTDisplayWidget(QWidget* parent)
 		});
 
 	connect(d.ui.pbInsertText, &QPushButton::clicked, this, [&]() {
-		//auto layer = d.glWindow->getCurLayer();
-		//CGData::CGItemText* text = new CGData::CGItemText(d.glWindow->ContextID());
-		//QString letext = d.ui.leText->text();
-		//text->setText(letext.toStdWString());
-		//layer->addItem(text);
+		/*Label label;
+		label.code = 1;
+		label.type = -1;
+		label.x = 0;
+		label.y = 0;
+		label.w = 30;
+		label.h = 40;*/
+
+		Label* label = new Label[2];
+		label[0].code = 1;
+		label[0].type = -1;
+		label[0].x = 0;
+		label[0].y = 0;
+		label[0].w = 30;
+		label[0].h = 40;
+
+		label[1].code = 2;
+		label[1].type = -1;
+		label[1].x = -100;
+		label[1].y = -100;
+		label[1].w = 40;
+		label[1].h = 90;
+
+		d.render2D->SetLabels(label, 2);
 		});
 
 
@@ -362,24 +437,6 @@ QTDisplayWidget::QTDisplayWidget(QWidget* parent)
 	HWND parentHwnd = reinterpret_cast<HWND>(d.ui.w_glwindow->winId()); // 获取窗口句柄
 	RECT rect;
 	GetWindowRect(parentHwnd, &rect);
-#ifdef use_Render2D
-	d.render2D = new Render2D();
-	d.render2D->Create(parentHwnd, width, height);
-
-
-	connect(d.ui.pbDrawRect, &QPushButton::clicked, this, [&]() {
-		Parameter parameter;
-		parameter.rbutton_mode = 1;
-		parameter.windowType = 0;
-		d.render2D->SetParameter(parameter);
-
-		});
-
-	QTimer* timer = new QTimer(this);
-	connect(timer, &QTimer::timeout, this, &QTDisplayWidget::runLoop);
-	timer->start(10);
-	return;
-#endif // use_Render2D
 
 
 	d.renderview = std::make_unique<CGRender::CGRenderView>(width, height, parentHwnd);
@@ -439,11 +496,12 @@ QTDisplayWidget::QTDisplayWidget(QWidget* parent)
 			//getImageData(selectedFile.toStdWString(), 496, 448, imageData);
 
 			d.glWindow->addImage(imageData.data, imageData.width, imageData.height, false, GLTextureType::GLTexture_Raw16);
+			d.use16unsignedint = true;
 		}
 		else
 		{
 			d.glWindow->addImage(selectedFile.toStdWString());
-
+			d.use16unsignedint = false;
 		}
 
 		d.ui.leImagePath->setText(selectedFile);
@@ -453,17 +511,22 @@ QTDisplayWidget::QTDisplayWidget(QWidget* parent)
 
 	connect(d.ui.pbGrayColor, &QPushButton::clicked, this, [&]() {
 		auto layer = d.glWindow->getCurLayer();
-		layer->addImageShader(ShaderCodeName::FS_Tex_Gray);
+		//layer->addImageShader(ShaderCodeName::FS_Tex_Gray);
+		layer->addImageShader(ShaderCodeName::FS_Tex_RGBA_equalizeHistogramSource);
+		//layer->addImageShader(ShaderCodeName::FS_Tex_Red_equalizeHistogramSource);
 		});
 
 	connect(d.ui.pbInvertColor, &QPushButton::clicked, this, [&]() {
 		auto layer = d.glWindow->getCurLayer();
-		layer->addImageShader(ShaderCodeName::FS_Tex_Invert);
+		//layer->addImageShader(ShaderCodeName::FS_Tex_Invert);
+		layer->addImageShader(ShaderCodeName::FS_Tex_Red_Invert);
 		});
 
-	connect(d.ui.pbNormalColor, &QPushButton::clicked, this, [&]() {
+	connect(d.ui.pbxRevert, &QPushButton::clicked, this, [&]() {
 		auto layer = d.glWindow->getCurLayer();
-		layer->addImageShader(ShaderCodeName::FS_Tex);
+		//layer->addImageShader(ShaderCodeName::FS_Tex);
+		layer->addImageShader(ShaderCodeName::FS_Tex_Red_xRevert);
+		
 		});
 	connect(d.ui.pbRotate90, &QPushButton::clicked, this, [&]() {
 		auto layer = d.glWindow->getCurLayer();
@@ -500,6 +563,7 @@ QTDisplayWidget::QTDisplayWidget(QWidget* parent)
 	DWORD pbcolor2 = 0xffFFFF97;
 
 
+
 	{
 		QColor color1(0xffFFFACD);
 
@@ -526,15 +590,34 @@ QTDisplayWidget::QTDisplayWidget(QWidget* parent)
 		if (!d.image)
 			return;
 		int width = d.image->width();
-		DWORD* colorbuffer = new DWORD[width * insertHeight];
-		for (int i = 0; i < width * insertHeight; i++)
+		if (d.use16unsignedint)
 		{
-			colorbuffer[i] = color;
+
+			uint16_t color16 = ConvertColorToRGB565(color);
+			char* colorbuffer = new char[width * insertHeight * 2];
+
+			for (int i = 0; i < width * insertHeight * 2; i += 2) {
+				colorbuffer[i] = color16 & 0xFF;
+				colorbuffer[i + 1] = (color16 >> 8) & 0xFF;
+			}
+
+			d.image->updateData(colorbuffer, width, insertHeight);
+			delete[]colorbuffer;
+			return;
 		}
 
-		d.image->updateData(colorbuffer, width, insertHeight);
+		{
+			DWORD* colorbuffer = new DWORD[width * insertHeight];
+			for (int i = 0; i < width * insertHeight; i++)
+			{
+				colorbuffer[i] = color;
+			}
+			d.image->updateData(colorbuffer, width, insertHeight);
+			delete[]colorbuffer;
+		}
 
-		delete[]colorbuffer;
+
+
 		};
 
 	connect(d.ui.pbInsert1, &QPushButton::clicked, this, [&, insertcolor, pbcolor1]() {
@@ -612,7 +695,9 @@ QTDisplayWidget::~QTDisplayWidget()
 #ifdef use_Render2D
 	d.render2D->Release();
 #else
+	d.mutex.lock();
 	d.renderview.release();
+	d.mutex.unlock();
 #endif // use_Render2D
 	if (m_priv)
 	{
@@ -625,6 +710,7 @@ void QTDisplayWidget::closeEvent(QCloseEvent* event)
 {
 	auto& d = *m_priv;
 #ifndef use_Render2D
+	std::lock_guard lock(d.mutex);
 	d.renderview.release();
 #endif // use_Render2D
 
@@ -634,6 +720,7 @@ void QTDisplayWidget::closeEvent(QCloseEvent* event)
 void QTDisplayWidget::runLoop()
 {
 	auto& d = *m_priv;
+	std::lock_guard lock(d.mutex);
 #ifdef use_Render2D
 	if (d.render2D)
 	{
@@ -644,4 +731,4 @@ void QTDisplayWidget::runLoop()
 		d.renderview->Render();
 #endif // use_Render2D
 
-}
+	}

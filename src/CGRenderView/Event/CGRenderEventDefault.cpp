@@ -62,6 +62,9 @@ CGRender::CGRenderEventDefault::~CGRenderEventDefault()
 	auto& d = *m_priv;
 	if (d.rtTexture.hsrcTexture != -1)
 		CGRender_DeleteTexture(d.window->ContextID(), d.rtTexture.hsrcTexture);
+	if (d.rtTexture.hTargetTexture != -1)
+		CGRender_DeleteTexture(d.window->ContextID(), d.rtTexture.hTargetTexture);
+
 	SAFE_DELETE(d.rtTexture.itemRect);
 	SAFE_DELETE(m_priv);
 }
@@ -158,7 +161,11 @@ void CGRender::CGRenderEventDefault::setDefultTexture(bool needUpdate)
 
 void CGRenderEventDefault::PrivateData::renderRTTexture()
 {
-	return;
+	//return;
+
+	if (winWindow->RenderMode() == CGRenderMode::RenderMode_rolling)
+		return;
+
 	if (rtTexture.renderNums < 0)
 		return;
 	rtTexture.renderNums--;
@@ -195,7 +202,7 @@ void CGRenderEventDefault::PrivateData::renderRTTexture()
 	}
 	CGRender_CopyTexture(contextid, rtTexture.hTargetTexture, 0, 0, window->GetWidth(), window->GetHeight(),
 		rtTexture.hsrcTexture, 0, 0, window->GetWidth(), window->GetHeight());
-	if(1)
+	if (1)
 	{
 		int oldTarget = CGRender_GetRenderTarget(contextid);
 		CGRender_SetRenderTarget(contextid, rtTexture.hTargetTexture);
@@ -203,7 +210,9 @@ void CGRenderEventDefault::PrivateData::renderRTTexture()
 		glm::mat4 vpmatrix = winWindow->getVPMatrix();
 		rtTexture.itemRect->Width(40);
 		rtTexture.itemRect->Height(30);
+		CGRender_SetLineWidth(contextid, 30);
 		rtTexture.itemRect->Render(contextid, vpmatrix);//todo  只要执行这个，就会有问题
+		CGRender_SetLineWidth(contextid, 1);
 		if (0)
 		{
 			CGRender_SaveTextue(contextid, rtTexture.hTargetTexture, L"D:/testImg.png");
@@ -211,13 +220,9 @@ void CGRenderEventDefault::PrivateData::renderRTTexture()
 		CGRender_SetRenderTarget(contextid, oldTarget);
 	}
 
-
-
 	int width = window->GetWidth();
 
-
 	CGRECT rect{ width - 200,0,200,100 };
-	//CGRECT rect{ 0,0,window->GetWidth(),window->GetHeight() };
 	CGRender_RenderTexture(contextid, rtTexture.hTargetTexture, &rect);
 
 	if (0)

@@ -7,6 +7,8 @@
 
 bool GLRENDER_API CGRender_Init(const TCHAR* pluginPath);
 int  GLRENDER_API CGRender_CreateContext(HWND hWnd, HGLRC hGLRC, int nWidth = 0, int nHeight = 0);
+bool GLRENDER_API CGRender_MakeCurrent(int Device);
+bool GLRENDER_API CGRender_UnMakeCurrent(int Device);
 bool GLRENDER_API CGRender_ResizeWindow(int Device, int nWidth, int nHeight);
 
 bool GLRENDER_API CGRender_Present(int Device);
@@ -57,9 +59,24 @@ bool GLRENDER_API CGRender_SaveImageByVoid(const void* buffer, unsigned int widt
 void GLRENDER_API CGRender_DWORD2RGBA(const DWORD& color, CGRGBA& rgba);
 void GLRENDER_API CGRender_RGBA2DWORD(DWORD& color, const CGRGBA& rgba);
 
+/*
+* Font
+*/
 bool GLRENDER_API CGRender_Font_Init(int Device);
 bool GLRENDER_API CGRender_Font_LoadFont(int Device, const std::wstring& face = L"/ARIALUNI.TTF");
 bool GLRENDER_API CGRender_Font_LoadFaces(int Device, const std::wstring& text);
 bool GLRENDER_API CGRender_Font_GetCharacters(int Device, const std::wstring& text, std::map<wchar_t, Character>& charactors);
+
+/*
+* LineManager
+*/
+//0.5 < linewidth <10.0
+bool GLRENDER_API CGRender_SetLineWidth(int Device, float linewidth);
+
+
+/*
+* cuda
+*/
+bool GLRENDER_API CGRender_CudaTexture(int Device, int hTexture, std::vector<ShaderCodeName>fsName);
 
 #endif // !_CGRENDERAPI_H_

@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>951</width>
+    <width>946</width>
     <height>609</height>
    </rect>
   </property>
@@ -156,9 +156,9 @@
          </layout>
         </item>
         <item>
-         <widget class="QPushButton" name="pbNormalColor">
+         <widget class="QPushButton" name="pbxRevert">
           <property name="text">
-           <string>Normal</string>
+           <string>xRevert</string>
           </property>
          </widget>
         </item>
@@ -230,11 +230,28 @@
            </widget>
           </item>
           <item>
-           <widget class="QPushButton" name="pbDrawRect">
-            <property name="text">
-             <string>DrawRect</string>
-            </property>
-           </widget>
+           <layout class="QHBoxLayout" name="horizontalLayout_3">
+            <item>
+             <widget class="QLineEdit" name="leRectText">
+              <property name="maximumSize">
+               <size>
+                <width>30</width>
+                <height>30</height>
+               </size>
+              </property>
+              <property name="text">
+               <string>1</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="pbDrawRect">
+              <property name="text">
+               <string>DrawRect</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
           </item>
          </layout>
         </item>

@@ -35,7 +35,7 @@ namespace CGRender
 
 
 
-	class Window
+	class CGRENDERVIEW_API Window
 	{
 	public:
 		using EventCallbackFn = std::function<void(Event&)>;

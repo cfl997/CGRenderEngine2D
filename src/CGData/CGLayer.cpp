@@ -133,18 +133,21 @@ std::vector<CGItem*> CGData::CGLayer::getItem(CGItemType itemType)
 void CGData::CGLayer::addImageShader(ShaderCodeName name)
 {
 	auto& d = *m_priv;
+	std::lock_guard a(d.reMutex);
 	d.imageEffector->addEffector(name);
 }
 
 void CGData::CGLayer::removeImageShader(ShaderCodeName name)
 {
 	auto& d = *m_priv;
+	std::lock_guard a(d.reMutex);
 	d.imageEffector->removeEffector(name);
 }
 
 void CGData::CGLayer::removeAllImageShader()
 {
 	auto& d = *m_priv;
+	std::lock_guard a(d.reMutex);
 	d.imageEffector->removeAllEffctor();
 }
 

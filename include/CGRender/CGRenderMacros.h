@@ -29,10 +29,17 @@ enum ShaderCodeName
 
 	FSTwoTex,
 	FS_Text,
+
+	//Ö±·½Í¼¾ùºâ
+	FS_Tex_Red_equalizeHistogramSource,
+	FS_Tex_RGBA_equalizeHistogramSource,
+
+	//red
+	FS_Tex_Red,
+	FS_Tex_Red_xRevert,
+	FS_Tex_Red_Invert,
 	FS_Count,
 
-	//raw16
-	FS_Tex_Raw,
 	ShaderCodeCount,
 	//test
 	FSTestUniform,
@@ -191,6 +198,12 @@ struct CGRECT
 	uint32_t y;
 	uint32_t width;
 	uint32_t height;
+};
+
+struct CudaTextureIn
+{
+	int hTexture;
+	std::vector<ShaderCodeName>fsName;
 };
 
 /*

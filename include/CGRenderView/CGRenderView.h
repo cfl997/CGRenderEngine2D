@@ -4,6 +4,8 @@
 #include "CGRenderView_Export.h"
 #include "RenderView.h"
 #include "CGRenderType.h"
+#include "CGWindow.h"
+#include "CGWindowsWindos.h"
 
 
 #ifdef _DEBUG

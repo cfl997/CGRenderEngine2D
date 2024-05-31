@@ -74,6 +74,7 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}
 	${CGRender_ROOT_DIR}/include/CGRender
 	${CGRender_ROOT_DIR}/include/CGRenderView
 	${CGRender_ROOT_DIR}/include/CGData
+	${CGRender_ROOT_DIR}/include/Render2D
 )
 
 	link_directories(
@@ -106,7 +107,7 @@ if(${CMAKE_BUILD_TYPE} MATCHES "Debug")
 		)      
 endif()
 #add_dependencies(${PROJECT_NAME} CGRender CGData)
-add_dependencies(${PROJECT_NAME} CGData CGRenderView)
+add_dependencies(${PROJECT_NAME} CGData CGRenderView Render2D)
 
 # 添加包含 DLL 的文件夹路径
 #set(EXTRA_DLL_PATH "C:/Qt/6.6.3/msvc2019_64/bin")
