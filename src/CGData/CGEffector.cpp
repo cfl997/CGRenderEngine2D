@@ -107,6 +107,7 @@ void CGData::CGEffector::Render(int device, int hTexture, int* desTexture)
 		if (
 			iter->first == ShaderCodeName::FS_Tex_Red_equalizeHistogramSource ||
 			iter->first == ShaderCodeName::FS_Tex_RGBA_equalizeHistogramSource
+			//iter->first == ShaderCodeName::FS_Tex_Red_Invert
 			)
 		{
 			cudafsname.push_back(iter->first);
@@ -167,6 +168,8 @@ void CGData::CGEffector::Render(int device, int hTexture, int* desTexture)
 				CGRender_SetRenderTarget(device, newTarget);
 				CGRender_SetShaderTexture(device, cudaTexture, 0, ShaderType::FRAGMENT);
 				CGRender_Render(device, d.vertexBufferId, d.indexBufferId, d.primitiveType, 0, 0, 0);
+				if (cudaTexture != hTexture)
+					CGRender_DeleteTexture(device, cudaTexture);//这个会越来越多的texture
 				if (0)
 				{
 					CGRender_SaveTextue(device, newTarget, L"d:/effectnewTarget.png");

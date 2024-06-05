@@ -12,7 +12,7 @@ namespace CGRender
 		CGRenderView(unsigned int width, unsigned int height, void* parent);
 		~CGRenderView();
 	private:
-		CGRenderView() = delete;
+		//CGRenderView() = delete;
 	public:
 		/*
 		* window
@@ -40,6 +40,8 @@ namespace CGRender
 		PrivateRenderView* m_priv;
 	};
 }
+
+
 extern "C" int testswig_add(int a, int b);
 extern "C" int testswig_char(char a[], int b);
 #endif // !_RENDERVIEW_H_

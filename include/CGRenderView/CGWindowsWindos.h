@@ -39,6 +39,7 @@ namespace CGRender
 		void setWindowType(WindowType type);
 	public:
 		const glm::mat4& getVPMatrix();
+		const glm::mat4& getPerspectiveMatrix();
 
 	public:
 		inline virtual void* GetNativeWindow() const { return m_Window; }

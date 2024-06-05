@@ -205,7 +205,7 @@ namespace CGRender
 		if (scale > g_Camera_SCALE[CAMERA_SCALE_NUMS - 1])
 			scale = 1.0;
 		d.camera->ScaleCoefficient(scale);
-		d.camera->ImageMinSclae(scale);
+		d.camera->ImageMinScale(scale);
 		d.camera->resetPosition(d.windowWidth, d.windowHeight);
 #else
 		d.imageWidth = image->worldWidth();
@@ -238,7 +238,7 @@ namespace CGRender
 		if (scale > g_Camera_SCALE[CAMERA_SCALE_NUMS - 1])
 			scale = 1.0;
 		d.camera->ScaleCoefficient(scale);
-		d.camera->ImageMinSclae(scale);
+		d.camera->ImageMinScale(scale);
 		d.camera->resetPosition(d.windowWidth, d.windowHeight);
 #else
 		d.imageWidth = image->worldWidth();
@@ -258,7 +258,7 @@ namespace CGRender
 		if (scale > g_Camera_SCALE[CAMERA_SCALE_NUMS - 1])
 			scale = 1.0;
 		d.camera->ScaleCoefficient(scale);
-		d.camera->ImageMinSclae(scale);
+		d.camera->ImageMinScale(scale);
 		d.camera->resetPosition(d.windowWidth, d.windowHeight);
 
 		float imageWidth = d.windowWidth / scale * g_globalProportion;
@@ -312,7 +312,7 @@ namespace CGRender
 		const auto pCamera = parent->getCamera();
 		const float pSclae = pCamera->ScaleCoefficient();
 		getCamera()->ScaleCoefficient(pSclae);
-		getCamera()->ImageMinSclae(pSclae);
+		getCamera()->ImageMinScale(pSclae);
 
 
 		const auto pLayer = parent->getCurLayer();
@@ -696,6 +696,13 @@ namespace CGRender
 		glm::mat4 Perspective = d.getPerspectiveMatrix();
 
 		return Perspective * view;
+	}
+
+	const glm::mat4& WindowsWindow::getPerspectiveMatrix()
+	{
+		// TODO: 在此处插入 return 语句
+		auto& d = *m_priv;
+		return d.getPerspectiveMatrix();
 	}
 
 	void* WindowsWindow::GetWindowHwnd() const

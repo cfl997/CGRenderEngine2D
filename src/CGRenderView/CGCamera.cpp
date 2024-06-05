@@ -16,6 +16,10 @@ struct CGCamera::PrivateData
 	float scaleCoefficient = 1.f;
 	float imageMinScale = .1f;//Í¼Æ¬µÄ±ÈÀý
 	int scaleFlag = 10;
+
+#ifdef USE_ORTHO
+	glm::vec3 originPos = glm::vec3{ 1 };
+#endif
 };
 
 CGCamera::CGCamera(glm::vec3 position, glm::vec3 up, float yaw, float pitch) :
@@ -49,6 +53,13 @@ void CGRender::CGCamera::resetPosition(uint32_t windowWidth, uint32_t windowHeig
 {
 	Position.x = -static_cast<float>(windowWidth) / 2.;
 	Position.y = -static_cast<float>(windowHeight) / 2.;
+	auto& d = *m_priv;
+	d.originPos = Position;
+}
+glm::vec3 CGRender::CGCamera::OriginPos()
+{
+	auto& d = *m_priv;
+	return d.originPos;
 }
 #endif //USE_ORTHO
 
@@ -89,10 +100,15 @@ void CGRender::CGCamera::ScaleCoefficient(float scale)
 	d.scaleCoefficient = scale;
 }
 
-void CGRender::CGCamera::ImageMinSclae(float scale)
+void CGRender::CGCamera::ImageMinScale(float scale)
 {
 	auto& d = *m_priv;
 	d.imageMinScale = scale;
+}
+
+float CGRender::CGCamera::ImageMinScale()
+{
+	return m_priv->imageMinScale;
 }
 
 void CGRender::CGCamera::ProcessMouseMoveXY(float x, float y)

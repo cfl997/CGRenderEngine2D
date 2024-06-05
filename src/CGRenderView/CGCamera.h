@@ -57,13 +57,15 @@ namespace CGRender
 		* reset camera position
 		*/
 		void resetPosition(uint32_t windowWidth, uint32_t windowHeight);
+		glm::vec3 OriginPos();
 #endif // USE_ORTHO
 	public:
 		glm::mat4 GetViewMatrix();
 		glm::mat4 GetSalceMatrix();
 		float ScaleCoefficient();
 		void ScaleCoefficient(float scale);
-		void ImageMinSclae(float scale);
+		void ImageMinScale(float scale);
+		float ImageMinScale();
 	public:
 		/*
 		* event

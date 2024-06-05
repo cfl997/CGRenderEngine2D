@@ -202,15 +202,56 @@ void CGRenderEventDefault::PrivateData::renderRTTexture()
 	}
 	CGRender_CopyTexture(contextid, rtTexture.hTargetTexture, 0, 0, window->GetWidth(), window->GetHeight(),
 		rtTexture.hsrcTexture, 0, 0, window->GetWidth(), window->GetHeight());
-	if (1)
+
+
+
+	auto windowWidth = winWindow->GetWidth();
+	auto windowHeight = winWindow->GetHeight();
+
 	{
+		//RedRect
 		int oldTarget = CGRender_GetRenderTarget(contextid);
 		CGRender_SetRenderTarget(contextid, rtTexture.hTargetTexture);
 
-		glm::mat4 vpmatrix = winWindow->getVPMatrix();
-		rtTexture.itemRect->Width(40);
-		rtTexture.itemRect->Height(30);
-		CGRender_SetLineWidth(contextid, 30);
+		auto scaleMatrix = glm::mat4{ 1 };
+		float RedrectScale = 1.0;
+		{
+			float ScaleCoefficient = winWindow->getCamera()->ScaleCoefficient();
+			float minScale = winWindow->getCamera()->ImageMinScale();
+			RedrectScale = 1 / (ScaleCoefficient - minScale);
+			if (RedrectScale / 2.5 < 1)
+				RedrectScale *= 2.5;
+			scaleMatrix = glm::scale(scaleMatrix, { RedrectScale,RedrectScale,1 });
+		}
+
+		glm::mat4 vpmatrix = glm::mat4{ 1 };
+		glm::vec2 RedPos = glm::vec2{ 1 };
+		auto translate = glm::mat4{ 1 };
+		{
+			auto camera = winWindow->getCamera();
+
+			{
+				//translate
+				auto cameraMoveDirection = camera->Position - camera->OriginPos();
+				cameraMoveDirection *= RedrectScale;
+				translate = glm::translate(translate, cameraMoveDirection);
+			}
+
+			auto cameraOriginPos = camera->OriginPos();
+			RedPos.x = 0 + cameraOriginPos.x;
+			RedPos.y = 0 - cameraOriginPos.y;
+
+			auto viewMatrix = glm::lookAt(cameraOriginPos, cameraOriginPos + camera->Front, camera->Up);
+			auto perspectiveMatrix = winWindow->getPerspectiveMatrix();
+			vpmatrix = perspectiveMatrix * viewMatrix * translate * scaleMatrix;
+		}
+
+
+
+		rtTexture.itemRect->Width(windowWidth);
+		rtTexture.itemRect->Height(windowHeight);
+		rtTexture.itemRect->setPos({ RedPos.x,RedPos.y });
+		CGRender_SetLineWidth(contextid, 10);
 		rtTexture.itemRect->Render(contextid, vpmatrix);//todo  只要执行这个，就会有问题
 		CGRender_SetLineWidth(contextid, 1);
 		if (0)
@@ -220,9 +261,10 @@ void CGRenderEventDefault::PrivateData::renderRTTexture()
 		CGRender_SetRenderTarget(contextid, oldTarget);
 	}
 
-	int width = window->GetWidth();
+	uint32_t rtRectWidth = windowWidth * 0.1;
+	uint32_t rtRectHeight = windowHeight * 0.1;
 
-	CGRECT rect{ width - 200,0,200,100 };
+	CGRECT rect{ windowWidth - rtRectWidth,0,rtRectWidth,rtRectHeight };
 	CGRender_RenderTexture(contextid, rtTexture.hTargetTexture, &rect);
 
 	if (0)

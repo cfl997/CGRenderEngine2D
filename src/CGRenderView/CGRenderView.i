@@ -82,7 +82,6 @@ namespace CGRender
 		bool createWindow(void* parentWindow, const char* Title, unsigned int  windowWidth, unsigned int  windowHeight, void* share_Window, WindowType type);
 
 		bool deleteWindow(const char* title);
-
 	public:
 		/*
 		* c#
@@ -107,7 +106,6 @@ namespace CGRender
 	};
 
 }
-
 
 //// ²Ù×÷²ÎÊý
 //struct Parameter {

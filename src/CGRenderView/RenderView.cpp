@@ -271,4 +271,3 @@ int testswig_char(char a[], int b)
 {
 	return 0;
 }
-
