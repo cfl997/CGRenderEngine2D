@@ -302,6 +302,17 @@ namespace CGRender
 		return d.renderMode;
 	}
 
+
+
+	void WindowsWindow::setWindowWidthLevel(int WindowWidth, int WindowLevel)
+	{
+		auto& d = *m_priv;
+		auto effector = getCurLayer()->Effector();
+		if (!effector)
+			return;
+		effector->setWindowWidthLevel(WindowWidth, WindowLevel);
+	}
+
 	void WindowsWindow::syncWindowByParent(WindowsWindow* parent)
 	{
 		auto& d = *m_priv;
@@ -423,7 +434,7 @@ namespace CGRender
 			glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 #endif // use_opengl_4_6
 
-			}//s_GLFWInitialized
+		}//s_GLFWInitialized
 
 		{
 			//event
@@ -595,7 +606,7 @@ namespace CGRender
 				MouseMovedEvent event((float)worldx, (float)worldy);
 				data.EventCallback(event);
 			});
-		}
+	}
 
 	void WindowsWindow::Shutdown()
 	{
@@ -770,5 +781,5 @@ namespace CGRender
 		CGRender_SetScissor(glContextID, 0, 0, windowWidth, windowHeight);
 		CGRender_ResizeWindow(glContextID, windowWidth, windowHeight);
 	}
-	}
+}
 

@@ -77,6 +77,11 @@ namespace CGRender
 		CGRenderMode RenderMode();
 	public:
 		/*
+		* cuda
+		*/
+		void setWindowWidthLevel(int WindowWidth, int WindowLevel);
+	public:
+		/*
 		* another window
 		*/
 		void syncWindowByParent(WindowsWindow* parent);

@@ -199,6 +199,12 @@ void CGData::CGLayer::resetPosition(const glm::vec3& pos)
 	d.position = pos;
 }
 
+CGData::CGEffector* CGData::CGLayer::Effector()
+{
+	auto& d = *m_priv;
+	return d.imageEffector;
+}
+
 void CGData::CGLayer::ProcessMouseMoveXY(float x, float y)
 {
 	auto& d = *m_priv;

@@ -77,6 +77,6 @@ bool GLRENDER_API CGRender_SetLineWidth(int Device, float linewidth);
 /*
 * cuda
 */
-bool GLRENDER_API CGRender_CudaTexture(int Device, int hTexture, std::vector<ShaderCodeName>fsName);
+//bool GLRENDER_API CGRender_CudaTexture(int Device, int hTexture, std::vector<ShaderCodeName>fsName, const CudaParameter* cudaParameter);
 
 #endif // !_CGRENDERAPI_H_

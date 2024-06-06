@@ -18,6 +18,7 @@ include_directories(
 	${CGRender_ROOT_DIR}/include
 	${CGRender_ROOT_DIR}/include/CGRender
 	${CGRender_ROOT_DIR}/include/CGData
+	${CGRender_ROOT_DIR}/include/CGCuda
 )
 
 set(COMMON_HEAD_PUBLIC
@@ -69,9 +70,6 @@ include_directories(
 link_directories(
 	${CGRender_ROOT_DIR}/lib/win64/
 	)
-link_directories(
-	${CGRender_ROOT_DIR}/lib/win64/
-)
 
 ADD_LIBRARY(${LIB_NAME} SHARED
 	${COMMON_SOURCE_FILES} 
@@ -85,7 +83,7 @@ else()
 target_link_libraries(${PROJECT_NAME} ${CGRender_ROOT_DIR}/third/freetype-2.13.0/Release/lib/freetype.lib)
 endif()
 
-#add_dependencies(${PROJECT_NAME} CGRender)
+add_dependencies(${PROJECT_NAME} CGCuda)
 
 source_group(${CG_HEADER_FILES} FILES ${COMMON_HEAD_FILES})
 source_group(${CG_SOURCE_FILES} FILES ${COMMON_SOURCE_FILES})

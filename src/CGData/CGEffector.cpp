@@ -4,6 +4,7 @@ using namespace CGData;
 
 #include "CGRender.h"
 #include <map>
+#include "CGCuda/CGCuda.h"
 
 struct CGEffector::PrivateData
 {
@@ -16,6 +17,11 @@ struct CGEffector::PrivateData
 	GLPrimitiveTypes primitiveType = GLPrimitiveTypes::TRIANGLELIST;
 
 	ItemData data;
+
+	/*
+	* cuda
+	*/
+	CudaParameter cudaParam;
 };
 
 CGEffector::CGEffector(int Device) :m_priv(new PrivateData)
@@ -66,14 +72,17 @@ CGEffector::~CGEffector()
 void CGData::CGEffector::addEffector(ShaderCodeName name)
 {
 	auto& d = *m_priv;
-	if (!(name<ShaderCodeName::FS_Count && name>ShaderCodeName::VS_Count))
-		return;
-	int shader = -1;
-	if (name != ShaderCodeName::FS_Tex_RGBA_equalizeHistogramSource)
-	{
-		//todo
-		shader = CGRender_CreateShader(d.Device, name);
-	}
+	////if (!(name<ShaderCodeName::FS_Count && name>ShaderCodeName::VS_Count))
+	////	return;
+	//int shader = -1;
+	//if (name != ShaderCodeName::FS_Tex_RGBA_equalizeHistogramSource &&
+	//	name != ShaderCodeName::CUDA_WindowWidthLevel
+	//	)
+	//{
+	//	//todo
+	//	shader = CGRender_CreateShader(d.Device, name);
+	//}
+	int shader = CGRender_CreateShader(d.Device, name);
 	d.m_fs[name] = shader;
 }
 
@@ -91,6 +100,13 @@ void CGData::CGEffector::removeAllEffctor()
 	d.m_fs.clear();
 }
 
+void CGData::CGEffector::setWindowWidthLevel(int WindowWidth, int WindowLevel)
+{
+	auto& d = *m_priv;
+	d.cudaParam.windowWidth = WindowWidth;
+	d.cudaParam.windowLevel = WindowLevel;
+}
+
 void CGData::CGEffector::Render(int device, int hTexture, int* desTexture)
 {
 	auto& d = *m_priv;
@@ -106,8 +122,9 @@ void CGData::CGEffector::Render(int device, int hTexture, int* desTexture)
 	{
 		if (
 			iter->first == ShaderCodeName::FS_Tex_Red_equalizeHistogramSource ||
-			iter->first == ShaderCodeName::FS_Tex_RGBA_equalizeHistogramSource
-			//iter->first == ShaderCodeName::FS_Tex_Red_Invert
+			iter->first == ShaderCodeName::FS_Tex_RGBA_equalizeHistogramSource ||
+			iter->first == ShaderCodeName::FS_Tex_Red_Invert ||
+			iter->first == ShaderCodeName::CUDA_WindowWidthLevel
 			)
 		{
 			cudafsname.push_back(iter->first);
@@ -126,7 +143,8 @@ void CGData::CGEffector::Render(int device, int hTexture, int* desTexture)
 		CGRender_GetTextureInfo(device, hTexture, &nwidth, &nheight, &type);
 		cudaTexture = CGRender_CreateTextureFromData(device, 0, nwidth, nheight, GLTextureType(type));
 		CGRender_CopyTexture(device, cudaTexture, 0, 0, nwidth, nheight, hTexture, 0, 0, nwidth, nheight);
-		CGRender_CudaTexture(device, cudaTexture, cudafsname);
+		//CGRender_CudaTexture(device, cudaTexture, cudafsname, &d.cudaParam);
+		CUDA_OpenglTexturebyShaderName(device, cudaTexture, cudafsname, &d.cudaParam);
 	}
 
 	if (tempfs.empty())

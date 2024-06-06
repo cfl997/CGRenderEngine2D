@@ -30,15 +30,18 @@ enum ShaderCodeName
 	FSTwoTex,
 	FS_Text,
 
-	//直方图均衡
-	FS_Tex_Red_equalizeHistogramSource,
-	FS_Tex_RGBA_equalizeHistogramSource,
+
 
 	//red
 	FS_Tex_Red,
 	FS_Tex_Red_xRevert,
 	FS_Tex_Red_Invert,
 	FS_Count,
+
+	//cuda
+	FS_Tex_Red_equalizeHistogramSource,//直方图均衡
+	FS_Tex_RGBA_equalizeHistogramSource,//直方图均衡
+	CUDA_WindowWidthLevel,//窗宽窗位
 
 	ShaderCodeCount,
 	//test
@@ -200,11 +203,7 @@ struct CGRECT
 	uint32_t height;
 };
 
-struct CudaTextureIn
-{
-	int hTexture;
-	std::vector<ShaderCodeName>fsName;
-};
+
 
 /*
 *
@@ -267,6 +266,23 @@ struct RenderTextureIn
 {
 	int hTexture;
 	const CGRECT* pDstRt;
+};
+
+/*
+* cuda
+*/
+
+struct CudaParameter
+{
+	int windowWidth;
+	int windowLevel;
+};
+
+struct CudaTextureIn
+{
+	int hTexture;
+	std::vector<ShaderCodeName>fsName;
+	const CudaParameter* cudaParameter;
 };
 
 //common

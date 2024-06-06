@@ -184,6 +184,13 @@
          </widget>
         </item>
         <item>
+         <widget class="QPushButton" name="pbWindowWidthLevel">
+          <property name="text">
+           <string>WindowWidthLevel</string>
+          </property>
+         </widget>
+        </item>
+        <item>
          <widget class="QPushButton" name="pbClearAll">
           <property name="text">
            <string>ClearAll</string>

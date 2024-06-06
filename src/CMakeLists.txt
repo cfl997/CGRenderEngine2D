@@ -5,6 +5,7 @@ add_subdirectory ("CGData")
 add_subdirectory ("CGRenderView")
 add_subdirectory ("gTestCGRenderView")
 add_subdirectory ("Render2D")
+add_subdirectory ("CGCuda")
 #add_subdirectory ("Cplusplus2CSharp")
 
 

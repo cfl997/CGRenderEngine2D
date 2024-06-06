@@ -43,6 +43,11 @@ public:
 	void SetLabels(Label* labels, int count);
 	void GetLabels(Label* labels, int capacity);
 	void Update();
+public:
+	/*
+	* 窗宽窗位更改需要调用
+	*/
+	void SetWindowWidthLevel(int windowWidth, int windowLevel);
 private:
 	void* impl;
 };

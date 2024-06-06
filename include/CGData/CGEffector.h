@@ -16,7 +16,11 @@ namespace CGData
 		void addEffector(ShaderCodeName name);
 		void removeEffector(ShaderCodeName name);
 		void removeAllEffctor();
-
+	public:
+		/*
+		* cuda
+		*/
+		void setWindowWidthLevel(int WindowWidth, int WindowLevel);
 	public:
 
 		void Render(int device, int hTexture, int* desTexture);

@@ -201,3 +201,11 @@ void Render2D::Update()
 	if (!d.Release)
 		d.window->Render();
 }
+
+
+
+void Render2D::SetWindowWidthLevel(int windowWidth, int windowLevel)
+{
+	auto& d = *(PrivateData*)impl;
+	d.window->setWindowWidthLevel(windowWidth, windowLevel);
+}

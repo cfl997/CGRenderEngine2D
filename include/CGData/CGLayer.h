@@ -2,6 +2,7 @@
 #define _CGLAYER_H_
 
 #include "CGItem.h"
+#include "CGEffector.h"
 
 namespace CGData
 {
@@ -26,6 +27,8 @@ namespace CGData
 		void Render(int device, const glm::mat4& matrix);
 
 		void resetPosition(const glm::vec3& pos);
+	public:
+		CGData::CGEffector* Effector();
 
 	public:
 		void ProcessMouseMoveXY(float x, float y);

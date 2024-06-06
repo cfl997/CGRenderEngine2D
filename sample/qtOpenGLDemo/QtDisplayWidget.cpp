@@ -532,6 +532,12 @@ QTDisplayWidget::QTDisplayWidget(QWidget* parent)
 		auto layer = d.glWindow->getCurLayer();
 		layer->addImageShader(ShaderCodeName::FS_Tex_Rotate90);
 		});
+	connect(d.ui.pbWindowWidthLevel, &QPushButton::clicked, this, [&]() {
+		auto layer = d.glWindow->getCurLayer();
+		d.glWindow->setWindowWidthLevel(4000, 20000);
+		layer->addImageShader(ShaderCodeName::CUDA_WindowWidthLevel);
+		});
+	
 	connect(d.ui.pbClearAll, &QPushButton::clicked, this, [&]() {
 		auto layer = d.glWindow->getCurLayer();
 		layer->removeAllImageShader();
