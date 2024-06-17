@@ -10,6 +10,8 @@
 #define CGCUDA_API __declspec(dllimport)
 #endif // CGCUDA_EXPORTS
 
+bool CGCUDA_API CUDA_ConfigInit();
+bool CGCUDA_API CUDA_ReleaseMemory();
 
 bool CGCUDA_API CUDA_OpenglTexturebyShaderName(int contextid, int texture, std::vector<ShaderCodeName>vName, const CudaParameter * cudaParam);
 

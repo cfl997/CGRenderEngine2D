@@ -29,7 +29,6 @@ CGEffector::CGEffector(int Device) :m_priv(new PrivateData)
 	auto& d = *m_priv;
 	d.Device = Device;
 
-
 	d.data.vertexes.clear();
 	//远平面z值问题
 	d.data.vertexes.push_back({ {-1,1,1},{0xff00ffff},{0,	1} });
@@ -51,6 +50,9 @@ CGEffector::CGEffector(int Device) :m_priv(new PrivateData)
 		d.indexBufferId = CGRender_CreateBuffer(Device, sizeof(uint32_t), d.data.indexes.size(), d.data.indexes.data(), GLBufferType::IndexBuffer, d.primitiveType);
 
 	d.vsShader = CGRender_CreateShader(Device, ShaderCodeName::VS_POS_COLOR_TEX);
+
+	d.cudaParam.windowWidth = 4000;
+	d.cudaParam.windowLevel = 20000;
 }
 
 CGEffector::~CGEffector()
@@ -143,7 +145,7 @@ void CGData::CGEffector::Render(int device, int hTexture, int* desTexture)
 		CGRender_GetTextureInfo(device, hTexture, &nwidth, &nheight, &type);
 		cudaTexture = CGRender_CreateTextureFromData(device, 0, nwidth, nheight, GLTextureType(type));
 		CGRender_CopyTexture(device, cudaTexture, 0, 0, nwidth, nheight, hTexture, 0, 0, nwidth, nheight);
-		//CGRender_CudaTexture(device, cudaTexture, cudafsname, &d.cudaParam);
+		CUDA_ConfigInit();
 		CUDA_OpenglTexturebyShaderName(device, cudaTexture, cudafsname, &d.cudaParam);
 	}
 

@@ -16,6 +16,7 @@ typedef struct _Parameter {
 typedef struct _Property {
 	bool anticolor;				// 反色
 	bool equalization;			// 直方图均衡
+	bool windowWidthLevel;		// 窗宽窗位
 } Property;
 
 // 图像标签
@@ -45,6 +46,7 @@ public:
 	void Update();
 public:
 	/*
+	* _Property.windowWidthLevel
 	* 窗宽窗位更改需要调用
 	*/
 	void SetWindowWidthLevel(int windowWidth, int windowLevel);

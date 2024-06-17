@@ -7,6 +7,8 @@
 
 bool GLRENDER_API CGRender_Init(const TCHAR* pluginPath);
 int  GLRENDER_API CGRender_CreateContext(HWND hWnd, HGLRC hGLRC, int nWidth = 0, int nHeight = 0);
+bool GLRENDER_API CGRender_ReleaseContext(int Device);
+
 bool GLRENDER_API CGRender_MakeCurrent(int Device);
 bool GLRENDER_API CGRender_UnMakeCurrent(int Device);
 bool GLRENDER_API CGRender_ResizeWindow(int Device, int nWidth, int nHeight);
@@ -78,5 +80,8 @@ bool GLRENDER_API CGRender_SetLineWidth(int Device, float linewidth);
 * cuda
 */
 //bool GLRENDER_API CGRender_CudaTexture(int Device, int hTexture, std::vector<ShaderCodeName>fsName, const CudaParameter* cudaParameter);
+
+
+
 
 #endif // !_CGRENDERAPI_H_

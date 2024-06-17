@@ -91,6 +91,8 @@ bool CGRender::CGRenderEventRectWindow::OnMouseButtonRelease(MouseButtonReleased
 		d.itemRect->NeedRender(false);
 		d.win->AfterEvent();
 
+		auto layer = d.win->getCurLayer();
+		layer->removeItem(d.itemRect->GUID());
 	}
 	if (!d.isPressLeft)
 	{

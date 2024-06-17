@@ -33,9 +33,6 @@ m_priv(new PrivateData)
 
 	auto layer = d.win->getCurLayer();
 	layer->addItem(d.itemRect);
-
-
-	//d.itemRect->Text(L"hzfjksdj大佛啊设计费你打93240932!@##$%#$^^&()_+{}: > ? ;l ");
 }
 
 CGRender::CGRenderEventRectangle::~CGRenderEventRectangle()
@@ -92,7 +89,6 @@ bool CGRender::CGRenderEventRectangle::OnMouseButtonRelease(MouseButtonReleasedE
 		d.releasePos = glm::vec2{ posx,posy };
 
 		d.win->AfterEvent();
-
 	}
 	if (!d.isPressLeft)
 	{

@@ -35,6 +35,8 @@
 
 #include "CGData.h"
 
+#include "CGCuda/CGCuda.h"
+
 namespace CGRender
 {
 
@@ -128,6 +130,7 @@ namespace CGRender
 	{
 		if (m_priv)
 		{
+			CGRender_ReleaseContext(m_priv->glContextID);
 			if (m_priv->eventManager)
 			{
 				m_priv->eventManager.reset();
@@ -139,6 +142,7 @@ namespace CGRender
 			delete m_priv;
 			m_priv = nullptr;
 		}
+		CUDA_ReleaseMemory();
 		Shutdown();
 	}
 
@@ -545,6 +549,7 @@ namespace CGRender
 					break;
 				}
 				}
+				data.super->Render();
 			});
 
 		glfwSetCharCallback(m_Window, [](GLFWwindow* window, uint32_t keycode)
@@ -553,6 +558,7 @@ namespace CGRender
 
 				KeyTypedEvent event(keycode);
 				data.EventCallback(event);
+				data.super->Render();
 			});
 
 		glfwSetMouseButtonCallback(m_Window, [](GLFWwindow* window, int button, int action, int mods)
@@ -580,6 +586,7 @@ namespace CGRender
 					break;
 				}
 				}
+				data.super->Render();
 			});
 
 		glfwSetScrollCallback(m_Window, [](GLFWwindow* window, double xOffset, double yOffset)
@@ -593,6 +600,7 @@ namespace CGRender
 
 				MouseScrolledEvent event((float)xOffset, (float)yOffset, (float)worldx, (float)worldy);
 				data.EventCallback(event);
+				data.super->Render();
 			});
 
 		glfwSetCursorPosCallback(m_Window, [](GLFWwindow* window, double x, double y)
@@ -605,6 +613,7 @@ namespace CGRender
 
 				MouseMovedEvent event((float)worldx, (float)worldy);
 				data.EventCallback(event);
+				data.super->Render();
 			});
 	}
 

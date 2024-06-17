@@ -171,7 +171,7 @@ QTDisplayWidget::QTDisplayWidget(QWidget* parent)
 
 	int RollingHeight = 1000;
 	{
-		d.render2D->SetMode(1);
+		//d.render2D->SetMode(1);
 		d.render2D->SetHeight(RollingHeight);
 		d.render2D->SetDirection(0);
 		d.use16unsignedint = true;
@@ -180,9 +180,9 @@ QTDisplayWidget::QTDisplayWidget(QWidget* parent)
 
 
 
-	QTimer* timer = new QTimer(this);
-	connect(timer, &QTimer::timeout, this, &QTDisplayWidget::runLoop);
-	timer->start(10);
+	//QTimer* timer = new QTimer(this);
+	//connect(timer, &QTimer::timeout, this, &QTDisplayWidget::runLoop);
+	//timer->start(10);
 
 	{
 		//int contextId = renderWindow->ContextID();
@@ -190,9 +190,9 @@ QTDisplayWidget::QTDisplayWidget(QWidget* parent)
 		//CGRender_SetRenderTarget(contextId, renderTarget);
 
 		//Ö÷Ñ­»·
-		QTimer* timer = new QTimer(this);
-		connect(timer, &QTimer::timeout, this, &QTDisplayWidget::runLoop);
-		timer->start(10);
+		//QTimer* timer = new QTimer(this);
+		//connect(timer, &QTimer::timeout, this, &QTDisplayWidget::runLoop);
+		//timer->start(10);
 	}
 
 
@@ -236,20 +236,25 @@ QTDisplayWidget::QTDisplayWidget(QWidget* parent)
 
 		});
 
+
+
+
 	connect(d.ui.pbGrayColor, &QPushButton::clicked, this, [&]() {
 		//auto layer = d.glWindow->getCurLayer();
-		//layer->addImageShader(ShaderCodeName::FS_Tex_Gray);
+
+		//layer->addImageShader(ShaderCodeName::FS_Tex_Red_equalizeHistogramSource);
 		});
 
 	connect(d.ui.pbInvertColor, &QPushButton::clicked, this, [&]() {
 		//auto layer = d.glWindow->getCurLayer();
-		//layer->addImageShader(ShaderCodeName::FS_Tex_Invert);
+		////layer->addImageShader(ShaderCodeName::FS_Tex_Invert);
+		//layer->addImageShader(ShaderCodeName::FS_Tex_Red_Invert);
 		});
 
-	connect(d.ui.pbNormalColor, &QPushButton::clicked, this, [&]() {
-		//auto layer = d.glWindow->getCurLayer();
-		//layer->addImageShader(ShaderCodeName::FS_Tex);
-		});
+	//connect(d.ui.pbNormalColor, &QPushButton::clicked, this, [&]() {
+	//	//auto layer = d.glWindow->getCurLayer();
+	//	//layer->addImageShader(ShaderCodeName::FS_Tex);
+	//	});
 	connect(d.ui.pbRotate90, &QPushButton::clicked, this, [&]() {
 		//auto layer = d.glWindow->getCurLayer();
 		//layer->addImageShader(ShaderCodeName::FS_Tex_Rotate90);
@@ -512,8 +517,8 @@ QTDisplayWidget::QTDisplayWidget(QWidget* parent)
 	connect(d.ui.pbGrayColor, &QPushButton::clicked, this, [&]() {
 		auto layer = d.glWindow->getCurLayer();
 		//layer->addImageShader(ShaderCodeName::FS_Tex_Gray);
-		layer->addImageShader(ShaderCodeName::FS_Tex_RGBA_equalizeHistogramSource);
-		//layer->addImageShader(ShaderCodeName::FS_Tex_Red_equalizeHistogramSource);
+		//layer->addImageShader(ShaderCodeName::FS_Tex_RGBA_equalizeHistogramSource);
+		layer->addImageShader(ShaderCodeName::FS_Tex_Red_equalizeHistogramSource);
 		});
 
 	connect(d.ui.pbInvertColor, &QPushButton::clicked, this, [&]() {
@@ -715,9 +720,14 @@ QTDisplayWidget::~QTDisplayWidget()
 void QTDisplayWidget::closeEvent(QCloseEvent* event)
 {
 	auto& d = *m_priv;
-#ifndef use_Render2D
 	std::lock_guard lock(d.mutex);
+#ifndef use_Render2D
 	d.renderview.release();
+#else
+	if (d.render2D)
+	{
+		d.render2D->Release();
+	}
 #endif // use_Render2D
 
 }

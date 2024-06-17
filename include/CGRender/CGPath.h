@@ -9,6 +9,7 @@ enum CGPathType
 	CG_PATH_BIN = 0,
 	CG_PATH_PLUGIN,
 	CG_PATH_FONTS,
+	CG_PATH_CONFIG,
 	CG_PATH_COUNT,									//预定义
 
 	CG_PATH_CUSTOM_FIRST = CG_PATH_COUNT,			//自定义

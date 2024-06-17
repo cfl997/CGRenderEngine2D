@@ -22,21 +22,7 @@ CGRenderEventManager::~CGRenderEventManager()
 
 void CGRender::CGRenderEventManager::OnEvent(Event& e)
 {
-	unsigned int size = m_CGrenderEvents.size();
-	//if (size == 1)
-	{
-		m_CGrenderEvents[m_currentType]->OnEvent(e);
-		//m_CGrenderEvents[CGRenderEventType::RenderEvent_Default]->OnEvent(e);
-		//return;
-	}
-	return;
-
-	for (auto& data : m_CGrenderEvents)
-	{
-		CGRenderEventType eventType = data.second->Type();
-		if (eventType != CGRenderEventType::RenderEvent_Default)
-			data.second->OnEvent(e);
-	}
+	m_CGrenderEvents[m_currentType]->OnEvent(e);
 }
 
 bool CGRender::CGRenderEventManager::addCGRenderEvent(CGRenderEvent* renderEvent)

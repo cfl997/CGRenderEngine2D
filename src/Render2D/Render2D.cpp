@@ -30,6 +30,9 @@ Render2D::Render2D()
 
 Render2D::~Render2D()
 {
+
+	auto& d = *(PrivateData*)impl;
+	SAFE_DELETE(d.window);
 	SAFE_DELETE(impl);
 }
 
@@ -41,6 +44,8 @@ void Render2D::Create(void* parent, int width, int height)
 	d.window = dynamic_cast<CGRender::WindowsWindow*>(CGRender::Window::Create(windowProps));
 	d.window->addCGRenderEvent(CGRenderEventType::RenderEvent_Default);
 	//d.window->addCGRenderEvent(CGRenderEventType::RenderEvent_Rectangle);
+
+	SetMode(0);
 }
 
 void Render2D::Release()
@@ -134,22 +139,22 @@ void Render2D::SetProperty(const Property& property)
 	auto& d = *(PrivateData*)impl;
 	NULL_Return(d.window);
 
-	if (property.anticolor)
-	{
-		d.window->getCurLayer()->addImageShader(ShaderCodeName::FS_Tex_Red_Invert);
-	}
-	else
-	{
-		d.window->getCurLayer()->removeImageShader(ShaderCodeName::FS_Tex_Red_Invert);
-	}
-	if (property.equalization)
-	{
+	auto fn = [&](bool property,ShaderCodeName name){
+		if (property)
+		{
+			d.window->getCurLayer()->addImageShader(name);
+		}
+		else
+		{
+			d.window->getCurLayer()->removeImageShader(name);
+		}
+		};
 
-	}
-	else
-	{
+	fn(property.anticolor, ShaderCodeName::FS_Tex_Red_Invert);
+	fn(property.windowWidthLevel, ShaderCodeName::CUDA_WindowWidthLevel);
 
-	}
+	//fn(property.equalization)//todo
+
 }
 
 void Render2D::SetLabels(Label* labels, int count)
