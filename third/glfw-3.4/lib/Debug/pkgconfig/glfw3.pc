@@ -1,7 +1,7 @@
-prefix=E:/A/program/third/glfw-3.4/install_prefix
+prefix=E:/A/program/third/glfw-3.4-cfl997/install_prefix
 exec_prefix=${prefix}
-includedir=E:/A/program/third/glfw-3.4/install_prefix/include
-libdir=E:/A/program/third/glfw-3.4/install_prefix/lib
+includedir=E:/A/program/third/glfw-3.4-cfl997/install_prefix/include
+libdir=E:/A/program/third/glfw-3.4-cfl997/install_prefix/lib
 
 Name: GLFW
 Description: A multi-platform library for OpenGL, window and input

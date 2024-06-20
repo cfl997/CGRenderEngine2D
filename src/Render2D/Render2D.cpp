@@ -40,6 +40,7 @@ void Render2D::Create(void* parent, int width, int height)
 {
 	CGPath_Init();
 	auto& d = *(PrivateData*)impl;
+
 	WindowProps windowProps{ parent,const_cast<wchar_t*>(g_windowMainStr.c_str()), (uint32_t)width, (uint32_t)height,nullptr ,WindowType::Window_Main };
 	d.window = dynamic_cast<CGRender::WindowsWindow*>(CGRender::Window::Create(windowProps));
 	d.window->addCGRenderEvent(CGRenderEventType::RenderEvent_Default);
@@ -87,11 +88,11 @@ void Render2D::SetDirection(int direction)
 {
 	auto& d = *(PrivateData*)impl;
 	NULL_Return(d.window);
-	if (d.window->RenderMode() != CGRenderMode::RenderMode_rolling)
+	if (d.window->RenderMode() != (int)CGRenderMode::RenderMode_rolling)
 		return;
 	if (direction != 0 && direction != 1)
 		return;
-	d.window->setRollingDirection(direction);
+	d.window->RollingDirection(direction);
 }
 
 void Render2D::SetImage(void* data, int width, int height, bool dual)
@@ -106,7 +107,7 @@ void Render2D::SetImage(void* data, int width, int height, bool dual)
 		d.window->addImage(data, width, height, dual, GLTextureType::GLTexture_Raw16);
 		return;
 	}
-	if (d.window->RenderMode() == CGRenderMode::RenderMode_rolling)
+	if (d.window->RenderMode() == (int)CGRenderMode::RenderMode_rolling)
 	{
 		std::swap(width, height);
 	}

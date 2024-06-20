@@ -46,7 +46,7 @@ CGRender::CGRenderView::CGRenderView(unsigned int width, unsigned int height, vo
 	window->addCGRenderEvent(CGRenderEventType::RenderEvent_Default);//先构建对象再创建事件
 
 #ifdef DEBUG
-	std::cout << "cfl :CGRenderView init successful!" << std::endl;
+	//std::cout << "cfl :CGRenderView init successful!" << std::endl;
 #endif // DEBUG
 }
 CGRenderView::~CGRenderView()
@@ -179,17 +179,17 @@ bool CGRender::CGRenderView::resizeWindow(const char* windowTitle, unsigned int 
 }
 
 // 创建时钟
-std::chrono::steady_clock::time_point start, end;
+//std::chrono::steady_clock::time_point start, end;
 
 
 void CGRender::CGRenderView::Render()
 {
 	auto& d = *m_priv;
 
-#ifdef DEBUG
-	// 开始计时
-	start = std::chrono::steady_clock::now();
-#endif // DEBUG
+//#ifdef DEBUG
+//	// 开始计时
+//	start = std::chrono::steady_clock::now();
+//#endif // DEBUG
 
 	//while (d.m_Running)//这个交给qt，不然事件冲突
 	d.needCloseWindow();
@@ -202,18 +202,18 @@ void CGRender::CGRenderView::Render()
 			win.second->Render();
 		}
 	}
-#ifdef DEBUG
-	// 停止计时
-	end = std::chrono::steady_clock::now();
-	// 计算时间差并转换为毫秒
-	auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
-	auto durationnano = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start);
-	// 输出结果
-	//GLRender_LOG("CGRenderVeiw - Render time :", duration.count());
-	std::cout << "CGRenderView - Render time ; " << duration.count() << "ms" << std::endl;
-	std::cout << "CGRenderView - Render time ; " << durationnano.count() << "nanos" << std::endl;
-	std::cout << "CGRenderView - Render time ; " << 1000000000 / durationnano.count() << "fps" << std::endl;
-#endif // DEBUG
+//#ifdef DEBUG
+//	// 停止计时
+//	end = std::chrono::steady_clock::now();
+//	// 计算时间差并转换为毫秒
+//	auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+//	auto durationnano = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start);
+//	// 输出结果
+//	//GLRender_LOG("CGRenderVeiw - Render time :", duration.count());
+//	std::cout << "CGRenderView - Render time ; " << duration.count() << "ms" << std::endl;
+//	std::cout << "CGRenderView - Render time ; " << durationnano.count() << "nanos" << std::endl;
+//	std::cout << "CGRenderView - Render time ; " << 1000000000 / durationnano.count() << "fps" << std::endl;
+//#endif // DEBUG
 
 }
 

@@ -168,6 +168,7 @@ void CGRenderEventDefault::PrivateData::renderRTTexture()
 
 	if (rtTexture.renderNums < 0)
 		return;
+
 	rtTexture.renderNums--;
 
 	int contextid = window->ContextID();

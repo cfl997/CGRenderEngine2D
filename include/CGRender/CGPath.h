@@ -28,4 +28,33 @@ GLRENDER_API std::wstring utf82wstr(const std::string& wstr);
 GLRENDER_API bool CGText_Init();//CGPath_Init()包含 更新数据后再次调用
 GLRENDER_API const std::wstring CGText_TextByCode(long code);
 
+
+GLRENDER_API void CGLog_INIT(const std::wstring& path);
+GLRENDER_API void CGLog_CLOSE();
+GLRENDER_API void CGTime_START();
+GLRENDER_API void CGTime_END(char*str);
+
+
+#ifdef DEBUG
+#define CGLOG_INIT(x) do { CGLog_INIT(x); } while(0)
+#define CGLOG_CLOSE do { CGLog_CLOSE(); } while(0)
+
+#define CGTIME_START do { CGTime_START(); } while(0)
+#define CGTIME_END(x) do { CGTime_END(x); } while(0)
+#else
+#if 1
+#define CGRender_LOG_INIT(x) do { CGLog_INIT(x); } while(0)
+#define CGRender_LOG_CLOSE do { CGLog_CLOSE(); } while(0)
+
+#define CGRender_TIME_START do { CGTime_START(); } while(0)
+#define CGRender_TIME_END(x) do { CGTime_END(x); } while(0)
+#else
+#define CGLOG_INIT(x) 
+#define CGLOG_CLOSE 
+
+#define CGTIME_START 
+#define CGTIME_END(x) 
+#endif // 0
+#endif //DEBUG
+
 #endif // !_CGPATH_H_

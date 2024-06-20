@@ -37,6 +37,12 @@
 
 #include "CGCuda/CGCuda.h"
 
+//正交模式
+#define USE_ORTHO
+
+//事件触发render - 集成使用
+//#define USE_EVNET_RENDER
+
 namespace CGRender
 {
 
@@ -53,8 +59,10 @@ namespace CGRender
 		uint32_t windowWidth, windowHeight;
 		bool VSync;
 		GLFWwindow* shareWindow;
+		bool resizeWindow = false;//resize状态
 		WindowType type;
 		CGRenderMode renderMode;
+		int RollingDirection = (int)CGData::ImageRollingDrt::ImageRollingDrt_left2right;//方向
 		//event
 		EventCallbackFn EventCallback = nullptr;
 		RenderViewCallBackFn RenderViewCallBack = nullptr;
@@ -105,6 +113,8 @@ namespace CGRender
 		const glm::mat4& getPerspectiveMatrix()noexcept;
 
 		void ResizeWindow(unsigned int width, unsigned int height);
+
+		void ImageScale(float imageWidth, float imageHeight);
 	};
 
 	static void GLFWErrorCallback(int error, const char* description)
@@ -203,14 +213,7 @@ namespace CGRender
 		d.layer->addItem(image);
 
 #ifdef USE_ORTHO
-		float widthScale = static_cast<float> (d.windowWidth) / static_cast<float> (image->worldWidth());
-		float heightScale = static_cast<float> (d.windowHeight) / static_cast<float> (image->worldHeight());
-		float scale = widthScale < heightScale ? widthScale : heightScale;
-		if (scale > g_Camera_SCALE[CAMERA_SCALE_NUMS - 1])
-			scale = 1.0;
-		d.camera->ScaleCoefficient(scale);
-		d.camera->ImageMinScale(scale);
-		d.camera->resetPosition(d.windowWidth, d.windowHeight);
+		d.ImageScale(image->worldWidth(), image->worldHeight());
 #else
 		d.imageWidth = image->worldWidth();
 		d.imageHeight = image->worldHeight();
@@ -218,6 +221,9 @@ namespace CGRender
 #endif // USE_ORTHO
 		d.eventDefault->setDefultTexture(true);
 
+#ifdef USE_EVNET_RENDER
+		Render();
+#endif // USE_EVNET_RENDER
 	}
 
 	void WindowsWindow::addImage(const std::string& path)
@@ -234,22 +240,18 @@ namespace CGRender
 		//image->updateData(data, width, height);
 		d.layer->addItem(image);
 
+
 #ifdef USE_ORTHO
-		//这个需要更改
-		float widthScale = static_cast<float> (d.windowWidth) / static_cast<float> (image->worldWidth());
-		float heightScale = static_cast<float> (d.windowHeight) / static_cast<float> (image->worldHeight());
-		float scale = widthScale < heightScale ? widthScale : heightScale;
-		if (scale > g_Camera_SCALE[CAMERA_SCALE_NUMS - 1])
-			scale = 1.0;
-		d.camera->ScaleCoefficient(scale);
-		d.camera->ImageMinScale(scale);
-		d.camera->resetPosition(d.windowWidth, d.windowHeight);
+		d.ImageScale(image->worldWidth(), image->worldHeight());
 #else
 		d.imageWidth = image->worldWidth();
 		d.imageHeight = image->worldHeight();
 		d.imageChange = true;
 #endif // USE_ORTHO
 		d.eventDefault->setDefultTexture(true);
+#ifdef USE_EVNET_RENDER
+		Render();
+#endif // USE_EVNET_RENDER
 	}
 
 	void WindowsWindow::setRollingHeight(float height)
@@ -274,24 +276,23 @@ namespace CGRender
 		if (items.empty())
 		{
 			image = new CGData::CGItemImage(ContextID(), 0, imageWidth, imageHeight, GLTextureType::GLTexture_Raw16);
+			image->setRollingDirection((CGData::ImageRollingDrt)d.RollingDirection);
 			d.layer->addItem(image);
 			return;
 		}
 		image = dynamic_cast<CGData::CGItemImage*>(items.at(0));
 		if (!image)return;
 		image->Resize(imageWidth, imageHeight);
+		image->setRollingDirection((CGData::ImageRollingDrt)d.RollingDirection);
+#ifdef USE_EVNET_RENDER
+		Render();
+#endif // USE_EVNET_RENDER
 	}
 
-	void WindowsWindow::setRollingDirection(int direction)
+	void WindowsWindow::RollingDirection(int direction)
 	{
 		auto& d = *m_priv;
-		auto items = d.layer->getItem(CGData::CGItemType::CGItemImage);
-		if (items.empty())
-		{
-			return;
-		}
-		CGData::CGItemImage* image = dynamic_cast<CGData::CGItemImage*>(items.at(0));
-		image->setRollingDirection(CGData::ImageRollingDrt(direction));
+		d.RollingDirection = direction;
 	}
 
 	void WindowsWindow::RenderMode(CGRenderMode renderMode)
@@ -365,8 +366,8 @@ namespace CGRender
 			CGRender_SetViewport(d.glContextID, 0, 0, d.windowWidth, d.windowHeight);
 			CGRender_SetScissor(d.glContextID, 0, 0, d.windowWidth, d.windowHeight);
 
-			CGRender_ClearTexture(d.glContextID, renderTarget, 0x00ffff00);
-			CGRender_ClearTexture(d.glContextID, renderTarget, 0x00000000);
+			//CGRender_ClearTexture(d.glContextID, renderTarget, 0x00ffff00);
+			CGRender_ClearTexture(d.glContextID, renderTarget, 0xFFFFFFFF);
 
 			glm::mat4 transform = glm::mat4(1.0f);
 			glm::mat4 view = d.getViewMatrix();
@@ -388,6 +389,11 @@ namespace CGRender
 			if (d.eventDefault == nullptr)
 				return;
 			d.eventDefault->RenderTexture();
+			if (1)
+			{
+				CGRender_SaveTextue(d.glContextID, renderTarget, L"D:/render2D.png");
+			}
+
 		}
 		else
 		{
@@ -410,26 +416,26 @@ namespace CGRender
 
 		if (!s_GLFWInitialized)
 		{
+			TCHAR* szfile = CGPath_GetPath(CGPathType::CG_PATH_PLUGIN);
+			CGRender_LOG_INIT(szfile);
 
+			CGRender_TIME_START;
 			int success = glfwInit();
 			assert(success);
 			glfwSetErrorCallback(GLFWErrorCallback);
 			s_GLFWInitialized = true;
 
-			TCHAR* szfile = CGPath_GetPath(CGPathType::CG_PATH_PLUGIN);
-			{
-#ifdef DEBUG
-				std::cout << "CGRender_Init: " << szfile << std::endl;
-#endif // DEBUG
+			CGRender_TIME_END("glfwInit");
 
-				bool isInit = CGRender_Init(szfile);//是否包含glew32.dll
-				assert(isInit);
-			}
+
 			//glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
+
 #ifndef use_Window_Title
 			// 设置窗口属性，隐藏标题栏
 			glfwWindowHint(GLFW_DECORATED, GLFW_FALSE);
 			//glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);//
+#else
+			glfwWindowHint(GLFW_DECORATED, GLFW_FALSE);
 #endif // use_Window_Title
 
 #ifdef use_opengl_4_6
@@ -439,7 +445,7 @@ namespace CGRender
 #endif // use_opengl_4_6
 
 		}//s_GLFWInitialized
-
+		CGRender_TIME_START;
 		{
 			//event
 			d.eventManager = std::make_unique<CGRenderEventManager>();
@@ -450,7 +456,7 @@ namespace CGRender
 			//d.eventDefault = dynamic_cast<CGRenderEventDefault*>(defaultRenderEvent);
 			//assert(d.eventDefault);
 		}
-
+		CGRender_TIME_END("CGRenderEventManager");
 		std::string title = wstr2utf8(d.Title);
 		//这个会导致  发生偏移 c++ 
 		int windowheigt = props.windowHeight;
@@ -461,13 +467,32 @@ namespace CGRender
 #else
 		if (!d.parent)
 		{
-			//windowWidth += 25;
 			windowheigt += 25;
 		}
 #endif // use_Window_Title
-		m_Window = glfwCreateWindow(d.parent, windowWidth, windowheigt, title.c_str(), nullptr, d.shareWindow);
-		glfwMakeContextCurrent(m_Window);
+		CGRender_TIME_START;
 
+		m_Window = glfwCreateWindow(d.parent, windowWidth, windowheigt, title.c_str(), nullptr, d.shareWindow);
+		{
+			////pianyi
+			//int x, y = -1;
+			//glfwGetWindowPos(m_Window, &x, &y);
+			//glfwSetWindowPos(m_Window, x, y - 25);
+		}
+		glfwMakeContextCurrent(m_Window);
+		CGRender_TIME_END("glfwCreateWindow");
+
+
+		{
+#ifdef DEBUG
+			std::cout << "CGRender_Init: " << szfile << std::endl;
+#endif // DEBUG
+
+			TCHAR* szfile = CGPath_GetPath(CGPathType::CG_PATH_PLUGIN);
+			bool isInit = CGRender_Init(szfile);//是否包含glew32.dll
+			assert(isInit);
+		}
+		CGRender_TIME_START;
 		{
 			//d.glContext = new CGRenderGL::GLContext();
 			// 获取窗口句柄
@@ -476,31 +501,35 @@ namespace CGRender
 			//d.glContext->setWindowData(hwnd, hGLRC);
 			d.glContextID = CGRender_CreateContext(d.hWnd, hGLRC, d.windowWidth, d.windowHeight);
 		}
+		CGRender_TIME_END("CGRender_CreateContext");
+		CGRender_TIME_START;
 		{
 			//cfl-20240523  一个目标
 			int renderTarget = CGRender_CreateTextureFromData(d.glContextID, 0, width, height, GLTexture_Normal2DTex);
 			CGRender_SetRenderTarget(d.glContextID, renderTarget);
 		}
+		CGRender_TIME_END("CGRender_CreateTextureFromData");
 		CGRender_SetViewport(d.glContextID, 0, 0, d.windowWidth, d.windowHeight);
 		CGRender_SetScissor(d.glContextID, 0, 0, d.windowWidth, d.windowHeight);
+		CGRender_TIME_START;
 		{
 			d.camera = std::make_unique<CGCamera>();
 #ifdef USE_ORTHO
 			d.camera->resetPosition(d.windowWidth, d.windowHeight);
 #endif // USE_ORTHO
 		}
+		CGRender_TIME_END("CGCamera");
+
 		{
+			CGRender_TIME_START;
 			d.layer = std::make_unique<CGData::CGLayer>(ContextID());
+			CGRender_TIME_END("CGLayer");
 		}
 		//cfl-test
+		CGRender_LOG_CLOSE;
 
-		if (0)
-		{
-			//cfl-test
-			std::wstring bin{ CGPath_GetPath(CGPathType::CG_PATH_BIN) };
-			bin += L"//img.png";
-			addImage(bin);
-		}
+		ResizeWindow(d.windowWidth, d.windowHeight);//20240618
+
 		glfwSetWindowUserPointer(m_Window, m_priv);
 
 		SetVSync(true);
@@ -509,12 +538,14 @@ namespace CGRender
 		glfwSetWindowSizeCallback(m_Window, [](GLFWwindow* window, int width, int height)
 			{
 				WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
-				if (width <= 0 && height <= 0)
+				if (width <= 0 && height <= 0 && data.resizeWindow)
 				{
-					int i = 0;
 					return;
 				}
 				data.ResizeWindow(width, height);
+#ifdef USE_EVNET_RENDER
+				data.super->Render();
+#endif // USE_EVNET_RENDER
 			});
 
 		glfwSetWindowCloseCallback(m_Window, [](GLFWwindow* window)
@@ -549,7 +580,9 @@ namespace CGRender
 					break;
 				}
 				}
+#ifdef USE_EVNET_RENDER
 				data.super->Render();
+#endif // USE_EVNET_RENDER
 			});
 
 		glfwSetCharCallback(m_Window, [](GLFWwindow* window, uint32_t keycode)
@@ -558,7 +591,9 @@ namespace CGRender
 
 				KeyTypedEvent event(keycode);
 				data.EventCallback(event);
+#ifdef USE_EVNET_RENDER
 				data.super->Render();
+#endif // USE_EVNET_RENDER
 			});
 
 		glfwSetMouseButtonCallback(m_Window, [](GLFWwindow* window, int button, int action, int mods)
@@ -586,7 +621,9 @@ namespace CGRender
 					break;
 				}
 				}
+#ifdef USE_EVNET_RENDER
 				data.super->Render();
+#endif // USE_EVNET_RENDER
 			});
 
 		glfwSetScrollCallback(m_Window, [](GLFWwindow* window, double xOffset, double yOffset)
@@ -600,7 +637,9 @@ namespace CGRender
 
 				MouseScrolledEvent event((float)xOffset, (float)yOffset, (float)worldx, (float)worldy);
 				data.EventCallback(event);
+#ifdef USE_EVNET_RENDER
 				data.super->Render();
+#endif // USE_EVNET_RENDER
 			});
 
 		glfwSetCursorPosCallback(m_Window, [](GLFWwindow* window, double x, double y)
@@ -613,7 +652,9 @@ namespace CGRender
 
 				MouseMovedEvent event((float)worldx, (float)worldy);
 				data.EventCallback(event);
+#ifdef USE_EVNET_RENDER
 				data.super->Render();
+#endif // USE_EVNET_RENDER
 			});
 	}
 
@@ -784,11 +825,41 @@ namespace CGRender
 		windowWidth = width;
 		windowHeight = height;
 
+		{
+			resizeWindow = true;
+			glfwSetWindowSize(super->m_Window, width, height);
+			resizeWindow = false;
+		}
+
+
 		camera->resetPosition(windowWidth, windowHeight);
 
 		CGRender_SetViewport(glContextID, 0, 0, windowWidth, windowHeight);
 		CGRender_SetScissor(glContextID, 0, 0, windowWidth, windowHeight);
 		CGRender_ResizeWindow(glContextID, windowWidth, windowHeight);
+
+
+		auto images = layer->getItem(CGData::CGItemType::CGItemImage);
+		if (images.empty())
+			return;
+
+		auto image = dynamic_cast<CGData::CGItemImage*>(images.at(0));
+		if (image == nullptr)
+			return;
+
+		ImageScale(image->worldWidth(), image->worldHeight());
+
+	}
+	void WindowsWindow::WindowData::ImageScale(float imageWidth, float imageHeight)
+	{
+		float widthScale = static_cast<float> (windowWidth) / static_cast<float> (imageWidth);
+		float heightScale = static_cast<float> (windowHeight) / static_cast<float> (imageHeight);
+		float scale = widthScale < heightScale ? widthScale : heightScale;
+		if (scale > g_Camera_SCALE[CAMERA_SCALE_NUMS - 1])
+			scale = 1.0;
+		camera->ScaleCoefficient(scale);
+		camera->ImageMinScale(scale);
+		camera->resetPosition(windowWidth, windowHeight);
 	}
 }
 

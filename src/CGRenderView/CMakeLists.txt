@@ -10,7 +10,7 @@ SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY_RELEASE "${CGRender_ROOT_DIR}/bin64/")
 
 add_definitions(-DCGRENDERVIEW_EXPORTS)
 add_definitions(-Duse_Window_Title)#标题栏会导致 页面发生偏差
-add_definitions(-DUSE_ORTHO)#使用平截头体（正射投影）
+#add_definitions(-DUSE_ORTHO)#使用平截头体（正射投影）
 
 
 include_directories(

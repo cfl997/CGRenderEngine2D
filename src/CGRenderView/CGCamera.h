@@ -6,7 +6,7 @@
 #include "CGglm.h"
 
 
-
+#define USE_ORTHO
 
 
 namespace CGRender

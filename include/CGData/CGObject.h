@@ -32,7 +32,7 @@ namespace CGData
 	{
 	public:
 		CGObject();
-		~CGObject();
+		virtual ~CGObject();
 
 		CGItemType(CGObject);
 

@@ -72,7 +72,7 @@ namespace CGRender
 		virtual void addImage(const std::string& path)override;
 		void addImage(void* data, int width, int height, bool dual, GLTextureType textureType = GLTextureType::GLTexture_Normal2DTex);
 		void setRollingHeight(float height);
-		void setRollingDirection(int direction);
+		void RollingDirection(int direction);
 		void RenderMode(CGRenderMode renderMode);
 		CGRenderMode RenderMode();
 	public:

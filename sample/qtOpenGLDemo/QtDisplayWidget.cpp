@@ -1,5 +1,6 @@
 #include "QtDisplayWidget.h"
 #include "ui_QtDisplayWidget.h"
+#include <QResizeEvent>
 
 
 #include "CGRenderView.h"
@@ -172,17 +173,17 @@ QTDisplayWidget::QTDisplayWidget(QWidget* parent)
 	int RollingHeight = 1000;
 	{
 		//d.render2D->SetMode(1);
-		d.render2D->SetHeight(RollingHeight);
 		d.render2D->SetDirection(0);
+		d.render2D->SetHeight(RollingHeight);
 		d.use16unsignedint = true;
 	}
 
 
 
 
-	//QTimer* timer = new QTimer(this);
-	//connect(timer, &QTimer::timeout, this, &QTDisplayWidget::runLoop);
-	//timer->start(10);
+	QTimer* timer = new QTimer(this);
+	connect(timer, &QTimer::timeout, this, &QTDisplayWidget::runLoop);
+	timer->start(10);
 
 	{
 		//int contextId = renderWindow->ContextID();
@@ -347,6 +348,7 @@ QTDisplayWidget::QTDisplayWidget(QWidget* parent)
 
 			//d.image->updateData(colorbuffer, width, insertHeight);
 			d.render2D->SetImage(colorbuffer, width, height, false);
+			d.render2D->Update();
 			delete[]colorbuffer;
 			return;
 		}
@@ -443,6 +445,10 @@ QTDisplayWidget::QTDisplayWidget(QWidget* parent)
 	RECT rect;
 	GetWindowRect(parentHwnd, &rect);
 
+	auto parentWindowPos = d.ui.w_glwindow->pos();
+	int x = parentWindowPos.x();
+	int y = parentWindowPos.y();
+
 
 	d.renderview = std::make_unique<CGRender::CGRenderView>(width, height, parentHwnd);
 	{
@@ -531,7 +537,7 @@ QTDisplayWidget::QTDisplayWidget(QWidget* parent)
 		auto layer = d.glWindow->getCurLayer();
 		//layer->addImageShader(ShaderCodeName::FS_Tex);
 		layer->addImageShader(ShaderCodeName::FS_Tex_Red_xRevert);
-		
+
 		});
 	connect(d.ui.pbRotate90, &QPushButton::clicked, this, [&]() {
 		auto layer = d.glWindow->getCurLayer();
@@ -542,7 +548,7 @@ QTDisplayWidget::QTDisplayWidget(QWidget* parent)
 		d.glWindow->setWindowWidthLevel(4000, 20000);
 		layer->addImageShader(ShaderCodeName::CUDA_WindowWidthLevel);
 		});
-	
+
 	connect(d.ui.pbClearAll, &QPushButton::clicked, this, [&]() {
 		auto layer = d.glWindow->getCurLayer();
 		layer->removeAllImageShader();
@@ -732,6 +738,19 @@ void QTDisplayWidget::closeEvent(QCloseEvent* event)
 
 }
 
+void QTDisplayWidget::resizeEvent(QResizeEvent* event)
+{
+	auto& d = *m_priv;
+	std::lock_guard lock(d.mutex);
+#ifdef use_Render2D
+#else
+	//QSize size = event->size();
+	QSize size = d.ui.w_glwindow->size();
+	d.glWindow->ResizeWindow(size.width(), size.height());
+#endif // use_Render2D
+
+}
+
 
 void QTDisplayWidget::runLoop()
 {
@@ -747,4 +766,4 @@ void QTDisplayWidget::runLoop()
 		d.renderview->Render();
 #endif // use_Render2D
 
-	}
+}

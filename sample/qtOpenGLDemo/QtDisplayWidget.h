@@ -17,6 +17,7 @@ public slots:
 
 public:
 	virtual void closeEvent(QCloseEvent* event)override;
+	virtual void resizeEvent(QResizeEvent* event)override;
 
 private:
 	struct PrivateData;
