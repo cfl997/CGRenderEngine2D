@@ -124,17 +124,97 @@ void CGData::CGItemImage::updateData(const std::wstring& path)
 void CGData::CGItemImage::updateData(void* data, int width, int height)
 {
 
-
 	bool moveResult = CGRender_MoveTexturePixel(ContextID(), TextureID(), 0, height);
 	assert(moveResult);
 
-	bool uploadresult = CGRender_UploadTexture(ContextID(), TextureID(), 0, 0, width, height, data);
-	assert(uploadresult);
+
+	auto& d = *m_priv;
+	int bytes = 4;
+	switch (d.type)
+	{
+	case GLTexture_Normal2DTex:
+	{
+
+	}
+	case GLTexture_Raw16:
+	{
+		bytes = 2;
+		break;
+	}
+	default:
+		break;
+	}
+	//if (width != d.width)
+	{
+		char* srcdata = (char*)data;
+
+		int srcStride = width * bytes;
+		int destStride = d.width * bytes;
+
+		int bufsize = d.width * height * bytes;
+		char* szbuf = new char[bufsize];
+
+#if 0
+
+
+		if (width > d.width)
+		{
+			for (int y = 0; y < height; ++y)
+			{
+				memcpy(szbuf + y * destStride, srcdata + y * srcStride, destStride);
+			}
+		}
+		else if (width < d.width)
+		{
+			for (int y = 0; y < height; ++y)
+			{
+				memcpy(szbuf + y * destStride, srcdata + y * srcStride, srcStride);
+				memset(szbuf + y * destStride + srcStride, 0, (d.width - width) * bytes);
+			}
+		}
+#else
+
+		if (width > d.width)
+		{
+			for (int y = 0; y < height; ++y)
+			{
+				memcpy(szbuf + (height - 1 - y) * destStride, srcdata + y * srcStride, destStride);
+			}
+		}
+		else if (width < d.width)
+		{
+			for (int y = 0; y < height; ++y)
+			{
+				memcpy(szbuf + (height - 1 - y) * destStride, srcdata + y * srcStride, srcStride);
+				memset(szbuf + (height - 1 - y) * destStride + srcStride, 0, (d.width - width) * bytes);
+			}
+		}
+		for (int y = 0; y < height; ++y)
+		{
+			memcpy(szbuf + (height - 1 - y) * destStride, srcdata + y * srcStride, srcStride);
+		}
+#endif // 0
+
+
+
+		bool uploadresult = CGRender_UploadTexture(ContextID(), TextureID(), 0, 0, d.width, height, szbuf);
+		assert(uploadresult);
+
+		delete[] szbuf;
+		return;
+	}
+	
+
+	//bool uploadresult = CGRender_UploadTexture(ContextID(), TextureID(), 0, 0, width, height, data);
+	//assert(uploadresult);
+
 }
 
 void CGData::CGItemImage::Resize(int width, int height)
 {
 	auto& d = *m_priv;
+	d.width = width;
+	d.height = height;
 	CGRender_DeleteTexture(ContextID(), TextureID());
 	d.hTexture = CGRender_CreateTextureFromData(ContextID(), 0, width, height, GLTexture_Normal2DTex);
 	return;
@@ -184,8 +264,10 @@ void CGData::CGItemImage::Render(int device, const glm::mat4& matrix)
 			break;
 		}
 		default:
+			mvp = glm::rotate(mvp, glm::radians(-90.0f), g_ZNormal);
 			break;
 		}
+
 	}
 	if (d.uniformBufferid < 0)
 		d.uniformBufferid = CGRender_CreateBuffer(device, sizeof(glm::mat4), 1, &mvp, GLBufferType::uniformBuffer);

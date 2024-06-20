@@ -36,11 +36,11 @@ GLRENDER_API void CGTime_END(char*str);
 
 
 #ifdef DEBUG
-#define CGLOG_INIT(x) do { CGLog_INIT(x); } while(0)
-#define CGLOG_CLOSE do { CGLog_CLOSE(); } while(0)
+#define CGRender_LOG_INIT(x) do { CGLog_INIT(x); } while(0)
+#define CGRender_LOG_CLOSE do { CGLog_CLOSE(); } while(0)
 
-#define CGTIME_START do { CGTime_START(); } while(0)
-#define CGTIME_END(x) do { CGTime_END(x); } while(0)
+#define CGRender_TIME_START do { CGTime_START(); } while(0)
+#define CGRender_TIME_END(x) do { CGTime_END(x); } while(0)
 #else
 #if 1
 #define CGRender_LOG_INIT(x) do { CGLog_INIT(x); } while(0)

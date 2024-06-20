@@ -20,6 +20,7 @@ struct PrivateData
 	WindowsWindow* window = nullptr;
 	bool Release = false;
 	std::recursive_mutex mutex;
+	bool needUpdateImage = false;
 };
 Render2D::Render2D()
 {
@@ -71,16 +72,26 @@ void Render2D::SetMode(int mode)
 {
 	auto& d = *(PrivateData*)impl;
 	NULL_Return(d.window);
-
 	d.window->RenderMode((CGRenderMode)mode);
+	d.needUpdateImage = true;
 }
 
 void Render2D::SetHeight(int height)
 {
 	auto& d = *(PrivateData*)impl;
 	NULL_Return(d.window);
+
 	if (d.window->RenderMode() != CGRenderMode::RenderMode_rolling)
 		return;
+	{
+		auto layer = d.window->getCurLayer();
+		NULL_Return(layer);
+		auto items = layer->getItem(CGData::CGItemType::CGItemImage);
+		if (!items.empty())
+		{
+			layer->removeItem(items.at(0)->GUID());
+		}
+	}
 	d.window->setRollingHeight(height);
 }
 
@@ -98,6 +109,10 @@ void Render2D::SetDirection(int direction)
 void Render2D::SetImage(void* data, int width, int height, bool dual)
 {
 	auto& d = *(PrivateData*)impl;
+	std::lock_guard lock(d.mutex);
+
+
+	std::swap(width, height);
 	NULL_Return(d.window);
 	auto layer = d.window->getCurLayer();
 	NULL_Return(layer);
@@ -107,13 +122,38 @@ void Render2D::SetImage(void* data, int width, int height, bool dual)
 		d.window->addImage(data, width, height, dual, GLTextureType::GLTexture_Raw16);
 		return;
 	}
-	if (d.window->RenderMode() == (int)CGRenderMode::RenderMode_rolling)
+	CGRenderMode RenderMode = d.window->RenderMode();
+	switch (RenderMode)
 	{
-		std::swap(width, height);
+	case RenderMode_static:
+	{
+		if (d.needUpdateImage)
+		{
+			layer->removeItem(items.at(0)->GUID());
+			d.window->addImage(data, width, height, dual, GLTextureType::GLTexture_Raw16);
+			d.needUpdateImage = false;
+			break;
+		}
+
+		{
+			CGData::CGItemImage* image = dynamic_cast<CGData::CGItemImage*>(items.at(0));
+			NULL_Return(image)
+			image->updateData(data, width, height);
+		}
+		break;
 	}
-	CGData::CGItemImage* image = dynamic_cast<CGData::CGItemImage*>(items.at(0));
-	NULL_Return(image);
-	image->updateData(data, width, height);
+	case RenderMode_rolling:
+	{
+		CGData::CGItemImage* image = dynamic_cast<CGData::CGItemImage*>(items.at(0));
+		NULL_Return(image)
+		image->updateData(data, width, height);
+		break;
+	}
+	case RenderMode_unknow:
+		break;
+	default:
+		break;
+	}
 }
 
 void Render2D::SetParameter(const Parameter& parameter)
@@ -140,7 +180,7 @@ void Render2D::SetProperty(const Property& property)
 	auto& d = *(PrivateData*)impl;
 	NULL_Return(d.window);
 
-	auto fn = [&](bool property,ShaderCodeName name){
+	auto fn = [&](bool property, ShaderCodeName name) {
 		if (property)
 		{
 			d.window->getCurLayer()->addImageShader(name);

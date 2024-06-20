@@ -31,7 +31,7 @@ namespace CGData
 		CGData::CGEffector* Effector();
 
 	public:
-		void ProcessMouseMoveXY(float x, float y);
+		void ProcessMouseMoveXY(float x, float y, bool xChange, bool yChange);
 		void ProcessMousePress(float x, float y);
 		void ProcessMouseRelease(float x, float y);
 	private:

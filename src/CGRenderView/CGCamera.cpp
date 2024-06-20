@@ -1,5 +1,7 @@
 #include "CGCamera.h"
 #include "CGCore.h"
+#include "CGWindowsWindos.h"
+#include "CGData.h"
 
 using namespace CGRender;
 
@@ -20,6 +22,8 @@ struct CGCamera::PrivateData
 #ifdef USE_ORTHO
 	glm::vec3 originPos = glm::vec3{ 1 };
 #endif
+
+	WindowsWindow* winWindow = nullptr;
 };
 
 CGCamera::CGCamera(glm::vec3 position, glm::vec3 up, float yaw, float pitch) :
@@ -46,6 +50,11 @@ CGCamera::CGCamera(glm::vec3 position, glm::vec3 up, float yaw, float pitch) :
 CGRender::CGCamera::~CGCamera()
 {
 	SAFE_DELETE(m_priv);
+}
+
+void CGRender::CGCamera::setWindow(WindowsWindow* winWindow)
+{
+	m_priv->winWindow = winWindow;
 }
 
 #ifdef USE_ORTHO
@@ -111,7 +120,7 @@ float CGRender::CGCamera::ImageMinScale()
 	return m_priv->imageMinScale;
 }
 
-void CGRender::CGCamera::ProcessMouseMoveXY(float x, float y)
+void CGRender::CGCamera::ProcessMouseMoveXY(float x, float y, bool xChange, bool yChange)
 {
 	auto& d = *m_priv;
 	if (d.isMove)
@@ -121,16 +130,16 @@ void CGRender::CGCamera::ProcessMouseMoveXY(float x, float y)
 		//先移动 layer 再同步到 camera
 		offset *= d.scaleCoefficient;
 #endif // USE_ORTHO
-
-		Position.x -= offset.x;
-		Position.y -= offset.y;
+		if (xChange)
+			Position.x -= offset.x;
+		if (yChange)
+			Position.y -= offset.y;
 
 		d.pressPos = glm::vec2{ x,y };
 		return;
 	}
 
 }
-
 
 void CGRender::CGCamera::ProcessMousePress(float x, float y)
 {

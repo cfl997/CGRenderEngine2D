@@ -107,6 +107,38 @@ static bool getImageData(const std::wstring& path, int width, int height, ImageD
 
 	return false;
 }
+#include <fstream>
+
+static bool getImageDataHeader(const char* path, ImageData& imageData)
+{
+	std::ifstream in(path, std::ios::in | std::ios::binary);
+	if (in.is_open()) {
+		struct {
+			//unsigned short n0, width, height, n1, bits, energy, order, inverse, n[248];
+			int width, height, n1, n2;
+		} header;
+		if (in.read((char*)&header, sizeof(header))) {
+			int width = header.width;
+			int height = header.height;
+			int bytes = 2;
+			int bufsize = width * height * bytes;
+			char* szbuf = new char[bufsize];
+			if (in.read(szbuf, bufsize)) {
+				imageData.width = width;
+				imageData.height = height;
+				imageData.isLoad = true;
+				imageData.data = new char[bytes * width * height];
+				std::copy(szbuf, szbuf + bytes * width * height, imageData.data);
+				delete szbuf;
+				szbuf = nullptr;
+				return true;
+			}
+		}
+	}
+	in.close();
+	return false;
+
+}
 
 
 uint16_t ConvertColorToRGB565(uint32_t color) {
@@ -128,7 +160,7 @@ uint16_t ConvertColorToRGB565(uint32_t color) {
 const std::wstring g_oneWindowTitle = L"oneTitleWindow";
 
 #include "Render2D.h"
-//#define use_Render2D
+#define use_Render2D
 #include <mutex>
 
 struct QTDisplayWidget::PrivateData
@@ -220,12 +252,13 @@ QTDisplayWidget::QTDisplayWidget(QWidget* parent)
 		QString fileSuffix = fileInfo.suffix();
 		if (fileSuffix == QString("raw"))
 		{
+
 			int width = d.ui.leW->text().toInt();
 			int height = d.ui.leH->text().toInt();
 			ImageData imageData;
-			getImageData(selectedFile.toStdWString(), width, height, imageData);
+			//getImageData(selectedFile.toStdWString(), width, height, imageData);
 			//getImageData(selectedFile.toStdWString(), 496, 448, imageData);
-
+			getImageDataHeader(selectedFile.toStdString().c_str(), imageData);
 			d.render2D->SetImage(imageData.data, imageData.width, imageData.height, false);
 		}
 		else

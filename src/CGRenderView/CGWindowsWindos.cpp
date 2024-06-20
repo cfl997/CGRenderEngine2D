@@ -41,7 +41,7 @@
 #define USE_ORTHO
 
 //事件触发render - 集成使用
-//#define USE_EVNET_RENDER
+#define USE_EVNET_RENDER
 
 namespace CGRender
 {
@@ -367,7 +367,8 @@ namespace CGRender
 			CGRender_SetScissor(d.glContextID, 0, 0, d.windowWidth, d.windowHeight);
 
 			//CGRender_ClearTexture(d.glContextID, renderTarget, 0x00ffff00);
-			CGRender_ClearTexture(d.glContextID, renderTarget, 0xFFFFFFFF);
+			//CGRender_ClearTexture(d.glContextID, renderTarget, 0xFFFFFFFF);
+			CGRender_ClearTexture(d.glContextID, renderTarget, 0x00000000);
 
 			glm::mat4 transform = glm::mat4(1.0f);
 			glm::mat4 view = d.getViewMatrix();
@@ -389,7 +390,7 @@ namespace CGRender
 			if (d.eventDefault == nullptr)
 				return;
 			d.eventDefault->RenderTexture();
-			if (1)
+			if (0)
 			{
 				CGRender_SaveTextue(d.glContextID, renderTarget, L"D:/render2D.png");
 			}
@@ -484,9 +485,6 @@ namespace CGRender
 
 
 		{
-#ifdef DEBUG
-			std::cout << "CGRender_Init: " << szfile << std::endl;
-#endif // DEBUG
 
 			TCHAR* szfile = CGPath_GetPath(CGPathType::CG_PATH_PLUGIN);
 			bool isInit = CGRender_Init(szfile);//是否包含glew32.dll
@@ -514,6 +512,7 @@ namespace CGRender
 		CGRender_TIME_START;
 		{
 			d.camera = std::make_unique<CGCamera>();
+			d.camera->setWindow(this);
 #ifdef USE_ORTHO
 			d.camera->resetPosition(d.windowWidth, d.windowHeight);
 #endif // USE_ORTHO
@@ -852,6 +851,7 @@ namespace CGRender
 	}
 	void WindowsWindow::WindowData::ImageScale(float imageWidth, float imageHeight)
 	{
+		std::swap(imageWidth, imageHeight);
 		float widthScale = static_cast<float> (windowWidth) / static_cast<float> (imageWidth);
 		float heightScale = static_cast<float> (windowHeight) / static_cast<float> (imageHeight);
 		float scale = widthScale < heightScale ? widthScale : heightScale;

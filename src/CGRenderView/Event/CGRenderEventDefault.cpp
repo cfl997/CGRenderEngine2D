@@ -27,6 +27,8 @@ struct RTTexture
 
 	int renderNums = -1;
 	std::recursive_mutex mutex;
+
+	bool isleftPress = false;
 	bool needUpdate = false;
 
 	CGData::CGItemRectangle* itemRect = nullptr;
@@ -42,6 +44,14 @@ struct CGRenderEventDefault::PrivateData
 	bool first = true;
 
 	void needRenderRect();
+
+	glm::vec2 pressPos = glm::vec2(0);
+
+	//ImageEdgePos
+	void ImageEdgePosMove(float x, float y);
+	bool xChange = true;
+	bool yChange = true;
+	void ImageEdgePosScoll();
 };
 
 
@@ -79,7 +89,8 @@ bool CGRender::CGRenderEventDefault::OnMouseScoll(MouseScrolledEvent& e)
 		return false;
 
 	winWindow->getCamera()->ProcessMouseScroll(e.GetYOffset(), e.GetX(), e.GetY());
-	//d.renderRTTexture();
+	d.ImageEdgePosScoll();
+
 	d.needRenderRect();
 	return true;
 }
@@ -95,11 +106,19 @@ bool CGRender::CGRenderEventDefault::OnMouseMove(MouseMovedEvent& e)
 	float x = e.GetX();
 	float y = e.GetY();
 
-	winWindow->getCamera()->ProcessMouseMoveXY(x, y);
+	d.ImageEdgePosMove(x, y);
 
-	winWindow->getCurLayer()->ProcessMouseMoveXY(x, y);
+	d.pressPos = glm::vec2(x, y);
 
-	return false;
+	winWindow->getCamera()->ProcessMouseMoveXY(x, y, d.xChange, d.yChange);
+
+	winWindow->getCurLayer()->ProcessMouseMoveXY(x, y, d.xChange, d.yChange);
+
+	if (d.rtTexture.isleftPress)
+	{
+		d.needRenderRect();
+	}
+	return true;
 }
 
 bool CGRender::CGRenderEventDefault::OnMouseButtonPress(MouseButtonPressedEvent& e)
@@ -120,6 +139,8 @@ bool CGRender::CGRenderEventDefault::OnMouseButtonPress(MouseButtonPressedEvent&
 	if (e.GetMouseButton() == CG_MOUSE_BUTTON_LEFT)
 		winWindow->getCurLayer()->ProcessMousePress(x, y);
 
+	d.rtTexture.isleftPress = true;
+	d.pressPos = glm::vec2(x, y);
 	return false;
 }
 
@@ -142,6 +163,7 @@ bool CGRender::CGRenderEventDefault::OnMouseButtonRelease(MouseButtonReleasedEve
 	if (e.GetMouseButton() == CG_MOUSE_BUTTON_LEFT)
 		winWindow->getCurLayer()->ProcessMouseRelease(x, y);
 
+	d.rtTexture.isleftPress = false;
 	return false;
 }
 
@@ -163,8 +185,8 @@ void CGRenderEventDefault::PrivateData::renderRTTexture()
 {
 	//return;
 
-	if (winWindow->RenderMode() == CGRenderMode::RenderMode_rolling)
-		return;
+	//if (winWindow->RenderMode() == CGRenderMode::RenderMode_rolling)
+	//	return;
 
 	if (rtTexture.renderNums < 0)
 		return;
@@ -277,6 +299,92 @@ void CGRenderEventDefault::PrivateData::renderRTTexture()
 void CGRenderEventDefault::PrivateData::needRenderRect()
 {
 	rtTexture.renderNums = 100;
+}
+
+void CGRenderEventDefault::PrivateData::ImageEdgePosMove(float x, float y)
+{
+	xChange = true;
+	yChange = true;
+	CGData::CGLayer* layer = winWindow->getCurLayer();
+	auto items = layer->getItem(CGData::CGItemType::CGItemImage);
+	if (!items.empty())
+	{
+		CGData::CGItemImage* image = dynamic_cast<CGData::CGItemImage*>(items.at(0));
+		int imageWidth = image->worldWidth();
+		int imageHeight = image->worldHeight();
+
+		std::swap(imageWidth, imageHeight);
+
+		int windowWidth = winWindow->GetWidth();
+		int windowHeight = winWindow->GetHeight();
+
+		auto camera = winWindow->getCamera();
+		float cameraScale = camera->ScaleCoefficient();
+
+		imageWidth *= cameraScale;
+		imageHeight *= cameraScale;
+
+		glm::vec3 originPos = camera->OriginPos();
+		glm::vec3 cameraCurPos = camera->Position;
+
+		float moveWidth = std::abs(imageWidth - windowWidth) / 2.;
+		float moveHeight = std::abs(imageHeight - windowHeight) / 2.;
+
+		int i = 0;
+
+		glm::vec2 offset = glm::vec2{ x,y } - pressPos;
+#ifdef USE_ORTHO
+		offset *= cameraScale;
+#endif // USE_ORTHO
+		//glm::vec3 cameraCanMovePos = originPos;
+		cameraCurPos.x -= offset.x;
+		cameraCurPos.y -= offset.y;
+
+		if (std::abs(cameraCurPos.x - originPos.x) > moveWidth)
+			xChange = false;
+		if (std::abs(cameraCurPos.y - originPos.y) > moveHeight)
+			yChange = false;
+
+	}
+}
+
+void CGRenderEventDefault::PrivateData::ImageEdgePosScoll()
+{
+	CGData::CGLayer* layer = winWindow->getCurLayer();
+	auto items = layer->getItem(CGData::CGItemType::CGItemImage);
+	if (items.empty())
+		return;
+	CGData::CGItemImage* image = dynamic_cast<CGData::CGItemImage*>(items.at(0));
+	int imageWidth = image->worldWidth();
+	int imageHeight = image->worldHeight();
+
+	std::swap(imageWidth, imageHeight);
+
+	int windowWidth = winWindow->GetWidth();
+	int windowHeight = winWindow->GetHeight();
+
+	auto camera = winWindow->getCamera();
+	float cameraScale = camera->ScaleCoefficient();
+
+	imageWidth *= cameraScale;
+	imageHeight *= cameraScale;
+
+	glm::vec3 originPos = camera->OriginPos();
+	glm::vec3 cameraCurPos = camera->Position;
+
+	float moveWidth = std::abs(imageWidth - windowWidth) / 2.;
+	float moveHeight = std::abs(imageHeight - windowHeight) / 2.;
+
+	{
+		float xCameraOffset = cameraCurPos.x - originPos.x;
+		if (std::abs(xCameraOffset) > moveWidth)
+			xCameraOffset < 0 ? (camera->Position.x += (std::abs(xCameraOffset) - moveWidth)) : camera->Position.x -= (std::abs(xCameraOffset) - moveWidth);
+	}
+	{
+		float yCameraOffset = cameraCurPos.y - originPos.y;
+		if (std::abs(yCameraOffset) > moveHeight)
+			yCameraOffset < 0 ? (camera->Position.y += (std::abs(yCameraOffset) - moveHeight)) : camera->Position.y -= (std::abs(yCameraOffset) - moveHeight);
+	}
 }
 
 

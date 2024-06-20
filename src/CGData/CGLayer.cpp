@@ -205,18 +205,17 @@ CGData::CGEffector* CGData::CGLayer::Effector()
 	return d.imageEffector;
 }
 
-void CGData::CGLayer::ProcessMouseMoveXY(float x, float y)
+void CGData::CGLayer::ProcessMouseMoveXY(float x, float y, bool xChange, bool yChange)
 {
 	auto& d = *m_priv;
 	if (!d.isMove)
 		return;
 	glm::vec2 offset = glm::vec2{ x,y } - d.pressPos;
-	//offset=glm::normalize(offset);
-	//d.position += glm::vec3((glm::vec2{ x,y } - d.pressPos),0.0);
-	d.position.x += offset.x;
-	d.position.y += offset.y;
+	if (xChange)
+		d.position.x += offset.x;
+	if (yChange)
+		d.position.y += offset.y;
 
-	//d.position = d.position - glm::vec3(offset, 0);
 	d.pressPos = glm::vec2{ x,y };
 
 }

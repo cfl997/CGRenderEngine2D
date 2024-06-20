@@ -29,6 +29,8 @@ namespace CGRender
 	const float SENSITIVITY = 0.1f;
 	//const float ZOOM = 45.0f;
 	const float ZOOM = 35.0f;//cfl-20240419
+
+	class WindowsWindow;
 	class CGCamera
 	{
 
@@ -52,6 +54,8 @@ namespace CGRender
 
 		~CGCamera();
 	public:
+		void setWindow(WindowsWindow* winWindow);
+	public:
 #ifdef USE_ORTHO
 		/*
 		* reset camera position
@@ -70,7 +74,7 @@ namespace CGRender
 		/*
 		* event
 		*/
-		void ProcessMouseMoveXY(float x, float y);
+		void ProcessMouseMoveXY(float x, float y, bool xChange, bool yChange);
 		void ProcessMousePress(float x, float y);
 		void ProcessMouseRelease(float x, float y);
 		void ProcessMouseScroll(float yoffset, float x, float y);
